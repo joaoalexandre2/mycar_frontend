@@ -27,6 +27,30 @@ import type { Manutencao } from "../../types/manutencao";
     const [ordens, setOrdens] = useState<OrdemServico[]>([]);
     const [manutencoes, setManutencoes] = useState<Manutencao[]>([]);
     const [carregando, setCarregando] = useState(true);
+
+      useEffect(() => {
+  async function carregar() {
+    try {
+      const [listaClientes, listaVeiculos, listaOrdens, listaManutencoes] =
+        await Promise.all([
+          clientesService.listar(),
+          veiculosService.listar(),
+          ordensServicoService.listar(),
+          manutencoesService.listar(),
+        ]);
+      setClientes(listaClientes);
+      setVeiculos(listaVeiculos);
+      setOrdens(listaOrdens);
+      setManutencoes(listaManutencoes);
+    } catch (error) {
+      window.alert(mensagemErro(error));
+    } finally {
+      setCarregando(false);
+    }
+  }
+
+  void carregar();
+}, []);
     return (
       <div className="p-8">
         {/* Cabeçalho */}
