@@ -22,11 +22,11 @@ import type { OrdemServico } from "../../types/ordemServico";
 import type { Manutencao } from "../../types/manutencao";
   
   export function Dashboard() {
-    const totalClientes = 128;
-    const totalVeiculos = 184;
-    const ordensAbertas = 12;
-    const faturamento = 18450;
-  
+    const [clientes, setClientes] = useState<Cliente[]>([]);
+    const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
+    const [ordens, setOrdens] = useState<OrdemServico[]>([]);
+    const [manutencoes, setManutencoes] = useState<Manutencao[]>([]);
+    const [carregando, setCarregando] = useState(true);
     return (
       <div className="p-8">
         {/* Cabeçalho */}
