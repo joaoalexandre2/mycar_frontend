@@ -1,7 +1,10 @@
+import type { Veiculo } from "./veiculo";
+
 export type StatusOrdemServico =
   | "aberta"
   | "em_andamento"
-  | "concluida"
+  | "aguardando_peca"
+  | "finalizada"
   | "cancelada";
 
 export interface OrdemServico {
@@ -11,4 +14,15 @@ export interface OrdemServico {
   status: StatusOrdemServico;
   valor: number;
   dataAbertura: string;
+  dataFechamento: string | null;
+  veiculo?: Veiculo | null;
+}
+
+export interface OrdemServicoPayload {
+  veiculo_id: number;
+  descricao: string;
+  status?: StatusOrdemServico;
+  valor: number;
+  data_abertura: string;
+  data_fechamento?: string | null;
 }

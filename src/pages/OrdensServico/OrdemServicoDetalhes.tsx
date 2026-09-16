@@ -13,14 +13,29 @@ import {
   Wrench,
 } from "lucide-react";
 
+import type { OrdemServico, StatusOrdemServico } from "../../types/ordemServico";
+import { formatarData, formatarMoeda } from "../../utils/formatters";
+
+const STATUS_LABEL: Record<StatusOrdemServico, string> = {
+  aberta: "Aberta",
+  em_andamento: "Em andamento",
+  aguardando_peca: "Aguardando peça",
+  finalizada: "Finalizada",
+  cancelada: "Cancelada",
+};
+
 interface OrdemServicoDetalhesProps {
+  ordem: OrdemServico;
   onVoltar: () => void;
 }
 
 export function OrdemServicoDetalhes({
+  ordem,
   onVoltar,
 }: OrdemServicoDetalhesProps) {
   const [abaAtiva, setAbaAtiva] = useState("informacoes");
+  const veiculo = ordem.veiculo;
+  const cliente = veiculo?.cliente;
 
   return (
     <div className="p-8">
@@ -36,16 +51,16 @@ export function OrdemServicoDetalhes({
         <div>
           <div className="flex items-center gap-3">
             <h2 className="text-[21px] font-bold text-gray-900">
-              OS-0001
+              OS-{String(ordem.id).padStart(4, "0")}
             </h2>
 
             <span className="rounded-full bg-blue-100 px-2.5 py-1 text-[10px] font-semibold text-blue-700">
-              Aberta
+              {STATUS_LABEL[ordem.status]}
             </span>
           </div>
 
           <p className="mt-1 text-xs text-gray-500">
-            Ordem de serviço criada em 24/08/2026
+            Ordem de serviço criada em {formatarData(ordem.dataAbertura)}
           </p>
         </div>
 
@@ -67,21 +82,25 @@ export function OrdemServicoDetalhes({
         <SummaryCard
           icon={<Car size={18} />}
           label="Veículo"
-          value="Honda Fit"
-          description="ABC1D23"
+          value={
+            veiculo
+              ? `${veiculo.marca} ${veiculo.modelo}`
+              : "Não informado"
+          }
+          description={veiculo?.placa ?? "—"}
         />
 
         <SummaryCard
           icon={<UserRound size={18} />}
           label="Cliente"
-          value="Maria Silva"
-          description="Proprietária"
+          value={cliente?.nome ?? "Não informado"}
+          description={cliente?.telefone ?? "Proprietário"}
         />
 
         <SummaryCard
           icon={<ClipboardList size={18} />}
           label="Valor da OS"
-          value="R$ 350,00"
+          value={formatarMoeda(ordem.valor)}
           description="Valor estimado"
         />
       </div>
@@ -121,7 +140,7 @@ export function OrdemServicoDetalhes({
 
         {/* Informações */}
         {abaAtiva === "informacoes" && (
-          <Informacoes />
+          <Informacoes ordem={ordem} />
         )}
 
         {/* Serviços */}
