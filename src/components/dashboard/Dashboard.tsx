@@ -21,12 +21,17 @@ import type { Veiculo } from "../../types/veiculo";
 import type { OrdemServico } from "../../types/ordemServico";
 import type { Manutencao } from "../../types/manutencao";
   
-  export function Dashboard() {
-    const [clientes, setClientes] = useState<Cliente[]>([]);
-    const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
-    const [ordens, setOrdens] = useState<OrdemServico[]>([]);
-    const [manutencoes, setManutencoes] = useState<Manutencao[]>([]);
-    const [carregando, setCarregando] = useState(true);
+export function Dashboard() {
+const [clientes, setClientes] = useState<Cliente[]>([]);
+const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
+const [ordens, setOrdens] = useState<OrdemServico[]>([]);
+const [manutencoes, setManutencoes] = useState<Manutencao[]>([]);
+const [carregando, setCarregando] = useState(true);
+
+const totalClientes = clientes.length;
+const totalVeiculos = veiculos.length;
+const ordensAbertas = ordens.filter((ordem) => ordem.status === "aberta").length;
+const faturamento = ordens.reduce((total, ordem) => total + ordem.valor, 0);
 
       useEffect(() => {
   async function carregar() {
