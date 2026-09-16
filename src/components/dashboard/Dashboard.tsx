@@ -9,6 +9,17 @@ import {
     Users,
     Wrench,
   } from "lucide-react";
+    import { useEffect, useState } from "react";
+import { clientesService } from "../../services/clientes";
+import { veiculosService } from "../../services/veiculos";
+import { ordensServicoService } from "../../services/ordensServico";
+import { manutencoesService } from "../../services/manutencoes";
+import { mensagemErro } from "../../services/api";
+import { formatarMoeda, formatarData } from "../../utils/formatters";
+import type { Cliente } from "../../types/cliente";
+import type { Veiculo } from "../../types/veiculo";
+import type { OrdemServico } from "../../types/ordemServico";
+import type { Manutencao } from "../../types/manutencao";
   
   interface Ordem {
     id: number;
