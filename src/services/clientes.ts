@@ -13,6 +13,39 @@ interface ClienteApi {
   created_at?: string;
 }
 
+export interface ResumoClientes {
+  total: number;
+  ativos: number;
+  inativos: number;
+  totalVeiculos: number;
+}
+
+interface RespostaPaginadaApi<T> {
+  data: T[];
+  meta: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
+  resumo: ResumoClientes;
+}
+
+export interface ListarClientesParams {
+  pagina?: number;
+  busca?: string;
+  status?: "todos" | "ativos" | "inativos";
+  porPagina?: number;
+}
+
+export interface PaginaClientes {
+  dados: Cliente[];
+  paginaAtual: number;
+  totalPaginas: number;
+  totalRegistros: number;
+  resumo: ResumoClientes;
+}
+
 function mapearCliente(cliente: ClienteApi): Cliente {
   return {
     id: cliente.id,
@@ -31,9 +64,42 @@ function hojeCadastro() {
 }
 
 export const clientesService = {
+  /**
+   * Retorna todos os clientes de uma vez (sem paginação).
+   * Usado para preencher combos/selects em outras telas.
+   */
   async listar() {
-    const { data } = await api.get<ClienteApi[]>("/clientes");
+    const { data } = await api.get<ClienteApi[]>("/clientes", {
+      params: { all: 1 },
+    });
     return data.map(mapearCliente);
+  },
+
+  /**
+   * Listagem paginada de verdade, usada pela tela de Clientes.
+   */
+  async listarPaginado(
+    params: ListarClientesParams = {},
+  ): Promise<PaginaClientes> {
+    const { data } = await api.get<RespostaPaginadaApi<ClienteApi>>(
+      "/clientes",
+      {
+        params: {
+          page: params.pagina ?? 1,
+          busca: params.busca || undefined,
+          status: params.status ?? "todos",
+          per_page: params.porPagina ?? 15,
+        },
+      },
+    );
+
+    return {
+      dados: data.data.map(mapearCliente),
+      paginaAtual: data.meta.current_page,
+      totalPaginas: data.meta.last_page,
+      totalRegistros: data.meta.total,
+      resumo: data.resumo,
+    };
   },
 
   async criar(payload: ClientePayload) {

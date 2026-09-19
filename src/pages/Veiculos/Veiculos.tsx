@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Car,
+  ChevronLeft,
+  ChevronRight,
   MoreHorizontal,
   Pencil,
   Plus,
@@ -11,26 +13,66 @@ import {
 import type { Cliente } from "../../types/cliente";
 import type { Veiculo } from "../../types/veiculo";
 import { clientesService } from "../../services/clientes";
-import { veiculosService } from "../../services/veiculos";
+import {
+  veiculosService,
+  type ResumoVeiculos,
+} from "../../services/veiculos";
 import { mensagemErro } from "../../services/api";
+
+const RESUMO_INICIAL: ResumoVeiculos = {
+  total: 0,
+  clientesComVeiculo: 0,
+  marcas: 0,
+  anoMedio: 0,
+};
 
 export function Veiculos() {
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [busca, setBusca] = useState("");
+  const [buscaDebounced, setBuscaDebounced] = useState("");
+  const [pagina, setPagina] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const [totalRegistros, setTotalRegistros] = useState(0);
+  const [resumo, setResumo] = useState<ResumoVeiculos>(RESUMO_INICIAL);
   const [modalAberto, setModalAberto] = useState(false);
   const [veiculoEditando, setVeiculoEditando] =
     useState<Veiculo | null>(null);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setBuscaDebounced(busca);
+      setPagina(1);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [busca]);
+
   async function carregar() {
     try {
       setCarregando(true);
-      const [listaVeiculos, listaClientes] = await Promise.all([
-        veiculosService.listar(),
+      const [resultado, listaClientes] = await Promise.all([
+        veiculosService.listarPaginado({
+          pagina,
+          busca: buscaDebounced,
+        }),
         clientesService.listar(),
       ]);
-      setVeiculos(listaVeiculos);
+
+      if (
+        resultado.dados.length === 0 &&
+        pagina > 1 &&
+        resultado.totalRegistros > 0
+      ) {
+        setPagina((atual) => Math.max(1, atual - 1));
+        return;
+      }
+
+      setVeiculos(resultado.dados);
+      setTotalPaginas(resultado.totalPaginas);
+      setTotalRegistros(resultado.totalRegistros);
+      setResumo(resultado.resumo);
       setClientes(listaClientes);
     } catch (error) {
       window.alert(mensagemErro(error));
@@ -41,40 +83,10 @@ export function Veiculos() {
 
   useEffect(() => {
     void carregar();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pagina, buscaDebounced]);
 
-  const veiculosFiltrados = useMemo(() => {
-    const termo = busca.toLowerCase().trim();
-
-    return veiculos.filter((veiculo) => {
-      const nomeCliente =
-        veiculo.cliente?.nome ??
-        clientes.find((item) => item.id === veiculo.clienteId)?.nome ??
-        "";
-
-      return (
-        !termo ||
-        veiculo.placa.toLowerCase().includes(termo) ||
-        veiculo.marca.toLowerCase().includes(termo) ||
-        veiculo.modelo.toLowerCase().includes(termo) ||
-        nomeCliente.toLowerCase().includes(termo)
-      );
-    });
-  }, [veiculos, clientes, busca]);
-
-  const clientesComVeiculo = new Set(
-    veiculos.map((veiculo) => veiculo.clienteId),
-  ).size;
-
-  const marcas = new Set(veiculos.map((veiculo) => veiculo.marca)).size;
-
-  const anoMedio =
-    veiculos.length > 0
-      ? Math.round(
-          veiculos.reduce((total, veiculo) => total + veiculo.ano, 0) /
-            veiculos.length,
-        )
-      : 0;
+  const anoMedioArredondado = Math.round(resumo.anoMedio);
 
   function nomeCliente(veiculo: Veiculo) {
     return (
@@ -159,10 +171,10 @@ export function Veiculos() {
       </div>
 
       <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <InfoCard label="Total de veículos" value={veiculos.length} icon={<Car size={19} />} />
-        <InfoCard label="Clientes com veículo" value={clientesComVeiculo} icon={<Car size={19} />} />
-        <InfoCard label="Marcas" value={marcas} icon={<Car size={19} />} />
-        <InfoCard label="Ano médio" value={anoMedio || "—"} icon={<Car size={19} />} />
+        <InfoCard label="Total de veículos" value={resumo.total} icon={<Car size={19} />} />
+        <InfoCard label="Clientes com veículo" value={resumo.clientesComVeiculo} icon={<Car size={19} />} />
+        <InfoCard label="Marcas" value={resumo.marcas} icon={<Car size={19} />} />
+        <InfoCard label="Ano médio" value={anoMedioArredondado || "—"} icon={<Car size={19} />} />
       </div>
 
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
@@ -174,7 +186,7 @@ export function Veiculos() {
             <p className="mt-1 text-[11px] text-gray-400">
               {carregando
                 ? "Carregando..."
-                : `${veiculosFiltrados.length} veículo(s) encontrado(s)`}
+                : `${totalRegistros} veículo(s) encontrado(s)`}
             </p>
           </div>
           <div className="relative w-full sm:w-72">
@@ -212,7 +224,7 @@ export function Veiculos() {
               </tr>
             </thead>
             <tbody>
-              {veiculosFiltrados.map((veiculo) => (
+              {veiculos.map((veiculo) => (
                 <tr
                   key={veiculo.id}
                   className="border-b border-gray-100 transition last:border-0 hover:bg-gray-50"
@@ -273,7 +285,7 @@ export function Veiculos() {
                 </tr>
               ))}
 
-              {!carregando && veiculosFiltrados.length === 0 && (
+              {!carregando && veiculos.length === 0 && (
                 <tr>
                   <td
                     colSpan={5}
@@ -285,6 +297,36 @@ export function Veiculos() {
               )}
             </tbody>
           </table>
+        </div>
+
+        <div className="flex items-center justify-between border-t border-gray-200 px-5 py-3">
+          <p className="text-[11px] text-gray-400">
+            Página {pagina} de {totalPaginas}
+          </p>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setPagina((atual) => Math.max(1, atual - 1))}
+              disabled={pagina <= 1 || carregando}
+              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <ChevronLeft size={14} />
+              Anterior
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                setPagina((atual) => Math.min(totalPaginas, atual + 1))
+              }
+              disabled={pagina >= totalPaginas || carregando}
+              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Próxima
+              <ChevronRight size={14} />
+            </button>
+          </div>
         </div>
       </div>
 

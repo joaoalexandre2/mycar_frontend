@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AlertTriangle,
   CalendarDays,
   Car,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   Clock,
   MoreHorizontal,
   Pencil,
@@ -15,10 +17,21 @@ import {
 } from "lucide-react";
 import type { Manutencao, StatusManutencao } from "../../types/manutencao";
 import type { Veiculo } from "../../types/veiculo";
-import { manutencoesService } from "../../services/manutencoes";
+import {
+  manutencoesService,
+  type ResumoManutencoes,
+} from "../../services/manutencoes";
 import { veiculosService } from "../../services/veiculos";
 import { mensagemErro } from "../../services/api";
 import { formatarData, formatarKm, hojeISO } from "../../utils/formatters";
+
+const RESUMO_INICIAL: ResumoManutencoes = {
+  total: 0,
+  emDia: 0,
+  proximas: 0,
+  atrasadas: 0,
+  veiculosMonitorados: 0,
+};
 
 export function Manutencoes() {
   const [manutencoes, setManutencoes] = useState<Manutencao[]>([]);
@@ -26,23 +39,56 @@ export function Manutencoes() {
   const [carregando, setCarregando] = useState(true);
 
   const [busca, setBusca] = useState("");
+  const [buscaDebounced, setBuscaDebounced] = useState("");
 
   const [filtroStatus, setFiltroStatus] =
     useState<"todos" | StatusManutencao>("todos");
+
+  const [pagina, setPagina] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const [totalRegistros, setTotalRegistros] = useState(0);
+  const [resumo, setResumo] =
+    useState<ResumoManutencoes>(RESUMO_INICIAL);
 
   const [modalAberto, setModalAberto] = useState(false);
 
   const [manutencaoEditando, setManutencaoEditando] =
     useState<Manutencao | null>(null);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setBuscaDebounced(busca);
+      setPagina(1);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [busca]);
+
   async function carregar() {
     try {
       setCarregando(true);
-      const [listaManutencoes, listaVeiculos] = await Promise.all([
-        manutencoesService.listar(),
+      const [resultado, listaVeiculos] = await Promise.all([
+        manutencoesService.listarPaginado({
+          pagina,
+          busca: buscaDebounced,
+          status: filtroStatus,
+        }),
         veiculosService.listar(),
       ]);
-      setManutencoes(listaManutencoes);
+
+      if (
+        resultado.dados.length === 0 &&
+        pagina > 1 &&
+        resultado.totalRegistros > 0
+      ) {
+        setPagina((atual) => Math.max(1, atual - 1));
+        return;
+      }
+
+      setManutencoes(resultado.dados);
+      setTotalPaginas(resultado.totalPaginas);
+      setTotalRegistros(resultado.totalRegistros);
+      setResumo(resultado.resumo);
       setVeiculos(listaVeiculos);
     } catch (error) {
       window.alert(mensagemErro(error));
@@ -53,7 +99,8 @@ export function Manutencoes() {
 
   useEffect(() => {
     void carregar();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pagina, buscaDebounced, filtroStatus]);
 
   function getVeiculo(manutencao: Manutencao) {
     return (
@@ -61,44 +108,6 @@ export function Manutencoes() {
       veiculos.find((veiculo) => veiculo.id === manutencao.veiculoId)
     );
   }
-
-  const manutencoesFiltradas = useMemo(() => {
-    const termo = busca.toLowerCase().trim();
-
-    return manutencoes.filter((manutencao) => {
-      const veiculo = getVeiculo(manutencao);
-
-      const correspondeBusca =
-        !termo ||
-        manutencao.tipo.toLowerCase().includes(termo) ||
-        manutencao.descricao.toLowerCase().includes(termo) ||
-        veiculo?.placa.toLowerCase().includes(termo) ||
-        veiculo?.modelo.toLowerCase().includes(termo) ||
-        veiculo?.cliente?.nome.toLowerCase().includes(termo);
-
-      const correspondeStatus =
-        filtroStatus === "todos" || manutencao.status === filtroStatus;
-
-      return correspondeBusca && correspondeStatus;
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [manutencoes, veiculos, busca, filtroStatus]);
-
-  const emDia = manutencoes.filter(
-    (item) => item.status === "em_dia",
-  ).length;
-
-  const proximas = manutencoes.filter(
-    (item) => item.status === "proxima",
-  ).length;
-
-  const atrasadas = manutencoes.filter(
-    (item) => item.status === "atrasada",
-  ).length;
-
-  const veiculosMonitorados = new Set(
-    manutencoes.map((item) => item.veiculoId),
-  ).size;
 
   function abrirNovaManutencao() {
     setManutencaoEditando(null);
@@ -192,25 +201,25 @@ export function Manutencoes() {
       <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-4">
         <InfoCard
           label="Manutenções em dia"
-          value={emDia}
+          value={resumo.emDia}
           icon={<CheckCircle2 size={19} />}
         />
 
         <InfoCard
           label="Próximas"
-          value={proximas}
+          value={resumo.proximas}
           icon={<Clock size={19} />}
         />
 
         <InfoCard
           label="Atrasadas"
-          value={atrasadas}
+          value={resumo.atrasadas}
           icon={<AlertTriangle size={19} />}
         />
 
         <InfoCard
           label="Veículos monitorados"
-          value={veiculosMonitorados}
+          value={resumo.veiculosMonitorados}
           icon={<Car size={19} />}
         />
       </div>
@@ -227,7 +236,7 @@ export function Manutencoes() {
             <p className="mt-1 text-[11px] text-gray-400">
               {carregando
                 ? "Carregando..."
-                : `${manutencoesFiltradas.length} manutenção(ões) encontrada(s)`}
+                : `${totalRegistros} manutenção(ões) encontrada(s)`}
             </p>
           </div>
 
@@ -253,13 +262,14 @@ export function Manutencoes() {
             {/* Filtro */}
             <select
               value={filtroStatus}
-              onChange={(event) =>
+              onChange={(event) => {
                 setFiltroStatus(
                   event.target.value as
                     | "todos"
                     | StatusManutencao,
-                )
-              }
+                );
+                setPagina(1);
+              }}
               className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-600 outline-none focus:border-blue-500"
             >
               <option value="todos">Todos</option>
@@ -308,7 +318,7 @@ export function Manutencoes() {
             </thead>
 
             <tbody>
-              {manutencoesFiltradas.map((manutencao) => {
+              {manutencoes.map((manutencao) => {
                 const veiculo = getVeiculo(manutencao);
 
                 return (
@@ -437,7 +447,7 @@ export function Manutencoes() {
                 );
               })}
 
-              {!carregando && manutencoesFiltradas.length === 0 && (
+              {!carregando && manutencoes.length === 0 && (
                 <tr>
                   <td
                     colSpan={8}
@@ -449,6 +459,36 @@ export function Manutencoes() {
               )}
             </tbody>
           </table>
+        </div>
+
+        <div className="flex items-center justify-between border-t border-gray-200 px-5 py-3">
+          <p className="text-[11px] text-gray-400">
+            Página {pagina} de {totalPaginas}
+          </p>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setPagina((atual) => Math.max(1, atual - 1))}
+              disabled={pagina <= 1 || carregando}
+              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <ChevronLeft size={14} />
+              Anterior
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                setPagina((atual) => Math.min(totalPaginas, atual + 1))
+              }
+              disabled={pagina >= totalPaginas || carregando}
+              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Próxima
+              <ChevronRight size={14} />
+            </button>
+          </div>
         </div>
       </div>
 
