@@ -1,75 +1,87 @@
-# React + TypeScript + Vite
+# MyCar Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Interface web para gerenciar uma oficina mecânica: clientes, veículos, ordens de serviço e manutenções. Consome a [API MyCar](https://github.com/joaoalexandre2/mycar) feita em Laravel.
 
-Currently, two official plugins are available:
+## Tecnologias
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 19 + TypeScript
+- Vite
+- React Router
+- Tailwind CSS 4
+- Axios
+- Lucide React (ícones)
+- Vitest + Testing Library
 
-## React Compiler
+## Funcionalidades
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Login com autenticação por token e rotas protegidas
+- Dashboard com resumo
+- CRUD de clientes, veículos, ordens de serviço e manutenções, com paginação
+- Tela de configurações
 
-## Expanding the ESLint configuration
+## Pré-requisitos
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Node.js 20+
+- API MyCar rodando (por padrão em `http://localhost:8000`)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Instalação
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+git clone https://github.com/joaoalexandre2/mycar_frontend.git
+cd mycar_frontend
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+Crie um arquivo `.env` na raiz apontando para a API:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```env
+VITE_API_URL=http://localhost:8000/api
+```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Se `VITE_API_URL` não for definida, o padrão é `http://localhost:8000/api`.
+
+## Executando
+
+```bash
+npm run dev
+```
+
+## Scripts
+
+| Comando | Descrição |
+|---|---|
+| `npm run dev` | Servidor de desenvolvimento |
+| `npm run build` | Checagem de tipos e build de produção |
+| `npm run preview` | Pré-visualiza o build |
+| `npm run lint` | Roda o ESLint |
+| `npm test` | Roda os testes uma vez |
+| `npm run test:watch` | Testes em modo watch |
+
+## Rotas
+
+| Rota | Tela |
+|---|---|
+| `/login` | Login |
+| `/` | Dashboard |
+| `/clientes` | Clientes |
+| `/veiculos` | Veículos |
+| `/ordens-servico` | Ordens de serviço |
+| `/manutencoes` | Manutenções |
+| `/configuracoes` | Configurações |
+
+## Estrutura
 
 ```
+src/
+├── components/   # auth, dashboard e layout
+├── contexts/     # AuthContext
+├── hooks/        # useAuth
+├── pages/        # telas da aplicação
+├── services/     # chamadas à API (axios)
+├── types/        # tipos TypeScript
+└── utils/
+```
+
+## Backend
+
+A API fica em [joaoalexandre2/mycar](https://github.com/joaoalexandre2/mycar).
