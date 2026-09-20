@@ -16,6 +16,10 @@ Controle clientes, veículos, ordens de serviço e manutenções em um só lugar
 
 </div>
 
+<div align="center">
+  <img src="docs/login.png" alt="Tela de login do MyCar" width="720">
+</div>
+
 ---
 
 ## ✨ Funcionalidades
