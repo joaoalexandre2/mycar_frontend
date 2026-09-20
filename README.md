@@ -34,6 +34,24 @@ Controle clientes, veículos, ordens de serviço e manutenções em um só lugar
 | 🔧 **Manutenções** | Histórico e próximas revisões |
 | ⚙️ **Configurações** | Ajustes da conta |
 
+## 📸 Telas
+
+<table>
+  <tr>
+    <td align="center"><b>Dashboard</b><br><img src="docs/dashboard.png" alt="Dashboard"></td>
+    <td align="center"><b>Ordens de serviço</b><br><img src="docs/ordens-servico.png" alt="Ordens de serviço"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Clientes</b><br><img src="docs/clientes.png" alt="Clientes"></td>
+    <td align="center"><b>Veículos</b><br><img src="docs/veiculos.png" alt="Veículos"></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2"><b>Manutenções</b><br><img src="docs/manutencoes.png" alt="Manutenções" width="50%"></td>
+  </tr>
+</table>
+
+> Dados de exemplo, apenas para demonstração.
+
 ## 🧩 Como funciona
 
 ```mermaid
