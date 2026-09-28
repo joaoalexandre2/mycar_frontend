@@ -2,9 +2,18 @@ export interface Usuario {
   id: number;
   name: string;
   email: string;
+  oficina?: string | null;
 }
 
 export interface LoginPayload {
   email: string;
   password: string;
+}
+
+export interface RegisterPayload {
+  nome_oficina: string;
+  name: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
 }

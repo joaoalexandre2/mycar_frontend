@@ -14,6 +14,8 @@ import { Sidebar } from "./components/layout/Sidebar";
 import { Dashboard } from "./components/dashboard/Dashboard";
 
 import { Login } from "./pages/Login/Login";
+import { Register } from "./pages/Register/Register";
+import { EmailConfirmado } from "./pages/EmailConfirmado/EmailConfirmado";
 import { Clientes } from "./pages/Clientes/Clientes";
 import { Veiculos } from "./pages/Veiculos/Veiculos";
 import { OrdensServico } from "./pages/OrdensServico/OrdensServico";
@@ -82,6 +84,16 @@ function App() {
           <Route
             path="/login"
             element={<Login />}
+          />
+
+          <Route
+            path="/registrar"
+            element={<Register />}
+          />
+
+          <Route
+            path="/email-confirmado"
+            element={<EmailConfirmado />}
           />
 
           <Route element={<ProtectedRoute />}>

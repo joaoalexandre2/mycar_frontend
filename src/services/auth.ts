@@ -1,5 +1,5 @@
 import api from "./api";
-import type { LoginPayload, Usuario } from "../types/auth";
+import type { LoginPayload, RegisterPayload, Usuario } from "../types/auth";
 import { limparSessao, salvarSessao } from "../utils/authStorage";
 
 interface LoginResposta {
@@ -22,5 +22,15 @@ export const authService = {
     } finally {
       limparSessao();
     }
+  },
+
+  /** Cria a oficina e o usuário administrador. Não faz login automático:
+   * o acesso só libera depois de confirmar o e-mail. */
+  async registrar(payload: RegisterPayload): Promise<void> {
+    await api.post("/register", payload);
+  },
+
+  async reenviarConfirmacao(email: string): Promise<void> {
+    await api.post("/email/reenviar", { email });
   },
 };

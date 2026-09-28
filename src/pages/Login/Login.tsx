@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Car, Lock, Mail } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
+import { authService } from "../../services/auth";
 import { mensagemErro } from "../../services/api";
 
 export function Login() {
@@ -13,6 +14,9 @@ export function Login() {
   const [senha, setSenha] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [precisaConfirmarEmail, setPrecisaConfirmarEmail] = useState(false);
+  const [reenviando, setReenviando] = useState(false);
+  const [reenviado, setReenviado] = useState(false);
 
   const estadoRota = location.state as { from?: string } | null;
   const destino = estadoRota?.from ?? "/";
@@ -20,15 +24,32 @@ export function Login() {
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setErro(null);
+    setPrecisaConfirmarEmail(false);
+    setReenviado(false);
     setEnviando(true);
 
     try {
       await entrar({ email, password: senha });
       navigate(destino, { replace: true });
     } catch (error) {
-      setErro(mensagemErro(error));
+      const mensagem = mensagemErro(error);
+      setErro(mensagem);
+      setPrecisaConfirmarEmail(mensagem.toLowerCase().includes("confirme seu e-mail"));
     } finally {
       setEnviando(false);
+    }
+  }
+
+  async function handleReenviar() {
+    setReenviando(true);
+
+    try {
+      await authService.reenviarConfirmacao(email);
+    } finally {
+      // A API nunca revela se o e-mail existe, então sempre mostramos a
+      // mesma confirmação de que a solicitação foi enviada.
+      setReenviado(true);
+      setReenviando(false);
     }
   }
 
@@ -99,9 +120,22 @@ export function Login() {
           </div>
 
           {erro && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
-              {erro}
-            </p>
+            <div className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
+              <p>{erro}</p>
+
+              {precisaConfirmarEmail && !reenviado && (
+                <button
+                  type="button"
+                  onClick={handleReenviar}
+                  disabled={reenviando || !email}
+                  className="mt-1 font-semibold underline disabled:opacity-60"
+                >
+                  {reenviando ? "Reenviando..." : "Reenviar e-mail de confirmação"}
+                </button>
+              )}
+
+              {reenviado && <p className="mt-1">Se o e-mail existir, reenviamos o link de confirmação.</p>}
+            </div>
           )}
 
           <button
@@ -111,6 +145,16 @@ export function Login() {
           >
             {enviando ? "Entrando..." : "Entrar"}
           </button>
+
+          <p className="text-center text-xs text-gray-500">
+            Ainda não tem conta?{" "}
+            <Link
+              to="/registrar"
+              className="font-semibold text-blue-600 hover:text-blue-700"
+            >
+              Criar conta
+            </Link>
+          </p>
         </form>
       </div>
     </div>
