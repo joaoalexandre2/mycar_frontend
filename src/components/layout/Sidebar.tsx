@@ -5,8 +5,10 @@ import {
     Wrench,
     ClipboardList,
     Settings,
+    LogOut,
   } from "lucide-react";
-  import { NavLink } from "react-router-dom";
+  import { NavLink, useNavigate } from "react-router-dom";
+  import { useAuth } from "../../hooks/useAuth";
   
   interface SidebarItemProps {
     icon: React.ReactNode;
@@ -14,7 +16,30 @@ import {
     to: string;
   }
   
+  function iniciais(nome?: string) {
+    if (!nome) {
+      return "?";
+    }
+  
+    const partes = nome.trim().split(/\s+/);
+  
+    return (
+      partes
+        .slice(0, 2)
+        .map((parte) => parte[0]?.toUpperCase() ?? "")
+        .join("") || "?"
+    );
+  }
+  
   export function Sidebar() {
+    const { usuario, sair } = useAuth();
+    const navigate = useNavigate();
+  
+    async function handleLogout() {
+      await sair();
+      navigate("/login", { replace: true });
+    }
+  
     return (
       <aside className="fixed inset-y-0 left-0 z-40 flex w-[250px] flex-col bg-gray-900 px-4 py-6 text-white">
         {/* Logo */}
@@ -78,19 +103,28 @@ import {
         {/* Usuário */}
         <div className="mt-auto border-t border-gray-800 pt-4">
           <div className="flex items-center gap-3 px-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-600">
-              JK
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-600">
+              {iniciais(usuario?.name)}
             </div>
   
             <div className="flex min-w-0 flex-col">
               <strong className="truncate text-xs">
-                João Kirst
+                {usuario?.name ?? "Usuário"}
               </strong>
   
-              <span className="text-[11px] text-gray-500">
-                Administrador
+              <span className="truncate text-[11px] text-gray-500">
+                {usuario?.email ?? ""}
               </span>
             </div>
+  
+            <button
+              type="button"
+              onClick={handleLogout}
+              title="Sair"
+              className="ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-800 hover:text-white"
+            >
+              <LogOut size={16} />
+            </button>
           </div>
         </div>
       </aside>

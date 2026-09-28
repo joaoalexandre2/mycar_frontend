@@ -18,6 +18,40 @@ interface OrdemApi {
   veiculo?: Parameters<typeof mapearVeiculo>[0] | null;
 }
 
+export interface ResumoOrdensServico {
+  total: number;
+  abertas: number;
+  emAndamento: number;
+  finalizadas: number;
+  valorTotal: number;
+}
+
+interface RespostaPaginadaApi<T> {
+  data: T[];
+  meta: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
+  resumo: ResumoOrdensServico;
+}
+
+export interface ListarOrdensServicoParams {
+  pagina?: number;
+  busca?: string;
+  status?: "todos" | StatusOrdemServico;
+  porPagina?: number;
+}
+
+export interface PaginaOrdensServico {
+  dados: OrdemServico[];
+  paginaAtual: number;
+  totalPaginas: number;
+  totalRegistros: number;
+  resumo: ResumoOrdensServico;
+}
+
 export function mapearOrdem(ordem: OrdemApi): OrdemServico {
   return {
     id: ordem.id,
@@ -34,9 +68,41 @@ export function mapearOrdem(ordem: OrdemApi): OrdemServico {
 }
 
 export const ordensServicoService = {
+  /**
+   * Retorna todas as ordens de uma vez (sem paginação).
+   */
   async listar() {
-    const { data } = await api.get<OrdemApi[]>("/ordens-servico");
+    const { data } = await api.get<OrdemApi[]>("/ordens-servico", {
+      params: { all: 1 },
+    });
     return data.map(mapearOrdem);
+  },
+
+  /**
+   * Listagem paginada de verdade, usada pela tela de Ordens de Serviço.
+   */
+  async listarPaginado(
+    params: ListarOrdensServicoParams = {},
+  ): Promise<PaginaOrdensServico> {
+    const { data } = await api.get<RespostaPaginadaApi<OrdemApi>>(
+      "/ordens-servico",
+      {
+        params: {
+          page: params.pagina ?? 1,
+          busca: params.busca || undefined,
+          status: params.status ?? "todos",
+          per_page: params.porPagina ?? 15,
+        },
+      },
+    );
+
+    return {
+      dados: data.data.map(mapearOrdem),
+      paginaAtual: data.meta.current_page,
+      totalPaginas: data.meta.last_page,
+      totalRegistros: data.meta.total,
+      resumo: data.resumo,
+    };
   },
 
   async buscar(id: number) {

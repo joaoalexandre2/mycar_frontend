@@ -1,9 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AlertTriangle,
   CalendarDays,
   Car,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   Clock,
   MoreHorizontal,
   Pencil,
@@ -13,239 +15,99 @@ import {
   Wrench,
   X,
 } from "lucide-react";
+import type { Manutencao, StatusManutencao } from "../../types/manutencao";
+import type { Veiculo } from "../../types/veiculo";
+import {
+  manutencoesService,
+  type ResumoManutencoes,
+} from "../../services/manutencoes";
+import { veiculosService } from "../../services/veiculos";
+import { mensagemErro } from "../../services/api";
+import { formatarData, formatarKm, hojeISO } from "../../utils/formatters";
 
-interface Cliente {
-  id: number;
-  nome: string;
-}
-
-interface Veiculo {
-  id: number;
-  clienteId: number;
-  placa: string;
-  marca: string;
-  modelo: string;
-  ano: number;
-}
-
-type StatusManutencao =
-  | "em_dia"
-  | "proxima"
-  | "atrasada";
-
-interface Manutencao {
-  id: number;
-  veiculoId: number;
-  tipo: string;
-  descricao: string;
-  ultimaData: string;
-  proximaData: string;
-  ultimaKm: number;
-  proximaKm: number;
-  status: StatusManutencao;
-}
-
-const clientes: Cliente[] = [
-  {
-    id: 1,
-    nome: "Maria Silva",
-  },
-  {
-    id: 2,
-    nome: "Carlos Oliveira",
-  },
-  {
-    id: 3,
-    nome: "Pedro Santos",
-  },
-  {
-    id: 4,
-    nome: "Ana Costa",
-  },
-  {
-    id: 5,
-    nome: "Rafael Martins",
-  },
-];
-
-const veiculos: Veiculo[] = [
-  {
-    id: 1,
-    clienteId: 1,
-    placa: "ABC1D23",
-    marca: "Honda",
-    modelo: "Fit",
-    ano: 2018,
-  },
-  {
-    id: 2,
-    clienteId: 1,
-    placa: "DEF2E34",
-    marca: "Toyota",
-    modelo: "Corolla",
-    ano: 2022,
-  },
-  {
-    id: 3,
-    clienteId: 2,
-    placa: "GHI3F45",
-    marca: "Chevrolet",
-    modelo: "Onix",
-    ano: 2021,
-  },
-  {
-    id: 4,
-    clienteId: 3,
-    placa: "JKL4G56",
-    marca: "Volkswagen",
-    modelo: "Golf",
-    ano: 2017,
-  },
-  {
-    id: 5,
-    clienteId: 4,
-    placa: "MNO5H67",
-    marca: "Fiat",
-    modelo: "Argo",
-    ano: 2020,
-  },
-  {
-    id: 6,
-    clienteId: 5,
-    placa: "PQR6I78",
-    marca: "Hyundai",
-    modelo: "Creta",
-    ano: 2023,
-  },
-];
-
-const manutencoesIniciais: Manutencao[] = [
-  {
-    id: 1,
-    veiculoId: 1,
-    tipo: "Troca de óleo",
-    descricao: "Troca de óleo e filtro do motor",
-    ultimaData: "2026-05-20",
-    proximaData: "2026-09-20",
-    ultimaKm: 85000,
-    proximaKm: 95000,
-    status: "proxima",
-  },
-  {
-    id: 2,
-    veiculoId: 2,
-    tipo: "Revisão",
-    descricao: "Revisão preventiva de 40.000 km",
-    ultimaData: "2026-06-10",
-    proximaData: "2026-10-10",
-    ultimaKm: 40000,
-    proximaKm: 50000,
-    status: "em_dia",
-  },
-  {
-    id: 3,
-    veiculoId: 3,
-    tipo: "Freios",
-    descricao: "Inspeção e substituição das pastilhas",
-    ultimaData: "2026-02-15",
-    proximaData: "2026-08-15",
-    ultimaKm: 52000,
-    proximaKm: 62000,
-    status: "atrasada",
-  },
-  {
-    id: 4,
-    veiculoId: 4,
-    tipo: "Alinhamento",
-    descricao: "Alinhamento e balanceamento",
-    ultimaData: "2026-07-01",
-    proximaData: "2026-10-01",
-    ultimaKm: 71000,
-    proximaKm: 81000,
-    status: "em_dia",
-  },
-  {
-    id: 5,
-    veiculoId: 5,
-    tipo: "Troca de óleo",
-    descricao: "Troca de óleo, filtro de óleo e filtro de ar",
-    ultimaData: "2026-04-12",
-    proximaData: "2026-08-30",
-    ultimaKm: 30000,
-    proximaKm: 40000,
-    status: "proxima",
-  },
-  {
-    id: 6,
-    veiculoId: 6,
-    tipo: "Revisão",
-    descricao: "Revisão geral do veículo",
-    ultimaData: "2026-01-20",
-    proximaData: "2026-07-20",
-    ultimaKm: 20000,
-    proximaKm: 30000,
-    status: "atrasada",
-  },
-];
+const RESUMO_INICIAL: ResumoManutencoes = {
+  total: 0,
+  emDia: 0,
+  proximas: 0,
+  atrasadas: 0,
+  veiculosMonitorados: 0,
+};
 
 export function Manutencoes() {
-  const [manutencoes, setManutencoes] = useState(
-    manutencoesIniciais,
-  );
+  const [manutencoes, setManutencoes] = useState<Manutencao[]>([]);
+  const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
+  const [carregando, setCarregando] = useState(true);
 
   const [busca, setBusca] = useState("");
+  const [buscaDebounced, setBuscaDebounced] = useState("");
 
   const [filtroStatus, setFiltroStatus] =
     useState<"todos" | StatusManutencao>("todos");
+
+  const [pagina, setPagina] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const [totalRegistros, setTotalRegistros] = useState(0);
+  const [resumo, setResumo] =
+    useState<ResumoManutencoes>(RESUMO_INICIAL);
 
   const [modalAberto, setModalAberto] = useState(false);
 
   const [manutencaoEditando, setManutencaoEditando] =
     useState<Manutencao | null>(null);
 
-  const manutencoesFiltradas = useMemo(() => {
-    const termo = busca.toLowerCase().trim();
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setBuscaDebounced(busca);
+      setPagina(1);
+    }, 400);
 
-    return manutencoes.filter((manutencao) => {
-      const veiculo = veiculos.find(
-        (item) => item.id === manutencao.veiculoId,
-      );
+    return () => clearTimeout(timer);
+  }, [busca]);
 
-      const cliente = clientes.find(
-        (item) => item.id === veiculo?.clienteId,
-      );
+  async function carregar() {
+    try {
+      setCarregando(true);
+      const [resultado, listaVeiculos] = await Promise.all([
+        manutencoesService.listarPaginado({
+          pagina,
+          busca: buscaDebounced,
+          status: filtroStatus,
+        }),
+        veiculosService.listar(),
+      ]);
 
-      const correspondeBusca =
-        !termo ||
-        manutencao.tipo.toLowerCase().includes(termo) ||
-        manutencao.descricao.toLowerCase().includes(termo) ||
-        veiculo?.placa.toLowerCase().includes(termo) ||
-        veiculo?.modelo.toLowerCase().includes(termo) ||
-        cliente?.nome.toLowerCase().includes(termo);
+      if (
+        resultado.dados.length === 0 &&
+        pagina > 1 &&
+        resultado.totalRegistros > 0
+      ) {
+        setPagina((atual) => Math.max(1, atual - 1));
+        return;
+      }
 
-      const correspondeStatus =
-        filtroStatus === "todos" ||
-        manutencao.status === filtroStatus;
+      setManutencoes(resultado.dados);
+      setTotalPaginas(resultado.totalPaginas);
+      setTotalRegistros(resultado.totalRegistros);
+      setResumo(resultado.resumo);
+      setVeiculos(listaVeiculos);
+    } catch (error) {
+      window.alert(mensagemErro(error));
+    } finally {
+      setCarregando(false);
+    }
+  }
 
-      return correspondeBusca && correspondeStatus;
-    });
-  }, [manutencoes, busca, filtroStatus]);
+  useEffect(() => {
+    void carregar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pagina, buscaDebounced, filtroStatus]);
 
-  const emDia = manutencoes.filter(
-    (item) => item.status === "em_dia",
-  ).length;
-
-  const proximas = manutencoes.filter(
-    (item) => item.status === "proxima",
-  ).length;
-
-  const atrasadas = manutencoes.filter(
-    (item) => item.status === "atrasada",
-  ).length;
-
-  const veiculosMonitorados = new Set(
-    manutencoes.map((item) => item.veiculoId),
-  ).size;
+  function getVeiculo(manutencao: Manutencao) {
+    return (
+      manutencao.veiculo ??
+      veiculos.find((veiculo) => veiculo.id === manutencao.veiculoId)
+    );
+  }
 
   function abrirNovaManutencao() {
     setManutencaoEditando(null);
@@ -257,7 +119,7 @@ export function Manutencoes() {
     setModalAberto(true);
   }
 
-  function excluirManutencao(id: number) {
+  async function excluirManutencao(id: number) {
     const confirmar = window.confirm(
       "Deseja realmente excluir esta manutenção?",
     );
@@ -266,44 +128,48 @@ export function Manutencoes() {
       return;
     }
 
-    setManutencoes((atuais) =>
-      atuais.filter((item) => item.id !== id),
-    );
-  }
-
-  function salvarManutencao(manutencao: Manutencao) {
-    if (manutencaoEditando) {
-      setManutencoes((atuais) =>
-        atuais.map((item) =>
-          item.id === manutencao.id ? manutencao : item,
-        ),
-      );
-    } else {
-      setManutencoes((atuais) => [
-        ...atuais,
-        {
-          ...manutencao,
-          id: Date.now(),
-        },
-      ]);
+    try {
+      await manutencoesService.remover(id);
+      await carregar();
+    } catch (error) {
+      window.alert(mensagemErro(error));
     }
-
-    setModalAberto(false);
-    setManutencaoEditando(null);
   }
 
-  function getVeiculo(veiculoId: number) {
-    return veiculos.find(
-      (veiculo) => veiculo.id === veiculoId,
-    );
-  }
+  async function salvarManutencao(dados: {
+    veiculoId: number;
+    tipo: string;
+    descricao: string;
+    valor: number | null;
+    dataManutencao: string;
+    quilometragem: number | null;
+    proximaData: string | null;
+    proximaQuilometragem: number | null;
+  }) {
+    const payload = {
+      veiculo_id: dados.veiculoId,
+      tipo: dados.tipo,
+      descricao: dados.descricao,
+      valor: dados.valor,
+      data_manutencao: dados.dataManutencao,
+      quilometragem: dados.quilometragem,
+      proxima_data: dados.proximaData,
+      proxima_quilometragem: dados.proximaQuilometragem,
+    };
 
-  function getCliente(veiculoId: number) {
-    const veiculo = getVeiculo(veiculoId);
+    try {
+      if (manutencaoEditando) {
+        await manutencoesService.atualizar(manutencaoEditando.id, payload);
+      } else {
+        await manutencoesService.criar(payload);
+      }
 
-    return clientes.find(
-      (cliente) => cliente.id === veiculo?.clienteId,
-    );
+      setModalAberto(false);
+      setManutencaoEditando(null);
+      await carregar();
+    } catch (error) {
+      window.alert(mensagemErro(error));
+    }
   }
 
   return (
@@ -335,25 +201,25 @@ export function Manutencoes() {
       <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-4">
         <InfoCard
           label="Manutenções em dia"
-          value={emDia}
+          value={resumo.emDia}
           icon={<CheckCircle2 size={19} />}
         />
 
         <InfoCard
           label="Próximas"
-          value={proximas}
+          value={resumo.proximas}
           icon={<Clock size={19} />}
         />
 
         <InfoCard
           label="Atrasadas"
-          value={atrasadas}
+          value={resumo.atrasadas}
           icon={<AlertTriangle size={19} />}
         />
 
         <InfoCard
           label="Veículos monitorados"
-          value={veiculosMonitorados}
+          value={resumo.veiculosMonitorados}
           icon={<Car size={19} />}
         />
       </div>
@@ -368,8 +234,9 @@ export function Manutencoes() {
             </h3>
 
             <p className="mt-1 text-[11px] text-gray-400">
-              {manutencoesFiltradas.length} manutenção(ões)
-              encontrada(s)
+              {carregando
+                ? "Carregando..."
+                : `${totalRegistros} manutenção(ões) encontrada(s)`}
             </p>
           </div>
 
@@ -395,13 +262,14 @@ export function Manutencoes() {
             {/* Filtro */}
             <select
               value={filtroStatus}
-              onChange={(event) =>
+              onChange={(event) => {
                 setFiltroStatus(
                   event.target.value as
                     | "todos"
                     | StatusManutencao,
-                )
-              }
+                );
+                setPagina(1);
+              }}
               className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-600 outline-none focus:border-blue-500"
             >
               <option value="todos">Todos</option>
@@ -450,14 +318,8 @@ export function Manutencoes() {
             </thead>
 
             <tbody>
-              {manutencoesFiltradas.map((manutencao) => {
-                const veiculo = getVeiculo(
-                  manutencao.veiculoId,
-                );
-
-                const cliente = getCliente(
-                  manutencao.veiculoId,
-                );
+              {manutencoes.map((manutencao) => {
+                const veiculo = getVeiculo(manutencao);
 
                 return (
                   <tr
@@ -498,7 +360,7 @@ export function Manutencoes() {
 
                     {/* Cliente */}
                     <td className="px-5 py-4 text-xs text-gray-500">
-                      {cliente?.nome}
+                      {veiculo?.cliente?.nome ?? "—"}
                     </td>
 
                     {/* Última */}
@@ -506,12 +368,12 @@ export function Manutencoes() {
                       <div className="flex flex-col gap-1">
                         <span className="text-xs text-gray-600">
                           {formatarData(
-                            manutencao.ultimaData,
+                            manutencao.dataManutencao,
                           )}
                         </span>
 
                         <span className="text-[10px] text-gray-400">
-                          {formatarKm(manutencao.ultimaKm)}
+                          {formatarKm(manutencao.quilometragem)}
                         </span>
                       </div>
                     </td>
@@ -536,7 +398,7 @@ export function Manutencoes() {
                     <td className="px-5 py-4">
                       <span className="text-xs font-semibold text-gray-700">
                         {formatarKm(
-                          manutencao.proximaKm,
+                          manutencao.proximaQuilometragem,
                         )}
                       </span>
                     </td>
@@ -563,7 +425,7 @@ export function Manutencoes() {
 
                         <button
                           onClick={() =>
-                            excluirManutencao(
+                            void excluirManutencao(
                               manutencao.id,
                             )
                           }
@@ -585,7 +447,7 @@ export function Manutencoes() {
                 );
               })}
 
-              {manutencoesFiltradas.length === 0 && (
+              {!carregando && manutencoes.length === 0 && (
                 <tr>
                   <td
                     colSpan={8}
@@ -598,17 +460,48 @@ export function Manutencoes() {
             </tbody>
           </table>
         </div>
+
+        <div className="flex items-center justify-between border-t border-gray-200 px-5 py-3">
+          <p className="text-[11px] text-gray-400">
+            Página {pagina} de {totalPaginas}
+          </p>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setPagina((atual) => Math.max(1, atual - 1))}
+              disabled={pagina <= 1 || carregando}
+              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <ChevronLeft size={14} />
+              Anterior
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                setPagina((atual) => Math.min(totalPaginas, atual + 1))
+              }
+              disabled={pagina >= totalPaginas || carregando}
+              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Próxima
+              <ChevronRight size={14} />
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Modal */}
       {modalAberto && (
         <ManutencaoModal
           manutencao={manutencaoEditando}
+          veiculos={veiculos}
           onClose={() => {
             setModalAberto(false);
             setManutencaoEditando(null);
           }}
-          onSave={salvarManutencao}
+          onSave={(dados) => void salvarManutencao(dados)}
         />
       )}
     </div>
@@ -678,12 +571,23 @@ function StatusManutencaoBadge({
 
 function ManutencaoModal({
   manutencao,
+  veiculos,
   onClose,
   onSave,
 }: {
   manutencao: Manutencao | null;
+  veiculos: Veiculo[];
   onClose: () => void;
-  onSave: (manutencao: Manutencao) => void;
+  onSave: (dados: {
+    veiculoId: number;
+    tipo: string;
+    descricao: string;
+    valor: number | null;
+    dataManutencao: string;
+    quilometragem: number | null;
+    proximaData: string | null;
+    proximaQuilometragem: number | null;
+  }) => void;
 }) {
   const [veiculoId, setVeiculoId] = useState(
     manutencao?.veiculoId?.toString() ?? "",
@@ -697,73 +601,70 @@ function ManutencaoModal({
     manutencao?.descricao ?? "",
   );
 
-  const [ultimaData, setUltimaData] = useState(
-    manutencao?.ultimaData ??
-      new Date().toISOString().split("T")[0],
+  const [dataManutencao, setDataManutencao] = useState(
+    manutencao?.dataManutencao ?? hojeISO(),
   );
 
   const [proximaData, setProximaData] = useState(
     manutencao?.proximaData ?? "",
   );
 
-  const [ultimaKm, setUltimaKm] = useState(
-    manutencao?.ultimaKm?.toString() ?? "",
+  const [quilometragem, setQuilometragem] = useState(
+    manutencao?.quilometragem?.toString() ?? "",
   );
 
-  const [proximaKm, setProximaKm] = useState(
-    manutencao?.proximaKm?.toString() ?? "",
+  const [proximaQuilometragem, setProximaQuilometragem] = useState(
+    manutencao?.proximaQuilometragem?.toString() ?? "",
   );
 
-  const [status, setStatus] =
-    useState<StatusManutencao>(
-      manutencao?.status ?? "em_dia",
-    );
+  const [valor, setValor] = useState(
+    manutencao?.valor?.toString() ?? "",
+  );
 
   function handleSubmit(
     event: React.FormEvent<HTMLFormElement>,
   ) {
     event.preventDefault();
 
-    if (
-      !veiculoId ||
-      !tipo.trim() ||
-      !descricao.trim() ||
-      !ultimaData ||
-      !proximaData ||
-      !ultimaKm ||
-      !proximaKm
-    ) {
+    if (!veiculoId || !tipo.trim() || !descricao.trim() || !dataManutencao) {
       window.alert(
-        "Preencha todos os campos obrigatórios.",
+        "Preencha veículo, tipo, descrição e data da manutenção.",
       );
 
       return;
     }
 
-    const ultimaKmNumerica = Number(ultimaKm);
-    const proximaKmNumerica = Number(proximaKm);
+    const quilometragemNumerica =
+      quilometragem === "" ? null : Number(quilometragem);
+
+    const proximaQuilometragemNumerica =
+      proximaQuilometragem === "" ? null : Number(proximaQuilometragem);
+
+    const valorNumerico = valor === "" ? null : Number(valor);
 
     if (
-      Number.isNaN(ultimaKmNumerica) ||
-      Number.isNaN(proximaKmNumerica) ||
-      ultimaKmNumerica < 0 ||
-      proximaKmNumerica < 0
+      (quilometragemNumerica !== null &&
+        (Number.isNaN(quilometragemNumerica) || quilometragemNumerica < 0)) ||
+      (proximaQuilometragemNumerica !== null &&
+        (Number.isNaN(proximaQuilometragemNumerica) ||
+          proximaQuilometragemNumerica < 0)) ||
+      (valorNumerico !== null &&
+        (Number.isNaN(valorNumerico) || valorNumerico < 0))
     ) {
-      window.alert("Informe uma quilometragem válida.");
+      window.alert("Informe valores numéricos válidos.");
 
       return;
     }
 
     onSave({
-      id: manutencao?.id ?? 0,
       veiculoId: Number(veiculoId),
       tipo: tipo.trim(),
       descricao: descricao.trim(),
-      ultimaData,
-      proximaData,
-      ultimaKm: ultimaKmNumerica,
-      proximaKm: proximaKmNumerica,
-      status,
+      valor: valorNumerico,
+      dataManutencao,
+      quilometragem: quilometragemNumerica,
+      proximaData: proximaData || null,
+      proximaQuilometragem: proximaQuilometragemNumerica,
     });
   }
 
@@ -813,22 +714,16 @@ function ManutencaoModal({
                   Selecione o veículo
                 </option>
 
-                {veiculos.map((veiculo) => {
-                  const cliente = clientes.find(
-                    (item) =>
-                      item.id === veiculo.clienteId,
-                  );
-
-                  return (
-                    <option
-                      key={veiculo.id}
-                      value={veiculo.id}
-                    >
-                      {veiculo.marca} {veiculo.modelo} -{" "}
-                      {veiculo.placa} - {cliente?.nome}
-                    </option>
-                  );
-                })}
+                {veiculos.map((veiculo) => (
+                  <option
+                    key={veiculo.id}
+                    value={veiculo.id}
+                  >
+                    {veiculo.marca} {veiculo.modelo} -{" "}
+                    {veiculo.placa}
+                    {veiculo.cliente ? ` - ${veiculo.cliente.nome}` : ""}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -868,18 +763,35 @@ function ManutencaoModal({
               />
             </div>
 
+            {/* Valor */}
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+                Valor (opcional)
+              </label>
+
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={valor}
+                onChange={(event) => setValor(event.target.value)}
+                placeholder="Ex.: 250.00"
+                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+              />
+            </div>
+
             {/* Datas */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                  Última manutenção
+                  Data da manutenção
                 </label>
 
                 <input
                   type="date"
-                  value={ultimaData}
+                  value={dataManutencao}
                   onChange={(event) =>
-                    setUltimaData(event.target.value)
+                    setDataManutencao(event.target.value)
                   }
                   className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
                   required
@@ -888,7 +800,7 @@ function ManutencaoModal({
 
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                  Próxima manutenção
+                  Próxima manutenção (opcional)
                 </label>
 
                 <input
@@ -898,7 +810,6 @@ function ManutencaoModal({
                     setProximaData(event.target.value)
                   }
                   className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
-                  required
                 />
               </div>
             </div>
@@ -907,69 +818,37 @@ function ManutencaoModal({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                  KM atual
+                  KM atual (opcional)
                 </label>
 
                 <input
                   type="number"
                   min="0"
-                  value={ultimaKm}
+                  value={quilometragem}
                   onChange={(event) =>
-                    setUltimaKm(event.target.value)
+                    setQuilometragem(event.target.value)
                   }
                   placeholder="Ex.: 50000"
                   className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
-                  required
                 />
               </div>
 
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                  Próxima KM
+                  Próxima KM (opcional)
                 </label>
 
                 <input
                   type="number"
                   min="0"
-                  value={proximaKm}
+                  value={proximaQuilometragem}
                   onChange={(event) =>
-                    setProximaKm(event.target.value)
+                    setProximaQuilometragem(event.target.value)
                   }
                   placeholder="Ex.: 60000"
                   className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
-                  required
                 />
               </div>
-            </div>
-
-            {/* Status */}
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                Situação
-              </label>
-
-              <select
-                value={status}
-                onChange={(event) =>
-                  setStatus(
-                    event.target
-                      .value as StatusManutencao,
-                  )
-                }
-                className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
-              >
-                <option value="em_dia">
-                  Em dia
-                </option>
-
-                <option value="proxima">
-                  Próxima
-                </option>
-
-                <option value="atrasada">
-                  Atrasada
-                </option>
-              </select>
             </div>
           </div>
 
@@ -996,14 +875,4 @@ function ManutencaoModal({
       </div>
     </div>
   );
-}
-
-function formatarData(data: string) {
-  return new Date(
-    `${data}T00:00:00`,
-  ).toLocaleDateString("pt-BR");
-}
-
-function formatarKm(km: number) {
-  return `${km.toLocaleString("pt-BR")} km`;
 }

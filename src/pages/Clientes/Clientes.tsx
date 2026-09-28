@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  ChevronLeft,
+  ChevronRight,
   MoreHorizontal,
   Pencil,
   Plus,
@@ -10,7 +12,10 @@ import {
   Car,
 } from "lucide-react";
 import type { Cliente } from "../../types/cliente";
-import { clientesService } from "../../services/clientes";
+import {
+  clientesService,
+  type ResumoClientes,
+} from "../../services/clientes";
 import { mensagemErro } from "../../services/api";
 import {
   formatarCpf,
@@ -18,21 +23,60 @@ import {
   soDigitos,
 } from "../../utils/formatters";
 
+const RESUMO_INICIAL: ResumoClientes = {
+  total: 0,
+  ativos: 0,
+  inativos: 0,
+  totalVeiculos: 0,
+};
+
 export function Clientes() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [busca, setBusca] = useState("");
+  const [buscaDebounced, setBuscaDebounced] = useState("");
   const [filtroStatus, setFiltroStatus] =
     useState<"todos" | "ativos" | "inativos">("todos");
+  const [pagina, setPagina] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const [totalRegistros, setTotalRegistros] = useState(0);
+  const [resumo, setResumo] = useState<ResumoClientes>(RESUMO_INICIAL);
   const [modalAberto, setModalAberto] = useState(false);
   const [clienteEditando, setClienteEditando] =
     useState<Cliente | null>(null);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setBuscaDebounced(busca);
+      setPagina(1);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [busca]);
+
+
   async function carregarClientes() {
     try {
       setCarregando(true);
-      const lista = await clientesService.listar();
-      setClientes(lista);
+      const resultado = await clientesService.listarPaginado({
+        pagina,
+        busca: buscaDebounced,
+        status: filtroStatus,
+      });
+
+      if (
+        resultado.dados.length === 0 &&
+        pagina > 1 &&
+        resultado.totalRegistros > 0
+      ) {
+        setPagina((atual) => Math.max(1, atual - 1));
+        return;
+      }
+
+      setClientes(resultado.dados);
+      setTotalPaginas(resultado.totalPaginas);
+      setTotalRegistros(resultado.totalRegistros);
+      setResumo(resultado.resumo);
     } catch (error) {
       window.alert(mensagemErro(error));
     } finally {
@@ -42,35 +86,8 @@ export function Clientes() {
 
   useEffect(() => {
     void carregarClientes();
-  }, []);
-
-  const clientesFiltrados = useMemo(() => {
-    const termo = busca.toLowerCase().trim();
-
-    return clientes.filter((cliente) => {
-      const correspondeBusca =
-        !termo ||
-        cliente.nome.toLowerCase().includes(termo) ||
-        cliente.cpf.includes(termo) ||
-        formatarCpf(cliente.cpf).includes(termo) ||
-        cliente.telefone.includes(termo);
-
-      const correspondeStatus =
-        filtroStatus === "todos" ||
-        (filtroStatus === "ativos" && cliente.ativo) ||
-        (filtroStatus === "inativos" && !cliente.ativo);
-
-      return correspondeBusca && correspondeStatus;
-    });
-  }, [clientes, busca, filtroStatus]);
-
-  const totalClientes = clientes.length;
-  const clientesAtivos = clientes.filter((cliente) => cliente.ativo).length;
-  const clientesInativos = clientes.filter((cliente) => !cliente.ativo).length;
-  const totalVeiculos = clientes.reduce(
-    (total, cliente) => total + cliente.quantidadeVeiculos,
-    0,
-  );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pagina, buscaDebounced, filtroStatus]);
 
   function abrirNovoCliente() {
     setClienteEditando(null);
@@ -157,22 +174,22 @@ export function Clientes() {
       <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <InfoCard
           label="Total de clientes"
-          value={totalClientes}
+          value={resumo.total}
           icon={<UserRound size={19} />}
         />
         <InfoCard
           label="Clientes ativos"
-          value={clientesAtivos}
+          value={resumo.ativos}
           icon={<UserRound size={19} />}
         />
         <InfoCard
           label="Clientes inativos"
-          value={clientesInativos}
+          value={resumo.inativos}
           icon={<UserRound size={19} />}
         />
         <InfoCard
           label="Veículos cadastrados"
-          value={totalVeiculos}
+          value={resumo.totalVeiculos}
           icon={<Car size={19} />}
         />
       </div>
@@ -186,7 +203,7 @@ export function Clientes() {
             <p className="mt-1 text-[11px] text-gray-400">
               {carregando
                 ? "Carregando..."
-                : `${clientesFiltrados.length} cliente(s) encontrado(s)`}
+                : `${totalRegistros} cliente(s) encontrado(s)`}
             </p>
           </div>
 
@@ -207,11 +224,12 @@ export function Clientes() {
 
             <select
               value={filtroStatus}
-              onChange={(event) =>
+              onChange={(event) => {
                 setFiltroStatus(
                   event.target.value as "todos" | "ativos" | "inativos",
-                )
-              }
+                );
+                setPagina(1);
+              }}
               className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-600 outline-none focus:border-blue-500"
             >
               <option value="todos">Todos</option>
@@ -244,7 +262,7 @@ export function Clientes() {
               </tr>
             </thead>
             <tbody>
-              {clientesFiltrados.map((cliente) => (
+              {clientes.map((cliente) => (
                 <tr
                   key={cliente.id}
                   className="border-b border-gray-100 transition last:border-0 hover:bg-gray-50"
@@ -306,7 +324,7 @@ export function Clientes() {
                 </tr>
               ))}
 
-              {!carregando && clientesFiltrados.length === 0 && (
+              {!carregando && clientes.length === 0 && (
                 <tr>
                   <td
                     colSpan={6}
@@ -318,6 +336,36 @@ export function Clientes() {
               )}
             </tbody>
           </table>
+        </div>
+
+        <div className="flex items-center justify-between border-t border-gray-200 px-5 py-3">
+          <p className="text-[11px] text-gray-400">
+            Página {pagina} de {totalPaginas}
+          </p>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setPagina((atual) => Math.max(1, atual - 1))}
+              disabled={pagina <= 1 || carregando}
+              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <ChevronLeft size={14} />
+              Anterior
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                setPagina((atual) => Math.min(totalPaginas, atual + 1))
+              }
+              disabled={pagina >= totalPaginas || carregando}
+              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Próxima
+              <ChevronRight size={14} />
+            </button>
+          </div>
         </div>
       </div>
 

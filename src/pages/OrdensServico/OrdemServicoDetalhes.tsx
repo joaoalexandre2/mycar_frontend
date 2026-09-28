@@ -225,7 +225,10 @@ function Tab({
   );
 }
 
-function Informacoes() {
+function Informacoes({ ordem }: { ordem: OrdemServico }) {
+  const veiculo = ordem.veiculo;
+  const cliente = veiculo?.cliente;
+
   return (
     <div className="grid grid-cols-1 gap-8 p-6 lg:grid-cols-2">
       {/* Problema */}
@@ -236,9 +239,7 @@ function Informacoes() {
 
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
           <p className="text-xs leading-6 text-gray-600">
-            Motor apresentando falhas durante o funcionamento.
-            Cliente relata perda de potência principalmente
-            durante aceleração.
+            {ordem.descricao}
           </p>
         </div>
       </div>
@@ -250,13 +251,16 @@ function Informacoes() {
         </h3>
 
         <div className="space-y-3">
-          <InfoRow label="Marca" value="Honda" />
+          <InfoRow label="Marca" value={veiculo?.marca ?? "—"} />
 
-          <InfoRow label="Modelo" value="Fit" />
+          <InfoRow label="Modelo" value={veiculo?.modelo ?? "—"} />
 
-          <InfoRow label="Ano" value="2018" />
+          <InfoRow
+            label="Ano"
+            value={veiculo ? String(veiculo.ano) : "—"}
+          />
 
-          <InfoRow label="Placa" value="ABC1D23" />
+          <InfoRow label="Placa" value={veiculo?.placa ?? "—"} />
         </div>
       </div>
 
@@ -267,16 +271,11 @@ function Informacoes() {
         </h3>
 
         <div className="space-y-3">
-          <InfoRow label="Nome" value="Maria Silva" />
+          <InfoRow label="Nome" value={cliente?.nome ?? "—"} />
 
           <InfoRow
             label="Telefone"
-            value="(45) 99999-9999"
-          />
-
-          <InfoRow
-            label="E-mail"
-            value="maria@email.com"
+            value={cliente?.telefone ?? "—"}
           />
         </div>
       </div>
@@ -290,17 +289,16 @@ function Informacoes() {
         <div className="space-y-3">
           <InfoRow
             label="Abertura"
-            value="24/08/2026"
-          />
-
-          <InfoRow
-            label="Previsão"
-            value="26/08/2026"
+            value={formatarData(ordem.dataAbertura)}
           />
 
           <InfoRow
             label="Conclusão"
-            value="—"
+            value={
+              ordem.dataFechamento
+                ? formatarData(ordem.dataFechamento)
+                : "Em aberto"
+            }
           />
         </div>
       </div>
