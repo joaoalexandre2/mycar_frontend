@@ -16,6 +16,8 @@ import { Dashboard } from "./components/dashboard/Dashboard";
 import { Login } from "./pages/Login/Login";
 import { Register } from "./pages/Register/Register";
 import { EmailConfirmado } from "./pages/EmailConfirmado/EmailConfirmado";
+import { EsqueciSenha } from "./pages/EsqueciSenha/EsqueciSenha";
+import { RedefinirSenha } from "./pages/RedefinirSenha/RedefinirSenha";
 import { Clientes } from "./pages/Clientes/Clientes";
 import { Veiculos } from "./pages/Veiculos/Veiculos";
 import { OrdensServico } from "./pages/OrdensServico/OrdensServico";
@@ -94,6 +96,16 @@ function App() {
           <Route
             path="/email-confirmado"
             element={<EmailConfirmado />}
+          />
+
+          <Route
+            path="/esqueci-senha"
+            element={<EsqueciSenha />}
+          />
+
+          <Route
+            path="/redefinir-senha"
+            element={<RedefinirSenha />}
           />
 
           <Route element={<ProtectedRoute />}>
