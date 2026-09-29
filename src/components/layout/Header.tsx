@@ -1,24 +1,40 @@
 import {
     Bell,
+    Menu,
     Search,
     CircleUserRound,
   } from "lucide-react";
-  
-  export function Header() {
+
+  interface HeaderProps {
+    aoAbrirMenu: () => void;
+  }
+
+  export function Header({ aoAbrirMenu }: HeaderProps) {
     return (
-      <header className="flex h-[82px] items-center justify-between border-b border-gray-200 bg-white px-8">
-        <div>
-          <h1 className="text-[22px] font-bold text-gray-900">
-            Dashboard
-          </h1>
-  
-          <p className="mt-0.5 text-xs text-gray-500">
-            Visão geral do seu sistema automotivo.
-          </p>
-        </div>
-  
+      <header className="flex h-[82px] items-center justify-between border-b border-gray-200 bg-white px-4 md:px-8">
         <div className="flex items-center gap-3">
-          <button className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:bg-gray-50">
+          <button
+            type="button"
+            onClick={aoAbrirMenu}
+            title="Abrir menu"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:bg-gray-50 md:hidden"
+          >
+            <Menu size={19} />
+          </button>
+
+          <div className="min-w-0">
+            <h1 className="truncate text-[22px] font-bold text-gray-900">
+              Dashboard
+            </h1>
+
+            <p className="mt-0.5 hidden text-xs text-gray-500 sm:block">
+              Visão geral do seu sistema automotivo.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button className="hidden h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:bg-gray-50 sm:flex">
             <Search size={19} />
           </button>
   
