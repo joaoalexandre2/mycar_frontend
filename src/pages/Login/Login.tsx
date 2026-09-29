@@ -98,9 +98,18 @@ export function Login() {
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-semibold text-gray-600">
-              Senha
-            </label>
+            <div className="mb-1 flex items-center justify-between">
+              <label className="block text-xs font-semibold text-gray-600">
+                Senha
+              </label>
+
+              <Link
+                to="/esqueci-senha"
+                className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+              >
+                Esqueceu a senha?
+              </Link>
+            </div>
 
             <div className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 focus-within:border-blue-500">
               <Lock

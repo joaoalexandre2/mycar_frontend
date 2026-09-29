@@ -33,4 +33,17 @@ export const authService = {
   async reenviarConfirmacao(email: string): Promise<void> {
     await api.post("/email/reenviar", { email });
   },
+
+  async esqueciSenha(email: string): Promise<void> {
+    await api.post("/password/esqueci", { email });
+  },
+
+  async redefinirSenha(payload: {
+    token: string;
+    email: string;
+    password: string;
+    password_confirmation: string;
+  }): Promise<void> {
+    await api.post("/password/redefinir", payload);
+  },
 };
