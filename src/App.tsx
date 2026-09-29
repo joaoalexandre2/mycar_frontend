@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   BrowserRouter,
   Navigate,
@@ -25,12 +26,17 @@ import { Manutencoes } from "./pages/Manutencoes/Manutencoes";
 import { Configuracoes } from "./pages/Configuracoes/Configuracoes";
 
 function AppLayout() {
+  const [menuAberto, setMenuAberto] = useState(false);
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <Sidebar />
+      <Sidebar
+        aberta={menuAberto}
+        aoFechar={() => setMenuAberto(false)}
+      />
 
-      <main className="ml-[250px] min-h-screen">
-        <Header />
+      <main className="min-h-screen md:ml-[250px]">
+        <Header aoAbrirMenu={() => setMenuAberto(true)} />
 
         <Routes>
           <Route
