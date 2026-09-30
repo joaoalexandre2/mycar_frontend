@@ -7,6 +7,7 @@ interface ClienteApi {
   nome: string;
   cpf: string;
   telefone: string;
+  email?: string | null;
   ativo: boolean | number;
   veiculos_count?: number;
   veiculos?: unknown[];
@@ -52,6 +53,7 @@ function mapearCliente(cliente: ClienteApi): Cliente {
     nome: cliente.nome,
     cpf: cliente.cpf,
     telefone: cliente.telefone,
+    email: cliente.email ?? null,
     ativo: Boolean(cliente.ativo),
     quantidadeVeiculos:
       cliente.veiculos_count ?? cliente.veiculos?.length ?? 0,
