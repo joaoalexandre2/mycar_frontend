@@ -8,6 +8,14 @@ interface VeiculoApi {
   marca: string;
   modelo: string;
   ano: number | string;
+  uf?: string | null;
+  ipva_estimado?: number | null;
+  licenciamento_valor?: number | null;
+  fipe_marca_id?: number | null;
+  fipe_modelo_id?: number | null;
+  fipe_ano?: string | null;
+  fipe_valor?: string | number | null;
+  fipe_consultado_em?: string | null;
   cliente?: {
     id: number;
     nome: string;
@@ -56,6 +64,17 @@ export function mapearVeiculo(veiculo: VeiculoApi): Veiculo {
     marca: veiculo.marca,
     modelo: veiculo.modelo,
     ano: Number(veiculo.ano),
+    uf: veiculo.uf ?? null,
+    ipvaEstimado: veiculo.ipva_estimado ?? null,
+    licenciamentoValor: veiculo.licenciamento_valor ?? null,
+    fipeMarcaId: veiculo.fipe_marca_id ?? null,
+    fipeModeloId: veiculo.fipe_modelo_id ?? null,
+    fipeAno: veiculo.fipe_ano ?? null,
+    fipeValor:
+      veiculo.fipe_valor === null || veiculo.fipe_valor === undefined
+        ? null
+        : Number(veiculo.fipe_valor),
+    fipeConsultadoEm: veiculo.fipe_consultado_em ?? null,
     cliente: veiculo.cliente
       ? {
           id: veiculo.cliente.id,
@@ -112,6 +131,14 @@ export const veiculosService = {
 
   async atualizar(id: number, payload: VeiculoPayload) {
     const { data } = await api.put<VeiculoApi>(`/veiculos/${id}`, payload);
+    return mapearVeiculo(data);
+  },
+
+  /**
+   * Consulta o valor atual na tabela FIPE e grava no veículo.
+   */
+  async consultarFipe(id: number) {
+    const { data } = await api.post<VeiculoApi>(`/veiculos/${id}/fipe`);
     return mapearVeiculo(data);
   },
 
