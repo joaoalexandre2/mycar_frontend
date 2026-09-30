@@ -12,6 +12,14 @@ export interface Veiculo {
   marca: string;
   modelo: string;
   ano: number;
+  uf: string | null;
+  ipvaEstimado: number | null;
+  licenciamentoValor: number | null;
+  fipeMarcaId: number | null;
+  fipeModeloId: number | null;
+  fipeAno: string | null;
+  fipeValor: number | null;
+  fipeConsultadoEm: string | null;
   cliente?: ClienteResumo | null;
 }
 
@@ -21,4 +29,8 @@ export interface VeiculoPayload {
   marca: string;
   modelo: string;
   ano: number;
+  uf?: string | null;
+  fipe_marca_id?: number | null;
+  fipe_modelo_id?: number | null;
+  fipe_ano?: string | null;
 }

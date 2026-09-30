@@ -6,6 +6,7 @@ import {
   MoreHorizontal,
   Pencil,
   Plus,
+  RefreshCw,
   Search,
   Trash2,
   X,
@@ -18,6 +19,22 @@ import {
   type ResumoVeiculos,
 } from "../../services/veiculos";
 import { mensagemErro } from "../../services/api";
+import {
+  FipeSeletor,
+  type FipeSelecao,
+} from "../../components/veiculos/FipeSeletor";
+import { formatarData, formatarMoeda } from "../../utils/formatters";
+import { ESTADOS } from "../../utils/estados";
+
+interface DadosVeiculoForm {
+  clienteId: number;
+  placa: string;
+  marca: string;
+  modelo: string;
+  ano: number;
+  uf: string;
+  fipe: FipeSelecao;
+}
 
 const RESUMO_INICIAL: ResumoVeiculos = {
   total: 0,
@@ -39,6 +56,7 @@ export function Veiculos() {
   const [modalAberto, setModalAberto] = useState(false);
   const [veiculoEditando, setVeiculoEditando] =
     useState<Veiculo | null>(null);
+  const [consultandoId, setConsultandoId] = useState<number | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -119,19 +137,31 @@ export function Veiculos() {
     }
   }
 
-  async function salvarVeiculo(payload: {
-    clienteId: number;
-    placa: string;
-    marca: string;
-    modelo: string;
-    ano: number;
-  }) {
+  async function consultarFipe(id: number) {
+    try {
+      setConsultandoId(id);
+      await veiculosService.consultarFipe(id);
+      await carregar();
+    } catch (error) {
+      window.alert(mensagemErro(error));
+    } finally {
+      setConsultandoId(null);
+    }
+  }
+
+  async function salvarVeiculo(payload: DadosVeiculoForm) {
     const dados = {
       cliente_id: payload.clienteId,
       placa: payload.placa,
       marca: payload.marca,
       modelo: payload.modelo,
       ano: payload.ano,
+      uf: payload.uf || null,
+      fipe_marca_id: payload.fipe.marcaId ? Number(payload.fipe.marcaId) : null,
+      fipe_modelo_id: payload.fipe.modeloId
+        ? Number(payload.fipe.modeloId)
+        : null,
+      fipe_ano: payload.fipe.ano || null,
     };
 
     try {
@@ -220,7 +250,13 @@ export function Veiculos() {
                 <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
                   Ano
                 </th>
-                <th className="w-28 px-5 py-3" />
+                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                  Valor FIPE
+                </th>
+                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                  IPVA / Licenciamento
+                </th>
+                <th className="w-32 px-5 py-3" />
               </tr>
             </thead>
             <tbody>
@@ -256,7 +292,67 @@ export function Veiculos() {
                     {veiculo.ano}
                   </td>
                   <td className="px-5 py-4">
+                    {veiculo.fipeValor !== null ? (
+                      <>
+                        <p className="text-xs font-semibold text-gray-900">
+                          {formatarMoeda(veiculo.fipeValor)}
+                        </p>
+                        <p className="mt-1 text-[10px] text-gray-400">
+                          em {formatarData(veiculo.fipeConsultadoEm)}
+                        </p>
+                      </>
+                    ) : (
+                      <span className="text-xs text-gray-400">—</span>
+                    )}
+                  </td>
+                  <td className="px-5 py-4">
+                    {veiculo.uf ? (
+                      <div className="space-y-1 text-[11px] text-gray-600">
+                        <p>
+                          IPVA{" "}
+                          <span className="font-semibold text-gray-900">
+                            {veiculo.ipvaEstimado !== null
+                              ? formatarMoeda(veiculo.ipvaEstimado)
+                              : "—"}
+                          </span>
+                        </p>
+                        <p>
+                          Lic.{" "}
+                          <span className="font-semibold text-gray-900">
+                            {veiculo.licenciamentoValor !== null
+                              ? formatarMoeda(veiculo.licenciamentoValor)
+                              : "—"}
+                          </span>{" "}
+                          <span className="text-gray-400">({veiculo.uf})</span>
+                        </p>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-gray-400">
+                        Informe o estado
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-5 py-4">
                     <div className="flex items-center justify-end gap-1">
+                      {veiculo.fipeMarcaId &&
+                        veiculo.fipeModeloId &&
+                        veiculo.fipeAno && (
+                          <button
+                            onClick={() => void consultarFipe(veiculo.id)}
+                            disabled={consultandoId === veiculo.id}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-50"
+                            title="Consultar valor na FIPE"
+                          >
+                            <RefreshCw
+                              size={15}
+                              className={
+                                consultandoId === veiculo.id
+                                  ? "animate-spin"
+                                  : ""
+                              }
+                            />
+                          </button>
+                        )}
                       <button
                         onClick={() => {
                           setVeiculoEditando(veiculo);
@@ -288,7 +384,7 @@ export function Veiculos() {
               {!carregando && veiculos.length === 0 && (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={7}
                     className="px-5 py-12 text-center text-xs text-gray-400"
                   >
                     Nenhum veículo encontrado.
@@ -374,13 +470,7 @@ function VeiculoModal({
   veiculo: Veiculo | null;
   clientes: Cliente[];
   onClose: () => void;
-  onSave: (veiculo: {
-    clienteId: number;
-    placa: string;
-    marca: string;
-    modelo: string;
-    ano: number;
-  }) => void;
+  onSave: (veiculo: DadosVeiculoForm) => void;
 }) {
   const [clienteId, setClienteId] = useState(
     veiculo?.clienteId?.toString() ?? "",
@@ -389,6 +479,12 @@ function VeiculoModal({
   const [marca, setMarca] = useState(veiculo?.marca ?? "");
   const [modelo, setModelo] = useState(veiculo?.modelo ?? "");
   const [ano, setAno] = useState(veiculo?.ano?.toString() ?? "");
+  const [uf, setUf] = useState(veiculo?.uf ?? "");
+  const [fipe, setFipe] = useState<FipeSelecao>({
+    marcaId: veiculo?.fipeMarcaId?.toString() ?? "",
+    modeloId: veiculo?.fipeModeloId?.toString() ?? "",
+    ano: veiculo?.fipeAno ?? "",
+  });
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -415,12 +511,14 @@ function VeiculoModal({
       marca: marca.trim(),
       modelo: modelo.trim(),
       ano: anoNumerico,
+      uf,
+      fipe,
     });
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-xl">
+      <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-xl bg-white shadow-xl">
         <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
           <div>
             <h3 className="text-sm font-semibold text-gray-900">
@@ -459,6 +557,16 @@ function VeiculoModal({
                 ))}
               </select>
             </div>
+
+            <FipeSeletor
+              valor={fipe}
+              onChange={(selecao, nomes) => {
+                setFipe(selecao);
+                if (nomes.marca !== undefined) setMarca(nomes.marca);
+                if (nomes.modelo !== undefined) setModelo(nomes.modelo);
+                if (nomes.ano !== undefined) setAno(String(nomes.ano));
+              }}
+            />
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
@@ -501,6 +609,24 @@ function VeiculoModal({
                 className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs font-semibold tracking-wider uppercase outline-none focus:border-blue-500"
                 required
               />
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+                Estado de emplacamento
+              </label>
+              <select
+                value={uf}
+                onChange={(event) => setUf(event.target.value)}
+                className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none transition focus:border-blue-500"
+              >
+                <option value="">Selecione (para calcular IPVA e licenciamento)</option>
+                {ESTADOS.map((sigla) => (
+                  <option key={sigla} value={sigla}>
+                    {sigla}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
