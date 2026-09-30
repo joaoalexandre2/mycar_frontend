@@ -126,12 +126,14 @@ export function Clientes() {
     nome: string;
     cpf: string;
     telefone: string;
+    email: string;
     ativo: boolean;
   }) {
     const payload = {
       nome: cliente.nome,
       cpf: soDigitos(cliente.cpf),
       telefone: cliente.telefone,
+      email: cliente.email.trim() || null,
       ativo: cliente.ativo,
     };
 
@@ -426,6 +428,7 @@ function ClienteModal({
     nome: string;
     cpf: string;
     telefone: string;
+    email: string;
     ativo: boolean;
   }) => void;
 }) {
@@ -434,6 +437,7 @@ function ClienteModal({
     cliente?.cpf ? formatarCpf(cliente.cpf) : "",
   );
   const [telefone, setTelefone] = useState(cliente?.telefone ?? "");
+  const [email, setEmail] = useState(cliente?.email ?? "");
   const [ativo, setAtivo] = useState(cliente?.ativo ?? true);
   const [salvando, setSalvando] = useState(false);
 
@@ -450,6 +454,7 @@ function ClienteModal({
       nome: nome.trim(),
       cpf,
       telefone: telefone.trim(),
+      email,
       ativo,
     });
     setSalvando(false);
@@ -521,6 +526,22 @@ function ClienteModal({
                   required
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+                E-mail
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="cliente@exemplo.com"
+                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-blue-500"
+              />
+              <p className="mt-1 text-[11px] text-gray-400">
+                Opcional. Usado para avisar sobre manutenções próximas ou atrasadas.
+              </p>
             </div>
 
             <div>
