@@ -325,6 +325,18 @@ export function Veiculos() {
                           </span>{" "}
                           <span className="text-gray-400">({veiculo.uf})</span>
                         </p>
+                        {veiculo.proximoVencimentoLicenciamento && (
+                          <p
+                            className={
+                              new Date(veiculo.proximoVencimentoLicenciamento) < new Date()
+                                ? "font-semibold text-red-600"
+                                : "text-gray-500"
+                            }
+                            title="Estimativa com base no final da placa. Confirme no Detran do seu estado."
+                          >
+                            Vence (est.) {formatarData(veiculo.proximoVencimentoLicenciamento)}
+                          </p>
+                        )}
                       </div>
                     ) : (
                       <span className="text-xs text-gray-400">

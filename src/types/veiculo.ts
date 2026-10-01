@@ -15,6 +15,7 @@ export interface Veiculo {
   uf: string | null;
   ipvaEstimado: number | null;
   licenciamentoValor: number | null;
+  proximoVencimentoLicenciamento: string | null;
   fipeMarcaId: number | null;
   fipeModeloId: number | null;
   fipeAno: string | null;
