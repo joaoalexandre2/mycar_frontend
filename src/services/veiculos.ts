@@ -11,6 +11,7 @@ interface VeiculoApi {
   uf?: string | null;
   ipva_estimado?: number | null;
   licenciamento_valor?: number | null;
+  proximo_vencimento_licenciamento?: string | null;
   fipe_marca_id?: number | null;
   fipe_modelo_id?: number | null;
   fipe_ano?: string | null;
@@ -67,6 +68,7 @@ export function mapearVeiculo(veiculo: VeiculoApi): Veiculo {
     uf: veiculo.uf ?? null,
     ipvaEstimado: veiculo.ipva_estimado ?? null,
     licenciamentoValor: veiculo.licenciamento_valor ?? null,
+    proximoVencimentoLicenciamento: veiculo.proximo_vencimento_licenciamento ?? null,
     fipeMarcaId: veiculo.fipe_marca_id ?? null,
     fipeModeloId: veiculo.fipe_modelo_id ?? null,
     fipeAno: veiculo.fipe_ano ?? null,
