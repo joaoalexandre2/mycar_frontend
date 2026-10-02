@@ -38,7 +38,7 @@ export function OrdemServicoDetalhes({
   const cliente = veiculo?.cliente;
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Cabeçalho */}
       <div className="mb-6 flex items-center gap-4">
         <button

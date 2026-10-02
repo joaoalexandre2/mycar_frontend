@@ -51,7 +51,7 @@ export function Configuracoes() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Cabeçalho */}
       <div className="mb-7">
         <h2 className="text-[21px] font-bold text-gray-900">

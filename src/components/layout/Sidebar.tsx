@@ -10,6 +10,7 @@ import {
   } from "lucide-react";
   import { NavLink, useNavigate } from "react-router-dom";
   import { useAuth } from "../../hooks/useAuth";
+  import { iniciais } from "../../utils/iniciais";
 
   interface SidebarProps {
     aberta: boolean;
@@ -21,21 +22,6 @@ import {
     label: string;
     to: string;
     aoNavegar: () => void;
-  }
-
-  function iniciais(nome?: string) {
-    if (!nome) {
-      return "?";
-    }
-
-    const partes = nome.trim().split(/\s+/);
-
-    return (
-      partes
-        .slice(0, 2)
-        .map((parte) => parte[0]?.toUpperCase() ?? "")
-        .join("") || "?"
-    );
   }
 
   export function Sidebar({ aberta, aoFechar }: SidebarProps) {
