@@ -3,6 +3,7 @@ import {
   Car,
   ChevronLeft,
   ChevronRight,
+  Clock,
   MoreHorizontal,
   Pencil,
   Plus,
@@ -11,6 +12,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { VeiculoHistorico } from "./VeiculoHistorico";
 import type { Cliente } from "../../types/cliente";
 import type { Veiculo } from "../../types/veiculo";
 import { clientesService } from "../../services/clientes";
@@ -57,6 +59,8 @@ export function Veiculos() {
   const [veiculoEditando, setVeiculoEditando] =
     useState<Veiculo | null>(null);
   const [consultandoId, setConsultandoId] = useState<number | null>(null);
+  const [veiculoHistoricoId, setVeiculoHistoricoId] =
+    useState<number | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -177,6 +181,15 @@ export function Veiculos() {
     } catch (error) {
       window.alert(mensagemErro(error));
     }
+  }
+
+  if (veiculoHistoricoId !== null) {
+    return (
+      <VeiculoHistorico
+        veiculoId={veiculoHistoricoId}
+        onVoltar={() => setVeiculoHistoricoId(null)}
+      />
+    );
   }
 
   return (
@@ -365,6 +378,13 @@ export function Veiculos() {
                             />
                           </button>
                         )}
+                      <button
+                        onClick={() => setVeiculoHistoricoId(veiculo.id)}
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-indigo-50 hover:text-indigo-600"
+                        title="Ver histórico"
+                      >
+                        <Clock size={15} />
+                      </button>
                       <button
                         onClick={() => {
                           setVeiculoEditando(veiculo);
