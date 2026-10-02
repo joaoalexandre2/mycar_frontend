@@ -35,7 +35,7 @@ function AppLayout() {
         aoFechar={() => setMenuAberto(false)}
       />
 
-      <main className="min-h-screen md:ml-[250px]">
+      <main className="min-h-screen md:ml-[250px] print:ml-0">
         <Header aoAbrirMenu={() => setMenuAberto(true)} />
 
         <Routes>

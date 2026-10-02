@@ -27,7 +27,7 @@ import {
     const { titulo, subtitulo } = TITULOS[pathname] ?? TITULOS["/"];
 
     return (
-      <header className="flex h-[82px] items-center justify-between border-b border-gray-200 bg-white px-4 md:px-8">
+      <header className="print:hidden flex h-[82px] items-center justify-between border-b border-gray-200 bg-white px-4 md:px-8">
         <div className="flex items-center gap-3">
           <button
             type="button"
