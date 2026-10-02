@@ -175,8 +175,8 @@ export function OrdensServico() {
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-7 flex items-center justify-between">
+    <div className="p-4 md:p-8">
+      <div className="mb-7 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-[21px] font-bold text-gray-900">
             Ordens de serviço

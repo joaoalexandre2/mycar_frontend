@@ -129,7 +129,7 @@ export function VeiculoHistorico({
 
   if (carregando) {
     return (
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         <p className="text-xs text-gray-400">Carregando histórico...</p>
       </div>
     );
@@ -137,7 +137,7 @@ export function VeiculoHistorico({
 
   if (!historico) {
     return (
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         <button
           onClick={onVoltar}
           className="mb-4 flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:bg-gray-50"
@@ -154,7 +154,7 @@ export function VeiculoHistorico({
   const valorFipeAtual = historico.fipeHistorico.at(-1)?.valor ?? veiculo.fipeValor;
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="mb-6 flex items-center gap-4">
         <button
           onClick={onVoltar}
