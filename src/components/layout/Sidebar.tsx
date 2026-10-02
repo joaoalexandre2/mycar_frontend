@@ -43,7 +43,7 @@ import {
         )}
 
         <aside
-          className={`fixed inset-y-0 left-0 z-40 flex w-[250px] flex-col bg-gray-900 px-4 py-6 text-white transition-transform duration-200 md:translate-x-0 ${
+          className={`print:hidden fixed inset-y-0 left-0 z-40 flex w-[250px] flex-col bg-gray-900 px-4 py-6 text-white transition-transform duration-200 md:translate-x-0 ${
             aberta ? "translate-x-0" : "-translate-x-full"
           }`}
         >

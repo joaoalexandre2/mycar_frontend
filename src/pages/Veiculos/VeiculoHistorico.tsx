@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   ArrowLeft,
+  Printer,
   Car,
   ClipboardList,
   DollarSign,
@@ -158,7 +159,7 @@ export function VeiculoHistorico({
       <div className="mb-6 flex items-center gap-4">
         <button
           onClick={onVoltar}
-          className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:bg-gray-50 hover:text-gray-900"
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:bg-gray-50 hover:text-gray-900 print:hidden"
         >
           <ArrowLeft size={17} />
         </button>
@@ -171,6 +172,15 @@ export function VeiculoHistorico({
             Placa {veiculo.placa} · Ano {veiculo.ano}
           </p>
         </div>
+
+        <button
+          onClick={() => window.print()}
+          className="ml-auto flex h-9 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-xs font-medium text-gray-600 transition hover:bg-gray-50 print:hidden"
+          title="Abre a impressão; escolha Salvar como PDF"
+        >
+          <Printer size={15} />
+          Exportar PDF
+        </button>
       </div>
 
       <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
