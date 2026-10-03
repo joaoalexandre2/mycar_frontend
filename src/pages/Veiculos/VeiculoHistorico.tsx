@@ -17,6 +17,7 @@ import { mensagemErro } from "../../services/api";
 import { formatarData, formatarMoeda } from "../../utils/formatters";
 import type { StatusOrdemServico } from "../../types/ordemServico";
 import { FichaTecnicaCard } from "./FichaTecnicaCard";
+import { PecasCard } from "./PecasCard";
 
 const STATUS_OS_LABEL: Record<StatusOrdemServico, string> = {
   aberta: "Aberta",
@@ -208,6 +209,8 @@ export function VeiculoHistorico({
       </div>
 
       <FichaTecnicaCard veiculoId={veiculo.id} />
+
+      <PecasCard veiculoId={veiculo.id} />
 
       {historico.fipeHistorico.length > 1 && (
         <div className="mb-5 overflow-hidden rounded-xl border border-gray-200 bg-white">
