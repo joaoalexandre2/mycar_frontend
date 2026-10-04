@@ -5,6 +5,7 @@ import {
     Wrench,
     ClipboardList,
     Settings,
+    ShieldCheck,
     LogOut,
     X,
   } from "lucide-react";
@@ -120,6 +121,15 @@ import {
               label="Configurações"
               aoNavegar={aoFechar}
             />
+
+            {usuario?.admin && (
+              <SidebarItem
+                to="/admin"
+                icon={<ShieldCheck size={19} />}
+                label="Administração"
+                aoNavegar={aoFechar}
+              />
+            )}
           </nav>
 
           {/* Usuário */}

@@ -3,6 +3,8 @@ export interface Usuario {
   name: string;
   email: string;
   oficina?: string | null;
+  /** Operador da plataforma. Só mostra/esconde o menu: o backend é quem barra. */
+  admin?: boolean;
 }
 
 export interface LoginPayload {
