@@ -26,6 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         autenticado: Boolean(usuario),
         entrar,
         sair,
+        atualizarUsuario: setUsuario,
       }}
     >
       {children}

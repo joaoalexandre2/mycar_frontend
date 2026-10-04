@@ -1,519 +1,459 @@
-import { useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import { Building2, Check, Palette, Settings, User } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
+import { mensagemErro } from "../../services/api";
+import { configuracaoService } from "../../services/configuracao";
 import {
-  Building2,
-  Check,
-  Palette,
-  Save,
-  Settings,
-  User,
-} from "lucide-react";
+  OPCOES_ITENS_POR_PAGINA,
+  obterCor,
+  obterItensPorPagina,
+  obterTema,
+  salvarAparencia,
+  salvarItensPorPagina,
+  type Cor,
+  type Tema,
+} from "../../utils/preferencias";
 
-type AbaConfiguracao =
-  | "perfil"
-  | "oficina"
-  | "sistema"
-  | "aparencia";
+type Aba = "perfil" | "oficina" | "sistema" | "aparencia";
+
+const ABAS: { chave: Aba; rotulo: string; icone: React.ReactNode }[] = [
+  { chave: "perfil", rotulo: "Perfil", icone: <User size={17} /> },
+  { chave: "oficina", rotulo: "Oficina", icone: <Building2 size={17} /> },
+  { chave: "sistema", rotulo: "Sistema", icone: <Settings size={17} /> },
+  { chave: "aparencia", rotulo: "Aparência", icone: <Palette size={17} /> },
+];
 
 export function Configuracoes() {
-  const [abaAtiva, setAbaAtiva] =
-    useState<AbaConfiguracao>("perfil");
-
-  const [nome, setNome] = useState("João Kirst");
-  const [email, setEmail] = useState("joao@mycar.com");
-  const [telefone, setTelefone] = useState("(45) 99999-9999");
-
-  const [nomeOficina, setNomeOficina] =
-    useState("MyCar Oficina");
-  const [cnpj, setCnpj] = useState("00.000.000/0001-00");
-  const [telefoneOficina, setTelefoneOficina] =
-    useState("(45) 3035-0000");
-  const [endereco, setEndereco] =
-    useState("Cascavel - PR");
-
-  const [moeda, setMoeda] = useState("BRL");
-  const [formatoData, setFormatoData] =
-    useState("dd/MM/yyyy");
-  const [itensPorPagina, setItensPorPagina] =
-    useState("10");
-
-  const [tema, setTema] = useState("claro");
-  const [corPrincipal, setCorPrincipal] =
-    useState("blue");
-
-  const [salvo, setSalvo] = useState(false);
-
-  function salvarConfiguracoes() {
-    setSalvo(true);
-
-    setTimeout(() => {
-      setSalvo(false);
-    }, 2500);
-  }
+  const [aba, setAba] = useState<Aba>("perfil");
 
   return (
     <div className="p-4 md:p-8">
-      {/* Cabeçalho */}
-      <div className="mb-7">
-        <h2 className="text-[21px] font-bold text-gray-900">
-          Configurações
-        </h2>
-
+      <div className="mb-6">
+        <h2 className="text-[21px] font-bold text-gray-900">Configurações</h2>
         <p className="mt-1 text-xs text-gray-500">
-          Gerencie as configurações do sistema e da sua oficina.
+          Gerencie seu perfil, os dados da oficina e as preferências do sistema.
         </p>
       </div>
 
-      <div className="grid grid-cols-[220px_1fr] gap-6">
-        {/* Menu lateral */}
-        <div className="h-fit rounded-xl border border-gray-200 bg-white p-2">
-          <ConfigItem
-            icon={<User size={17} />}
-            label="Perfil"
-            ativo={abaAtiva === "perfil"}
-            onClick={() => setAbaAtiva("perfil")}
-          />
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[220px_1fr] lg:gap-6">
+        <nav className="flex gap-1 overflow-x-auto rounded-xl border border-gray-200 bg-white p-2 lg:h-fit lg:flex-col lg:overflow-visible">
+          {ABAS.map((item) => (
+            <button
+              key={item.chave}
+              onClick={() => setAba(item.chave)}
+              className={`flex h-11 shrink-0 items-center gap-3 rounded-lg px-3 text-sm transition lg:w-full ${
+                aba === item.chave
+                  ? "bg-blue-50 font-semibold text-blue-600"
+                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+              }`}
+            >
+              {item.icone}
+              {item.rotulo}
+            </button>
+          ))}
+        </nav>
 
-          <ConfigItem
-            icon={<Building2 size={17} />}
-            label="Oficina"
-            ativo={abaAtiva === "oficina"}
-            onClick={() => setAbaAtiva("oficina")}
-          />
+        <div className="min-w-0 rounded-xl border border-gray-200 bg-white">
+          {aba === "perfil" && <Perfil />}
+          {aba === "oficina" && <Oficina />}
+          {aba === "sistema" && <Sistema />}
+          {aba === "aparencia" && <Aparencia />}
+        </div>
+      </div>
+    </div>
+  );
+}
 
-          <ConfigItem
-            icon={<Settings size={17} />}
-            label="Sistema"
-            ativo={abaAtiva === "sistema"}
-            onClick={() => setAbaAtiva("sistema")}
-          />
+/* ---------------------------- Perfil ---------------------------- */
 
-          <ConfigItem
-            icon={<Palette size={17} />}
-            label="Aparência"
-            ativo={abaAtiva === "aparencia"}
-            onClick={() => setAbaAtiva("aparencia")}
-          />
+function Perfil() {
+  const { usuario, atualizarUsuario } = useAuth();
+  const [nome, setNome] = useState(usuario?.name ?? "");
+  const [salvando, setSalvando] = useState(false);
+  const [aviso, setAviso] = useState<Aviso | null>(null);
+
+  const [senhaAtual, setSenhaAtual] = useState("");
+  const [novaSenha, setNovaSenha] = useState("");
+  const [confirmacao, setConfirmacao] = useState("");
+  const [salvandoSenha, setSalvandoSenha] = useState(false);
+  const [avisoSenha, setAvisoSenha] = useState<Aviso | null>(null);
+
+  async function salvarPerfil(event: FormEvent) {
+    event.preventDefault();
+    setAviso(null);
+
+    try {
+      setSalvando(true);
+      atualizarUsuario(await configuracaoService.atualizarPerfil(nome.trim()));
+      setAviso({ tipo: "ok", texto: "Perfil atualizado." });
+    } catch (error) {
+      setAviso({ tipo: "erro", texto: mensagemErro(error) });
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  async function alterarSenha(event: FormEvent) {
+    event.preventDefault();
+    setAvisoSenha(null);
+
+    if (novaSenha !== confirmacao) {
+      setAvisoSenha({ tipo: "erro", texto: "A confirmação não é igual à nova senha." });
+      return;
+    }
+
+    try {
+      setSalvandoSenha(true);
+      await configuracaoService.alterarSenha({
+        senha_atual: senhaAtual,
+        password: novaSenha,
+        password_confirmation: confirmacao,
+      });
+      setSenhaAtual("");
+      setNovaSenha("");
+      setConfirmacao("");
+      setAvisoSenha({ tipo: "ok", texto: "Senha alterada." });
+    } catch (error) {
+      setAvisoSenha({ tipo: "erro", texto: mensagemErro(error) });
+    } finally {
+      setSalvandoSenha(false);
+    }
+  }
+
+  return (
+    <>
+      <Secao titulo="Perfil" descricao="Seus dados de acesso.">
+        <form onSubmit={(e) => void salvarPerfil(e)} className="space-y-5">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <Campo label="Nome">
+              <input
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                required
+                className={ESTILO_CAMPO}
+              />
+            </Campo>
+            <Campo label="E-mail">
+              <input
+                value={usuario?.email ?? ""}
+                disabled
+                className={`${ESTILO_CAMPO} cursor-not-allowed opacity-60`}
+              />
+              <p className="mt-1 text-[11px] text-gray-400">
+                O e-mail é o seu login e não pode ser alterado aqui.
+              </p>
+            </Campo>
+          </div>
+          <Rodape aviso={aviso} salvando={salvando} rotulo="Salvar perfil" />
+        </form>
+      </Secao>
+
+      <Secao titulo="Alterar senha" descricao="Use pelo menos 8 caracteres." separada>
+        <form onSubmit={(e) => void alterarSenha(e)} className="space-y-5">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+            <Campo label="Senha atual">
+              <input
+                type="password"
+                value={senhaAtual}
+                onChange={(e) => setSenhaAtual(e.target.value)}
+                required
+                autoComplete="current-password"
+                className={ESTILO_CAMPO}
+              />
+            </Campo>
+            <Campo label="Nova senha">
+              <input
+                type="password"
+                value={novaSenha}
+                onChange={(e) => setNovaSenha(e.target.value)}
+                required
+                minLength={8}
+                autoComplete="new-password"
+                className={ESTILO_CAMPO}
+              />
+            </Campo>
+            <Campo label="Confirmar nova senha">
+              <input
+                type="password"
+                value={confirmacao}
+                onChange={(e) => setConfirmacao(e.target.value)}
+                required
+                minLength={8}
+                autoComplete="new-password"
+                className={ESTILO_CAMPO}
+              />
+            </Campo>
+          </div>
+          <Rodape aviso={avisoSenha} salvando={salvandoSenha} rotulo="Alterar senha" />
+        </form>
+      </Secao>
+    </>
+  );
+}
+
+/* ---------------------------- Oficina ---------------------------- */
+
+function Oficina() {
+  const [dados, setDados] = useState({ nome: "", cnpj: "", telefone: "", endereco: "" });
+  const [carregando, setCarregando] = useState(true);
+  const [salvando, setSalvando] = useState(false);
+  const [aviso, setAviso] = useState<Aviso | null>(null);
+
+  useEffect(() => {
+    let ativo = true;
+
+    configuracaoService
+      .buscarOficina()
+      .then((oficina) => {
+        if (!ativo) return;
+        setDados({
+          nome: oficina.nome,
+          cnpj: oficina.cnpj ?? "",
+          telefone: oficina.telefone ?? "",
+          endereco: oficina.endereco ?? "",
+        });
+      })
+      .catch((error) => {
+        if (ativo) setAviso({ tipo: "erro", texto: mensagemErro(error) });
+      })
+      .finally(() => {
+        if (ativo) setCarregando(false);
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, []);
+
+  async function salvar(event: FormEvent) {
+    event.preventDefault();
+    setAviso(null);
+
+    try {
+      setSalvando(true);
+      await configuracaoService.atualizarOficina({
+        nome: dados.nome.trim(),
+        cnpj: dados.cnpj.trim() || null,
+        telefone: dados.telefone.trim() || null,
+        endereco: dados.endereco.trim() || null,
+      });
+      setAviso({ tipo: "ok", texto: "Dados da oficina atualizados." });
+    } catch (error) {
+      setAviso({ tipo: "erro", texto: mensagemErro(error) });
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  const campo = (chave: keyof typeof dados, label: string, obrigatorio = false) => (
+    <Campo label={label}>
+      <input
+        value={dados[chave]}
+        onChange={(e) => setDados({ ...dados, [chave]: e.target.value })}
+        required={obrigatorio}
+        disabled={carregando}
+        className={ESTILO_CAMPO}
+      />
+    </Campo>
+  );
+
+  return (
+    <Secao titulo="Oficina" descricao="Informações da sua oficina.">
+      <form onSubmit={(e) => void salvar(e)} className="space-y-5">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          {campo("nome", "Nome da oficina", true)}
+          {campo("cnpj", "CNPJ")}
+          {campo("telefone", "Telefone")}
+          {campo("endereco", "Endereço")}
+        </div>
+        <Rodape aviso={aviso} salvando={salvando} rotulo="Salvar oficina" />
+      </form>
+    </Secao>
+  );
+}
+
+/* ---------------------------- Sistema ---------------------------- */
+
+function Sistema() {
+  const [itens, setItens] = useState(obterItensPorPagina());
+
+  return (
+    <Secao
+      titulo="Sistema"
+      descricao="Preferências deste navegador. Valem a partir da próxima vez que abrir uma lista."
+    >
+      <div className="max-w-xs">
+        <Campo label="Itens por página nas listas">
+          <select
+            value={itens}
+            onChange={(e) => {
+              const valor = Number(e.target.value);
+              setItens(valor);
+              salvarItensPorPagina(valor);
+            }}
+            className={ESTILO_CAMPO}
+          >
+            {OPCOES_ITENS_POR_PAGINA.map((opcao) => (
+              <option key={opcao} value={opcao}>
+                {opcao}
+              </option>
+            ))}
+          </select>
+        </Campo>
+        <p className="mt-2 text-[11px] text-gray-400">
+          Salvo automaticamente neste navegador.
+        </p>
+      </div>
+    </Secao>
+  );
+}
+
+/* ---------------------------- Aparência ---------------------------- */
+
+const CORES: { chave: Cor; classe: string; nome: string }[] = [
+  { chave: "blue", classe: "bg-blue-600", nome: "Azul" },
+  { chave: "green", classe: "bg-green-600", nome: "Verde" },
+  { chave: "purple", classe: "bg-purple-600", nome: "Roxo" },
+  { chave: "orange", classe: "bg-orange-500", nome: "Laranja" },
+];
+
+function Aparencia() {
+  const [tema, setTema] = useState<Tema>(obterTema());
+  const [cor, setCor] = useState<Cor>(obterCor());
+
+  function escolher(novoTema: Tema, novaCor: Cor) {
+    setTema(novoTema);
+    setCor(novaCor);
+    salvarAparencia(novoTema, novaCor);
+  }
+
+  return (
+    <Secao
+      titulo="Aparência"
+      descricao="Muda na hora e fica salvo neste navegador."
+    >
+      <div className="space-y-6">
+        <div>
+          <p className="mb-2 text-xs font-medium text-gray-700">Tema</p>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {(
+              [
+                ["claro", "Claro", "Interface clara"],
+                ["escuro", "Escuro", "Interface escura"],
+              ] as const
+            ).map(([chave, titulo, descricao]) => (
+              <button
+                key={chave}
+                onClick={() => escolher(chave, cor)}
+                className={`rounded-lg border p-4 text-left transition ${
+                  tema === chave
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span
+                    className={`text-xs font-semibold ${
+                      tema === chave ? "text-blue-600" : "text-gray-700"
+                    }`}
+                  >
+                    {titulo}
+                  </span>
+                  {tema === chave && <Check size={16} className="text-blue-600" />}
+                </div>
+                <p className="mt-1 text-[11px] text-gray-400">{descricao}</p>
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Conteúdo */}
-        <div className="rounded-xl border border-gray-200 bg-white">
-          {/* Perfil */}
-          {abaAtiva === "perfil" && (
-            <Section
-              titulo="Perfil"
-              descricao="Gerencie as informações do usuário administrador."
-            >
-              <div className="grid grid-cols-2 gap-5">
-                <Input
-                  label="Nome"
-                  value={nome}
-                  onChange={setNome}
-                />
-
-                <Input
-                  label="E-mail"
-                  type="email"
-                  value={email}
-                  onChange={setEmail}
-                />
-
-                <Input
-                  label="Telefone"
-                  value={telefone}
-                  onChange={setTelefone}
-                />
-              </div>
-            </Section>
-          )}
-
-          {/* Oficina */}
-          {abaAtiva === "oficina" && (
-            <Section
-              titulo="Oficina"
-              descricao="Configure as informações da sua oficina."
-            >
-              <div className="grid grid-cols-2 gap-5">
-                <Input
-                  label="Nome da oficina"
-                  value={nomeOficina}
-                  onChange={setNomeOficina}
-                />
-
-                <Input
-                  label="CNPJ"
-                  value={cnpj}
-                  onChange={setCnpj}
-                />
-
-                <Input
-                  label="Telefone"
-                  value={telefoneOficina}
-                  onChange={setTelefoneOficina}
-                />
-
-                <Input
-                  label="Endereço"
-                  value={endereco}
-                  onChange={setEndereco}
-                />
-              </div>
-            </Section>
-          )}
-
-          {/* Sistema */}
-          {abaAtiva === "sistema" && (
-            <Section
-              titulo="Sistema"
-              descricao="Configure o comportamento padrão do sistema."
-            >
-              <div className="grid grid-cols-2 gap-5">
-                <Select
-                  label="Moeda"
-                  value={moeda}
-                  onChange={setMoeda}
-                >
-                  <option value="BRL">
-                    Real brasileiro (R$)
-                  </option>
-
-                  <option value="USD">
-                    Dólar americano ($)
-                  </option>
-                </Select>
-
-                <Select
-                  label="Formato de data"
-                  value={formatoData}
-                  onChange={setFormatoData}
-                >
-                  <option value="dd/MM/yyyy">
-                    24/08/2026
-                  </option>
-
-                  <option value="MM/dd/yyyy">
-                    08/24/2026
-                  </option>
-                </Select>
-
-                <Select
-                  label="Itens por página"
-                  value={itensPorPagina}
-                  onChange={setItensPorPagina}
-                >
-                  <option value="10">10</option>
-                  <option value="20">20</option>
-                  <option value="50">50</option>
-                  <option value="100">100</option>
-                </Select>
-              </div>
-            </Section>
-          )}
-
-          {/* Aparência */}
-          {abaAtiva === "aparencia" && (
-            <Section
-              titulo="Aparência"
-              descricao="Personalize a aparência do MyCar."
-            >
-              <div className="space-y-6">
-                {/* Tema */}
-                <div>
-                  <label className="mb-2 block text-xs font-medium text-gray-700">
-                    Tema
-                  </label>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <ThemeOption
-                      titulo="Claro"
-                      descricao="Interface clara"
-                      ativo={tema === "claro"}
-                      onClick={() => setTema("claro")}
-                    />
-
-                    <ThemeOption
-                      titulo="Escuro"
-                      descricao="Interface escura"
-                      ativo={tema === "escuro"}
-                      onClick={() => setTema("escuro")}
-                    />
-                  </div>
-                </div>
-
-                {/* Cor */}
-                <div>
-                  <label className="mb-3 block text-xs font-medium text-gray-700">
-                    Cor principal
-                  </label>
-
-                  <div className="flex gap-3">
-                    <ColorOption
-                      cor="bg-blue-600"
-                      ativo={corPrincipal === "blue"}
-                      onClick={() => setCorPrincipal("blue")}
-                    />
-
-                    <ColorOption
-                      cor="bg-green-600"
-                      ativo={corPrincipal === "green"}
-                      onClick={() =>
-                        setCorPrincipal("green")
-                      }
-                    />
-
-                    <ColorOption
-                      cor="bg-purple-600"
-                      ativo={corPrincipal === "purple"}
-                      onClick={() =>
-                        setCorPrincipal("purple")
-                      }
-                    />
-
-                    <ColorOption
-                      cor="bg-orange-500"
-                      ativo={corPrincipal === "orange"}
-                      onClick={() =>
-                        setCorPrincipal("orange")
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
-            </Section>
-          )}
-
-          {/* Footer */}
-          <div className="flex items-center justify-end gap-3 border-t border-gray-200 bg-gray-50 px-6 py-4">
-            {salvo && (
-              <span className="flex items-center gap-1.5 text-xs font-medium text-green-600">
-                <Check size={15} />
-                Configurações salvas
-              </span>
-            )}
-
-            <button
-              onClick={salvarConfiguracoes}
-              className="flex h-9 items-center gap-2 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white transition hover:bg-blue-700"
-            >
-              <Save size={15} />
-
-              Salvar alterações
-            </button>
+        <div>
+          <p className="mb-2 text-xs font-medium text-gray-700">Cor principal</p>
+          <div className="flex gap-3">
+            {CORES.map((item) => (
+              <button
+                key={item.chave}
+                onClick={() => escolher(tema, item.chave)}
+                title={item.nome}
+                aria-label={item.nome}
+                className={`flex h-10 w-10 items-center justify-center rounded-full ${item.classe} ${
+                  cor === item.chave ? "ring-2 ring-gray-900 ring-offset-2" : ""
+                }`}
+              >
+                {cor === item.chave && <Check size={16} className="text-white" />}
+              </button>
+            ))}
           </div>
         </div>
       </div>
-    </div>
+    </Secao>
   );
 }
 
-/* ============================= */
-/* MENU CONFIGURAÇÕES */
-/* ============================= */
+/* ---------------------------- Peças de UI ---------------------------- */
 
-function ConfigItem({
-  icon,
-  label,
-  ativo,
-  onClick,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  ativo: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`mb-1 flex h-10 w-full items-center gap-3 rounded-lg px-3 text-xs font-medium transition ${
-        ativo
-          ? "bg-blue-50 text-blue-600"
-          : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
-      }`}
-    >
-      {icon}
+type Aviso = { tipo: "ok" | "erro"; texto: string };
 
-      {label}
-    </button>
-  );
-}
+const ESTILO_CAMPO =
+  "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-gray-50";
 
-/* ============================= */
-/* SECTION */
-/* ============================= */
-
-function Section({
+function Secao({
   titulo,
   descricao,
   children,
+  separada = false,
 }: {
   titulo: string;
   descricao: string;
   children: React.ReactNode;
+  separada?: boolean;
 }) {
   return (
-    <div>
-      <div className="border-b border-gray-200 px-6 py-5">
-        <h3 className="text-sm font-semibold text-gray-900">
-          {titulo}
-        </h3>
-
-        <p className="mt-1 text-[11px] text-gray-400">
-          {descricao}
-        </p>
+    <div className={separada ? "border-t border-gray-200" : ""}>
+      <div className="border-b border-gray-200 px-4 py-5 sm:px-6">
+        <h3 className="text-sm font-semibold text-gray-900">{titulo}</h3>
+        <p className="mt-1 text-[11px] text-gray-400">{descricao}</p>
       </div>
-
-      <div className="px-6 py-6">
-        {children}
-      </div>
+      <div className="px-4 py-6 sm:px-6">{children}</div>
     </div>
   );
 }
 
-/* ============================= */
-/* INPUT */
-/* ============================= */
-
-function Input({
-  label,
-  value,
-  onChange,
-  type = "text",
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  type?: string;
-}) {
+function Campo({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div>
-      <label className="mb-1.5 block text-xs font-medium text-gray-700">
-        {label}
-      </label>
-
-      <input
-        type={type}
-        value={value}
-        onChange={(event) =>
-          onChange(event.target.value)
-        }
-        className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-      />
-    </div>
+    <label className="block">
+      <span className="mb-1.5 block text-xs font-medium text-gray-700">{label}</span>
+      {children}
+    </label>
   );
 }
 
-/* ============================= */
-/* SELECT */
-/* ============================= */
-
-function Select({
-  label,
-  value,
-  onChange,
-  children,
+function Rodape({
+  aviso,
+  salvando,
+  rotulo,
 }: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  children: React.ReactNode;
+  aviso: Aviso | null;
+  salvando: boolean;
+  rotulo: string;
 }) {
   return (
-    <div>
-      <label className="mb-1.5 block text-xs font-medium text-gray-700">
-        {label}
-      </label>
-
-      <select
-        value={value}
-        onChange={(event) =>
-          onChange(event.target.value)
-        }
-        className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+    <div className="flex flex-wrap items-center gap-3">
+      <button
+        type="submit"
+        disabled={salvando}
+        className="h-10 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
       >
-        {children}
-      </select>
-    </div>
-  );
-}
-
-/* ============================= */
-/* TEMA */
-/* ============================= */
-
-function ThemeOption({
-  titulo,
-  descricao,
-  ativo,
-  onClick,
-}: {
-  titulo: string;
-  descricao: string;
-  ativo: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`rounded-lg border p-4 text-left transition ${
-        ativo
-          ? "border-blue-500 bg-blue-50"
-          : "border-gray-200 hover:border-gray-300"
-      }`}
-    >
-      <div className="flex items-center justify-between">
+        {salvando ? "Salvando..." : rotulo}
+      </button>
+      {aviso && (
         <span
-          className={`text-xs font-semibold ${
-            ativo
-              ? "text-blue-600"
-              : "text-gray-700"
-          }`}
+          role="status"
+          className={`text-xs ${aviso.tipo === "ok" ? "text-green-600" : "text-red-600"}`}
         >
-          {titulo}
+          {aviso.texto}
         </span>
-
-        {ativo && (
-          <Check
-            size={16}
-            className="text-blue-600"
-          />
-        )}
-      </div>
-
-      <p className="mt-1 text-[11px] text-gray-400">
-        {descricao}
-      </p>
-    </button>
-  );
-}
-
-/* ============================= */
-/* COR */
-/* ============================= */
-
-function ColorOption({
-  cor,
-  ativo,
-  onClick,
-}: {
-  cor: string;
-  ativo: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex h-9 w-9 items-center justify-center rounded-full ${cor} ${
-        ativo
-          ? "ring-2 ring-gray-900 ring-offset-2"
-          : ""
-      }`}
-      title="Selecionar cor"
-    >
-      {ativo && (
-        <Check
-          size={16}
-          className="text-white"
-        />
       )}
-    </button>
+    </div>
   );
 }

@@ -6,6 +6,7 @@ export interface AuthContextValor {
   autenticado: boolean;
   entrar: (payload: LoginPayload) => Promise<void>;
   sair: () => Promise<void>;
+  atualizarUsuario: (usuario: Usuario) => void;
 }
 
 export const AuthContext = createContext<AuthContextValor | undefined>(

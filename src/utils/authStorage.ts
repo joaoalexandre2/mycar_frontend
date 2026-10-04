@@ -12,6 +12,10 @@ export function salvarSessao(token: string, usuario: Usuario) {
   localStorage.setItem(CHAVE_USUARIO, JSON.stringify(usuario));
 }
 
+export function salvarUsuario(usuario: Usuario) {
+  localStorage.setItem(CHAVE_USUARIO, JSON.stringify(usuario));
+}
+
 export function obterUsuarioLogado(): Usuario | null {
   const bruto = localStorage.getItem(CHAVE_USUARIO);
 
