@@ -248,7 +248,7 @@ export function Veiculos() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full tabela-cartoes">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
                 <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
@@ -278,7 +278,7 @@ export function Veiculos() {
                   key={veiculo.id}
                   className="border-b border-gray-100 transition last:border-0 hover:bg-gray-50"
                 >
-                  <td className="px-5 py-4">
+                  <td data-label="Veículo" className="px-5 py-4">
                     <div className="flex items-center gap-3">
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
                         <Car size={18} />
@@ -293,18 +293,18 @@ export function Veiculos() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-5 py-4">
+                  <td data-label="Placa" className="px-5 py-4">
                     <span className="rounded-md border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-[10px] font-bold tracking-wider text-gray-700">
                       {veiculo.placa}
                     </span>
                   </td>
-                  <td className="px-5 py-4 text-xs text-gray-500">
+                  <td data-label="Cliente" className="px-5 py-4 text-xs text-gray-500">
                     {nomeCliente(veiculo)}
                   </td>
-                  <td className="px-5 py-4 text-xs text-gray-500">
+                  <td data-label="Ano" className="px-5 py-4 text-xs text-gray-500">
                     {veiculo.ano}
                   </td>
-                  <td className="px-5 py-4">
+                  <td data-label="Valor FIPE" className="px-5 py-4">
                     {veiculo.fipeValor !== null ? (
                       <>
                         <p className="text-xs font-semibold text-gray-900">
@@ -318,7 +318,7 @@ export function Veiculos() {
                       <span className="text-xs text-gray-400">—</span>
                     )}
                   </td>
-                  <td className="px-5 py-4">
+                  <td data-label="IPVA / Lic." className="px-5 py-4">
                     {veiculo.uf ? (
                       <div className="space-y-1 text-[11px] text-gray-600">
                         <p>

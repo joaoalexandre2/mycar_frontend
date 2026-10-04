@@ -45,6 +45,102 @@ body {
   background: #f5f7fb;
 }
 
+/* Barras de rolagem finas, no tom do tema (as nativas ficam grossas e com setas
+   no Windows e destoam do tema escuro). */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-gray-300) transparent;
+}
+
+/* ---------- Tabelas viram cartões no celular ----------
+   Cada <td> leva data-label com o nome da coluna; no desktop a tabela segue
+   igual. A primeira célula é o título do cartão e a última (sem rótulo) traz
+   as ações. */
+@media (max-width: 767px) {
+  .tabela-cartoes,
+  .tabela-cartoes tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .tabela-cartoes thead {
+    display: none;
+  }
+
+  .tabela-cartoes tr {
+    display: block;
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid var(--color-gray-100);
+  }
+
+  .tabela-cartoes tr:last-child {
+    border-bottom: 0;
+  }
+
+  .tabela-cartoes td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.3rem 0;
+    text-align: right;
+  }
+
+  /* Células com rótulo: rótulo à esquerda e o conteúdo (uma ou mais linhas)
+     empilhado e alinhado à direita. */
+  .tabela-cartoes td[data-label]:not(:first-child) {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 1rem;
+    align-items: baseline;
+  }
+
+  .tabela-cartoes td[data-label]:not(:first-child) > * {
+    grid-column: 2;
+    justify-self: end;
+    text-align: right;
+  }
+
+  .tabela-cartoes td[data-label]::before {
+    content: attr(data-label);
+    grid-column: 1;
+    grid-row: 1;
+    flex-shrink: 0;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-gray-500);
+  }
+
+  /* Título do cartão: sem rótulo, alinhado à esquerda, com respiro embaixo. */
+  .tabela-cartoes td:first-child {
+    justify-content: flex-start;
+    text-align: left;
+    padding-bottom: 0.5rem;
+  }
+
+  .tabela-cartoes td:first-child::before {
+    content: none;
+  }
+
+  /* Ações: à direita, separadas do resto por uma linha. */
+  .tabela-cartoes td:not([data-label]):not(:first-child) {
+    justify-content: flex-end;
+    margin-top: 0.25rem;
+    padding-top: 0.5rem;
+    border-top: 1px dashed var(--color-gray-100);
+  }
+
+  /* Linha "Nenhum registro encontrado". */
+  .tabela-cartoes td[colspan] {
+    display: block;
+    padding: 2rem 0;
+    text-align: center;
+  }
+}
+
 /* ---------- Cor principal (o app usa a escala "blue") ---------- */
 :root[data-cor="green"] {
   --color-blue-50: var(--color-green-50);

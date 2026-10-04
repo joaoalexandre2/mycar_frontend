@@ -253,7 +253,7 @@ export function OrdensServico() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full tabela-cartoes">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
                 <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">OS</th>
@@ -277,7 +277,7 @@ export function OrdensServico() {
                     key={ordem.id}
                     className="border-b border-gray-100 last:border-0 hover:bg-gray-50"
                   >
-                    <td className="px-5 py-4">
+                    <td data-label="OS" className="px-5 py-4">
                       <button
                         onClick={() => void abrirDetalhes(ordem)}
                         className="text-xs font-bold text-blue-600 hover:underline"
@@ -285,7 +285,7 @@ export function OrdensServico() {
                         #{String(ordem.id).padStart(4, "0")}
                       </button>
                     </td>
-                    <td className="px-5 py-4">
+                    <td data-label="Veículo" className="px-5 py-4">
                       <div className="flex flex-col gap-1">
                         <span className="text-xs font-semibold text-gray-900">
                           {veiculo?.marca} {veiculo?.modelo}
@@ -295,21 +295,21 @@ export function OrdensServico() {
                         </span>
                       </div>
                     </td>
-                    <td className="px-5 py-4 text-xs text-gray-500">
+                    <td data-label="Cliente" className="px-5 py-4 text-xs text-gray-500">
                       {veiculo?.cliente?.nome ?? "—"}
                     </td>
-                    <td className="max-w-[280px] px-5 py-4">
+                    <td data-label="Descrição" className="max-w-[280px] px-5 py-4">
                       <span className="block truncate text-xs text-gray-500">
                         {ordem.descricao}
                       </span>
                     </td>
-                    <td className="px-5 py-4 text-xs text-gray-500">
+                    <td data-label="Data" className="px-5 py-4 text-xs text-gray-500">
                       {formatarData(ordem.dataAbertura)}
                     </td>
-                    <td className="px-5 py-4 text-xs font-semibold text-gray-700">
+                    <td data-label="Valor" className="px-5 py-4 text-xs font-semibold text-gray-700">
                       {formatarMoeda(ordem.valor)}
                     </td>
-                    <td className="px-5 py-4">
+                    <td data-label="Status" className="px-5 py-4">
                       <Status status={ordem.status} />
                     </td>
                     <td className="px-5 py-4">

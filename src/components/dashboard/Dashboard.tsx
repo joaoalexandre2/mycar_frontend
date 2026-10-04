@@ -179,7 +179,7 @@ export function Dashboard() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full tabela-cartoes">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
                   <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
@@ -214,13 +214,13 @@ export function Dashboard() {
                     key={ordem.id}
                     className="border-b border-gray-100 last:border-0 hover:bg-gray-50"
                   >
-                    <td className="px-5 py-4">
+                    <td data-label="OS" className="px-5 py-4">
                       <span className="text-xs font-bold text-blue-600">
                         #{String(ordem.id).padStart(4, "0")}
                       </span>
                     </td>
 
-                    <td className="px-5 py-4">
+                    <td data-label="Veículo" className="px-5 py-4">
                       <div>
                         <p className="text-xs font-semibold text-gray-800">
                           {nomeVeiculo(ordem)}
@@ -232,21 +232,21 @@ export function Dashboard() {
                       </div>
                     </td>
 
-                    <td className="px-5 py-4 text-xs text-gray-500">
+                    <td data-label="Cliente" className="px-5 py-4 text-xs text-gray-500">
                       {nomeCliente(ordem)}
                     </td>
 
-                    <td className="max-w-[180px] px-5 py-4">
+                    <td data-label="Serviço" className="max-w-[180px] px-5 py-4">
                       <span className="block truncate text-xs text-gray-500">
                         {ordem.descricao}
                       </span>
                     </td>
 
-                    <td className="px-5 py-4 text-xs font-semibold text-gray-700">
+                    <td data-label="Valor" className="px-5 py-4 text-xs font-semibold text-gray-700">
                       {formatarMoeda(ordem.valor)}
                     </td>
 
-                    <td className="px-5 py-4">
+                    <td data-label="Status" className="px-5 py-4">
                       <Status status={ordem.status} />
                     </td>
                   </tr>

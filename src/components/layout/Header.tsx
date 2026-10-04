@@ -15,6 +15,7 @@ import {
     "/ordens-servico": { titulo: "Ordens de serviço", subtitulo: "Serviços dos veículos da oficina." },
     "/manutencoes": { titulo: "Manutenções", subtitulo: "Histórico e próximas manutenções." },
     "/configuracoes": { titulo: "Configurações", subtitulo: "Preferências do sistema." },
+    "/admin": { titulo: "Administração", subtitulo: "Visão geral da plataforma." },
   };
 
   interface HeaderProps {

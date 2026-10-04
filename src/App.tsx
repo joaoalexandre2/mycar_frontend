@@ -8,6 +8,7 @@ import {
 
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import { AdminRoute } from "./components/auth/AdminRoute";
 
 import { Header } from "./components/layout/Header";
 import { Sidebar } from "./components/layout/Sidebar";
@@ -24,6 +25,7 @@ import { Veiculos } from "./pages/Veiculos/Veiculos";
 import { OrdensServico } from "./pages/OrdensServico/OrdensServico";
 import { Manutencoes } from "./pages/Manutencoes/Manutencoes";
 import { Configuracoes } from "./pages/Configuracoes/Configuracoes";
+import { Admin } from "./pages/Admin/Admin";
 
 function AppLayout() {
   const [menuAberto, setMenuAberto] = useState(false);
@@ -68,6 +70,13 @@ function AppLayout() {
             path="/configuracoes"
             element={<Configuracoes />}
           />
+
+          <Route element={<AdminRoute />}>
+            <Route
+              path="/admin"
+              element={<Admin />}
+            />
+          </Route>
 
           <Route
             path="*"
