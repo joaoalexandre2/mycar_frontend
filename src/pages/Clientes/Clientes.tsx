@@ -242,7 +242,7 @@ export function Clientes() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full tabela-cartoes">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
                 <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
@@ -269,7 +269,7 @@ export function Clientes() {
                   key={cliente.id}
                   className="border-b border-gray-100 transition last:border-0 hover:bg-gray-50"
                 >
-                  <td className="px-5 py-4">
+                  <td data-label="Cliente" className="px-5 py-4">
                     <div className="flex items-center gap-3">
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-xs font-bold text-blue-600">
                         {obterIniciais(cliente.nome)}
@@ -284,19 +284,19 @@ export function Clientes() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-5 py-4 text-xs text-gray-500">
+                  <td data-label="CPF" className="px-5 py-4 text-xs text-gray-500">
                     {formatarCpf(cliente.cpf)}
                   </td>
-                  <td className="px-5 py-4 text-xs text-gray-500">
+                  <td data-label="Telefone" className="px-5 py-4 text-xs text-gray-500">
                     {cliente.telefone}
                   </td>
-                  <td className="px-5 py-4">
+                  <td data-label="Veículos" className="px-5 py-4">
                     <span className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-2.5 py-1.5 text-[10px] font-semibold text-gray-600">
                       <Car size={13} />
                       {cliente.quantidadeVeiculos}
                     </span>
                   </td>
-                  <td className="px-5 py-4">
+                  <td data-label="Status" className="px-5 py-4">
                     <StatusCliente ativo={cliente.ativo} />
                   </td>
                   <td className="px-5 py-4">

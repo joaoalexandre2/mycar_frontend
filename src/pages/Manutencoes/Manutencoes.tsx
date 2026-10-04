@@ -282,7 +282,7 @@ export function Manutencoes() {
 
         {/* Tabela */}
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full tabela-cartoes">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
                 <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
@@ -327,7 +327,7 @@ export function Manutencoes() {
                     className="border-b border-gray-100 transition last:border-0 hover:bg-gray-50"
                   >
                     {/* Manutenção */}
-                    <td className="px-5 py-4">
+                    <td data-label="Manutenção" className="px-5 py-4">
                       <div className="flex items-center gap-3">
                         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
                           <Wrench size={17} />
@@ -346,7 +346,7 @@ export function Manutencoes() {
                     </td>
 
                     {/* Veículo */}
-                    <td className="px-5 py-4">
+                    <td data-label="Veículo" className="px-5 py-4">
                       <div className="flex flex-col gap-1">
                         <span className="text-xs font-semibold text-gray-900">
                           {veiculo?.marca} {veiculo?.modelo}
@@ -359,12 +359,12 @@ export function Manutencoes() {
                     </td>
 
                     {/* Cliente */}
-                    <td className="px-5 py-4 text-xs text-gray-500">
+                    <td data-label="Cliente" className="px-5 py-4 text-xs text-gray-500">
                       {veiculo?.cliente?.nome ?? "—"}
                     </td>
 
                     {/* Última */}
-                    <td className="px-5 py-4">
+                    <td data-label="Última" className="px-5 py-4">
                       <div className="flex flex-col gap-1">
                         <span className="text-xs text-gray-600">
                           {formatarData(
@@ -379,7 +379,7 @@ export function Manutencoes() {
                     </td>
 
                     {/* Próxima */}
-                    <td className="px-5 py-4">
+                    <td data-label="Próxima" className="px-5 py-4">
                       <div className="flex items-center gap-2">
                         <CalendarDays
                           size={14}
@@ -395,7 +395,7 @@ export function Manutencoes() {
                     </td>
 
                     {/* KM */}
-                    <td className="px-5 py-4">
+                    <td data-label="KM" className="px-5 py-4">
                       <span className="text-xs font-semibold text-gray-700">
                         {formatarKm(
                           manutencao.proximaQuilometragem,
@@ -404,7 +404,7 @@ export function Manutencoes() {
                     </td>
 
                     {/* Status */}
-                    <td className="px-5 py-4">
+                    <td data-label="Situação" className="px-5 py-4">
                       <StatusManutencaoBadge
                         status={manutencao.status}
                       />
