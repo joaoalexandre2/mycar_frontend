@@ -1,4 +1,5 @@
 import api from "./api";
+import { obterItensPorPagina } from "../utils/preferencias";
 import type { Cliente, ClientePayload } from "../types/cliente";
 import { dataISO } from "../utils/formatters";
 
@@ -90,7 +91,7 @@ export const clientesService = {
           page: params.pagina ?? 1,
           busca: params.busca || undefined,
           status: params.status ?? "todos",
-          per_page: params.porPagina ?? 15,
+          per_page: params.porPagina ?? obterItensPorPagina(),
         },
       },
     );

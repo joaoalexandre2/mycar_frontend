@@ -1,4 +1,5 @@
 import api from "./api";
+import { obterItensPorPagina } from "../utils/preferencias";
 import type { Veiculo, VeiculoPayload } from "../types/veiculo";
 
 interface VeiculoApi {
@@ -112,7 +113,7 @@ export const veiculosService = {
         params: {
           page: params.pagina ?? 1,
           busca: params.busca || undefined,
-          per_page: params.porPagina ?? 15,
+          per_page: params.porPagina ?? obterItensPorPagina(),
         },
       },
     );

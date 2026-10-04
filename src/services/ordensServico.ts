@@ -1,4 +1,5 @@
 import api from "./api";
+import { obterItensPorPagina } from "../utils/preferencias";
 import type {
   OrdemServico,
   OrdemServicoPayload,
@@ -91,7 +92,7 @@ export const ordensServicoService = {
           page: params.pagina ?? 1,
           busca: params.busca || undefined,
           status: params.status ?? "todos",
-          per_page: params.porPagina ?? 15,
+          per_page: params.porPagina ?? obterItensPorPagina(),
         },
       },
     );
