@@ -74,6 +74,66 @@ describe("mapearManutencao - classificação de situação por data", () => {
   });
 });
 
+describe("mapearManutencao - peças registradas na manutenção", () => {
+  it("devolve lista vazia quando a API não traz peças (resposta antiga)", () => {
+    expect(mapearManutencao(itemBase()).pecas).toEqual([]);
+  });
+
+  it("converte as peças e normaliza a marca ausente para null", () => {
+    const manutencao = mapearManutencao(
+      itemBase({
+        pecas: [
+          { tipo: "pastilha_freio", especificacao: "PF-123", marca: "Marca X" },
+          { tipo: "bateria", especificacao: "60Ah" },
+        ],
+      }),
+    );
+
+    expect(manutencao.pecas).toEqual([
+      { tipo: "pastilha_freio", especificacao: "PF-123", marca: "Marca X" },
+      { tipo: "bateria", especificacao: "60Ah", marca: null },
+    ]);
+  });
+});
+
+describe("manutencoesService.criar e atualizar com peças", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const base = {
+    veiculo_id: 1,
+    tipo: "Freios",
+    descricao: "Troca de pastilhas",
+    data_manutencao: "2026-10-01",
+  };
+
+  it("envia a lista de peças no corpo da requisição", async () => {
+    const postSpy = vi
+      .spyOn(api, "post")
+      .mockResolvedValueOnce({ data: itemBase() } as never);
+
+    const pecas = [
+      { tipo: "pastilha_freio", especificacao: "PF-123", marca: null },
+    ];
+
+    await manutencoesService.criar({ ...base, pecas });
+
+    expect(postSpy).toHaveBeenCalledWith("/manutencoes", { ...base, pecas });
+  });
+
+  it("não inclui o campo quando não há peças a enviar (não apaga as existentes)", async () => {
+    const putSpy = vi
+      .spyOn(api, "put")
+      .mockResolvedValueOnce({ data: itemBase() } as never);
+
+    await manutencoesService.atualizar(7, base);
+
+    expect(putSpy).toHaveBeenCalledWith("/manutencoes/7", base);
+    expect(putSpy.mock.calls[0][1]).not.toHaveProperty("pecas");
+  });
+});
+
 describe("manutencoesService.listarPaginado", () => {
   afterEach(() => {
     vi.restoreAllMocks();
