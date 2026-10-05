@@ -19,8 +19,15 @@ import {
   type ResumoPlataforma,
 } from "../../services/admin";
 import { mensagemErro } from "../../services/api";
+import type { Perfil } from "../../types/auth";
 
 type Aviso = { tipo: "ok" | "erro"; texto: string };
+
+const ROTULO_PERFIL: Record<Perfil, string> = {
+  oficina: "Oficina",
+  pessoa: "Cuidados com seu carro",
+  frota: "Frota",
+};
 
 function formatarDataHora(iso: string | null) {
   if (!iso) {
@@ -165,7 +172,11 @@ export function Admin() {
         <StatCard
           title="Oficinas cadastradas"
           value={numero(resumo?.oficinas)}
-          description="Contas criadas na plataforma"
+          description={
+            resumo
+              ? `Fora elas: ${resumo.contasPessoa} de pessoa e ${resumo.contasFrota} de frota`
+              : "Contas criadas na plataforma"
+          }
           icon={<Building2 size={19} />}
         />
         <StatCard
@@ -257,7 +268,7 @@ export function Admin() {
                   Conta
                 </th>
                 <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
-                  Oficina
+                  Tipo / conta
                 </th>
                 <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
                   Cadastro
@@ -297,10 +308,13 @@ export function Admin() {
                     </div>
                   </td>
                   <td
-                    data-label="Oficina"
+                    data-label="Tipo / conta"
                     className="px-5 py-4 text-xs text-gray-600"
                   >
-                    {conta.oficina ?? "—"}
+                    <p>{conta.oficina ?? conta.conta ?? "—"}</p>
+                    <p className="mt-1 text-[10px] text-gray-400">
+                      {ROTULO_PERFIL[conta.perfil]}
+                    </p>
                   </td>
                   <td
                     data-label="Cadastro"

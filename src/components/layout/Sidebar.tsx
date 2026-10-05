@@ -12,6 +12,7 @@ import {
   import { NavLink, useNavigate } from "react-router-dom";
   import { useAuth } from "../../hooks/useAuth";
   import { iniciais } from "../../utils/iniciais";
+  import { ehConta, perfilDe } from "../../utils/perfil";
 
   interface SidebarProps {
     aberta: boolean;
@@ -28,6 +29,7 @@ import {
   export function Sidebar({ aberta, aoFechar }: SidebarProps) {
     const { usuario, sair } = useAuth();
     const navigate = useNavigate();
+    const perfil = perfilDe(usuario);
 
     async function handleLogout() {
       await sair();
@@ -55,9 +57,17 @@ import {
                 M
               </div>
 
-              <span className="text-xl font-bold">
-                MyCar
-              </span>
+              <div className="flex flex-col leading-tight">
+                <span className="text-xl font-bold">
+                  MyCar
+                </span>
+
+                {perfil !== "oficina" && (
+                  <span className="text-[10px] text-gray-400">
+                    {perfil === "pessoa" ? "Cuidados com seu carro" : "Frota"}
+                  </span>
+                )}
+              </div>
             </div>
 
             <button
@@ -76,40 +86,60 @@ import {
               MENU
             </p>
 
-            <SidebarItem
-              to="/"
-              icon={<LayoutDashboard size={19} />}
-              label="Dashboard"
-              aoNavegar={aoFechar}
-            />
+            {ehConta(perfil) ? (
+              <>
+                <SidebarItem
+                  to="/"
+                  icon={<LayoutDashboard size={19} />}
+                  label="Início"
+                  aoNavegar={aoFechar}
+                />
 
-            <SidebarItem
-              to="/clientes"
-              icon={<Users size={19} />}
-              label="Clientes"
-              aoNavegar={aoFechar}
-            />
+                <SidebarItem
+                  to="/veiculos"
+                  icon={<Car size={19} />}
+                  label={perfil === "frota" ? "Veículos da frota" : "Meus veículos"}
+                  aoNavegar={aoFechar}
+                />
+              </>
+            ) : (
+              <>
+                <SidebarItem
+                  to="/"
+                  icon={<LayoutDashboard size={19} />}
+                  label="Dashboard"
+                  aoNavegar={aoFechar}
+                />
 
-            <SidebarItem
-              to="/veiculos"
-              icon={<Car size={19} />}
-              label="Veículos"
-              aoNavegar={aoFechar}
-            />
+                <SidebarItem
+                  to="/clientes"
+                  icon={<Users size={19} />}
+                  label="Clientes"
+                  aoNavegar={aoFechar}
+                />
 
-            <SidebarItem
-              to="/ordens-servico"
-              icon={<ClipboardList size={19} />}
-              label="Ordens de serviço"
-              aoNavegar={aoFechar}
-            />
+                <SidebarItem
+                  to="/veiculos"
+                  icon={<Car size={19} />}
+                  label="Veículos"
+                  aoNavegar={aoFechar}
+                />
 
-            <SidebarItem
-              to="/manutencoes"
-              icon={<Wrench size={19} />}
-              label="Manutenções"
-              aoNavegar={aoFechar}
-            />
+                <SidebarItem
+                  to="/ordens-servico"
+                  icon={<ClipboardList size={19} />}
+                  label="Ordens de serviço"
+                  aoNavegar={aoFechar}
+                />
+
+                <SidebarItem
+                  to="/manutencoes"
+                  icon={<Wrench size={19} />}
+                  label="Manutenções"
+                  aoNavegar={aoFechar}
+                />
+              </>
+            )}
 
             <p className="mb-2 mt-7 px-2 text-[10px] font-bold tracking-widest text-gray-500">
               SISTEMA

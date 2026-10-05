@@ -1,8 +1,11 @@
 import api from "./api";
 import { obterItensPorPagina } from "../utils/preferencias";
+import type { Perfil } from "../types/auth";
 
 interface ResumoApi {
   oficinas: number;
+  /** Contas dos perfis Cuidados com seu carro (pessoa) e Frota. */
+  contas?: { pessoa: number; frota: number };
   usuarios: number;
   email_pendente: number;
   cadastros_7_dias: number;
@@ -25,6 +28,8 @@ interface ContaApi {
   cadastro_em: string | null;
   ultimo_acesso_em: string | null;
   admin: boolean;
+  perfil?: Perfil;
+  conta?: string | null;
   oficina: { id: number; nome: string } | null;
   totais: {
     clientes: number;
@@ -46,6 +51,8 @@ interface RespostaContasApi {
 
 export interface ResumoPlataforma {
   oficinas: number;
+  contasPessoa: number;
+  contasFrota: number;
   usuarios: number;
   emailPendente: number;
   cadastros7Dias: number;
@@ -67,6 +74,9 @@ export interface ContaAdmin {
   cadastroEm: string | null;
   ultimoAcessoEm: string | null;
   admin: boolean;
+  perfil: Perfil;
+  /** Nome da conta, nos perfis pessoa e frota. */
+  conta: string | null;
   oficina: string | null;
   totais: {
     clientes: number;
@@ -92,6 +102,8 @@ export interface ListarContasParams {
 export function mapearResumo(resumo: ResumoApi): ResumoPlataforma {
   return {
     oficinas: resumo.oficinas,
+    contasPessoa: resumo.contas?.pessoa ?? 0,
+    contasFrota: resumo.contas?.frota ?? 0,
     usuarios: resumo.usuarios,
     emailPendente: resumo.email_pendente,
     cadastros7Dias: resumo.cadastros_7_dias,
@@ -115,6 +127,8 @@ export function mapearConta(conta: ContaApi): ContaAdmin {
     cadastroEm: conta.cadastro_em,
     ultimoAcessoEm: conta.ultimo_acesso_em,
     admin: conta.admin,
+    perfil: conta.perfil ?? "oficina",
+    conta: conta.conta ?? null,
     oficina: conta.oficina?.nome ?? null,
     totais: {
       clientes: conta.totais.clientes,

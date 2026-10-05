@@ -3,6 +3,7 @@ import { Building2, Check, Palette, Settings, User } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { mensagemErro } from "../../services/api";
 import { configuracaoService } from "../../services/configuracao";
+import { perfilDe } from "../../utils/perfil";
 import {
   OPCOES_ITENS_POR_PAGINA,
   obterCor,
@@ -24,20 +25,27 @@ const ABAS: { chave: Aba; rotulo: string; icone: React.ReactNode }[] = [
 ];
 
 export function Configuracoes() {
+  const { usuario } = useAuth();
   const [aba, setAba] = useState<Aba>("perfil");
+
+  // Os dados da oficina só existem para o perfil Oficina.
+  const daOficina = perfilDe(usuario) === "oficina";
+  const abas = daOficina ? ABAS : ABAS.filter((item) => item.chave !== "oficina");
 
   return (
     <div className="p-4 md:p-8">
       <div className="mb-6">
         <h2 className="text-[21px] font-bold text-gray-900">Configurações</h2>
         <p className="mt-1 text-xs text-gray-500">
-          Gerencie seu perfil, os dados da oficina e as preferências do sistema.
+          {daOficina
+            ? "Gerencie seu perfil, os dados da oficina e as preferências do sistema."
+            : "Gerencie seu perfil e as preferências do sistema."}
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[220px_1fr] lg:gap-6">
         <nav className="flex gap-1 overflow-x-auto rounded-xl border border-gray-200 bg-white p-2 lg:h-fit lg:flex-col lg:overflow-visible">
-          {ABAS.map((item) => (
+          {abas.map((item) => (
             <button
               key={item.chave}
               onClick={() => setAba(item.chave)}
@@ -55,7 +63,7 @@ export function Configuracoes() {
 
         <div className="min-w-0 rounded-xl border border-gray-200 bg-white">
           {aba === "perfil" && <Perfil />}
-          {aba === "oficina" && <Oficina />}
+          {aba === "oficina" && daOficina && <Oficina />}
           {aba === "sistema" && <Sistema />}
           {aba === "aparencia" && <Aparencia />}
         </div>

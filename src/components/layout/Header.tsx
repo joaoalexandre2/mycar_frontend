@@ -7,6 +7,7 @@ import {
   import { useLocation } from "react-router-dom";
   import { useAuth } from "../../hooks/useAuth";
   import { iniciais } from "../../utils/iniciais";
+  import { ehConta, perfilDe } from "../../utils/perfil";
 
   const TITULOS: Record<string, { titulo: string; subtitulo: string }> = {
     "/": { titulo: "Dashboard", subtitulo: "Visão geral do seu sistema automotivo." },
@@ -18,6 +19,13 @@ import {
     "/admin": { titulo: "Administração", subtitulo: "Visão geral da plataforma." },
   };
 
+  // Pessoa (Cuidados com seu carro) e frota usam outras telas nas mesmas rotas.
+  const TITULOS_CONTA: Record<string, { titulo: string; subtitulo: string }> = {
+    "/": { titulo: "Início", subtitulo: "Seu carro e o que vence em breve." },
+    "/veiculos": { titulo: "Veículos", subtitulo: "Valor, IPVA e licenciamento estimados." },
+    "/configuracoes": { titulo: "Configurações", subtitulo: "Preferências do sistema." },
+  };
+
   interface HeaderProps {
     aoAbrirMenu: () => void;
   }
@@ -25,7 +33,8 @@ import {
   export function Header({ aoAbrirMenu }: HeaderProps) {
     const { usuario } = useAuth();
     const { pathname } = useLocation();
-    const { titulo, subtitulo } = TITULOS[pathname] ?? TITULOS["/"];
+    const titulos = ehConta(perfilDe(usuario)) ? TITULOS_CONTA : TITULOS;
+    const { titulo, subtitulo } = titulos[pathname] ?? titulos["/"];
 
     return (
       <header className="print:hidden flex h-[82px] items-center justify-between border-b border-gray-200 bg-white px-4 md:px-8">
