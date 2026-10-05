@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import api from "./api";
-import { limparSessao, salvarSessao } from "../utils/authStorage";
+import { limparSessao, salvarSessao, salvarUsuario } from "../utils/authStorage";
 import { authService } from "./auth";
 import type { Usuario } from "../types/auth";
 
@@ -10,6 +10,7 @@ import type { Usuario } from "../types/auth";
 // sem depender de detalhes de como o Vitest resolve bindings de ESM.
 vi.mock("../utils/authStorage", () => ({
   salvarSessao: vi.fn(),
+  salvarUsuario: vi.fn(),
   limparSessao: vi.fn(),
   obterToken: vi.fn(),
   obterUsuarioLogado: vi.fn(),
@@ -66,5 +67,25 @@ describe("authService.logout", () => {
     await authService.logout();
 
     expect(limparSessao).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("authService.atualizarSessao", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("relê o usuário em GET /me e guarda na sessão (o perfil novo vale sem novo login)", async () => {
+    const getSpy = vi.spyOn(api, "get").mockResolvedValueOnce({
+      data: { ...usuarioFake, perfil: "pessoa", conta: "Garagem" },
+    } as never);
+
+    const usuario = await authService.atualizarSessao();
+
+    expect(getSpy).toHaveBeenCalledWith("/me");
+    expect(usuario.perfil).toBe("pessoa");
+    expect(salvarUsuario).toHaveBeenCalledWith(
+      expect.objectContaining({ perfil: "pessoa", conta: "Garagem" }),
+    );
   });
 });

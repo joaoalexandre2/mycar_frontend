@@ -104,6 +104,14 @@ function RotasConta() {
         element={<Configuracoes />}
       />
 
+      {/* O operador da plataforma segue com a Administração mesmo usando outro perfil. */}
+      <Route element={<AdminRoute />}>
+        <Route
+          path="/admin"
+          element={<Admin />}
+        />
+      </Route>
+
       <Route
         path="*"
         element={

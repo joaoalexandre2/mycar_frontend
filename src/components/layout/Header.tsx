@@ -24,6 +24,7 @@ import {
     "/": { titulo: "Início", subtitulo: "Seu carro e o que vence em breve." },
     "/veiculos": { titulo: "Veículos", subtitulo: "Valor, IPVA e licenciamento estimados." },
     "/configuracoes": { titulo: "Configurações", subtitulo: "Preferências do sistema." },
+    "/admin": { titulo: "Administração", subtitulo: "Visão geral da plataforma." },
   };
 
   interface HeaderProps {

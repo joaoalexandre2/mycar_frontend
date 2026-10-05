@@ -1,6 +1,10 @@
 import api from "./api";
 import type { LoginPayload, RegisterPayload, Usuario } from "../types/auth";
-import { limparSessao, salvarSessao } from "../utils/authStorage";
+import {
+  limparSessao,
+  salvarSessao,
+  salvarUsuario,
+} from "../utils/authStorage";
 
 interface LoginResposta {
   user: Usuario;
@@ -22,6 +26,18 @@ export const authService = {
     } finally {
       limparSessao();
     }
+  },
+
+  /**
+   * Relê os dados do usuário no servidor e guarda na sessão. É o que faz uma
+   * mudança de perfil (ou de nome) valer sem precisar sair e entrar de novo.
+   */
+  async atualizarSessao(): Promise<Usuario> {
+    const { data } = await api.get<Usuario>("/me");
+
+    salvarUsuario(data);
+
+    return data;
   },
 
   /** Cria a oficina e o usuário administrador. Não faz login automático:
