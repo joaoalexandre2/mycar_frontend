@@ -1,11 +1,41 @@
 import { useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
-import { Building2, Car, Lock, Mail, User } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
+import {
+  ArrowLeft,
+  Building2,
+  Car,
+  Lock,
+  Mail,
+  Truck,
+  User,
+  Wrench,
+} from "lucide-react";
 import { authService } from "../../services/auth";
 import { mensagemErro } from "../../services/api";
+import type { Perfil } from "../../types/auth";
+import { ehPerfil, ORDEM_PERFIS, PERFIS } from "../../utils/perfil";
+
+const ICONES: Record<Perfil, React.ReactNode> = {
+  pessoa: <Car size={20} />,
+  oficina: <Wrench size={20} />,
+  frota: <Truck size={20} />,
+};
+
+const CHAMADA: Record<Perfil, string> = {
+  pessoa: "Cuide do seu carro",
+  oficina: "Cadastre sua oficina",
+  frota: "Cadastre sua frota",
+};
 
 export function Register() {
-  const [nomeOficina, setNomeOficina] = useState("");
+  const [parametros] = useSearchParams();
+  const perfilDoLink = parametros.get("perfil");
+
+  // Um link como /registrar?perfil=oficina já cai direto no formulário.
+  const [perfil, setPerfil] = useState<Perfil | null>(
+    ehPerfil(perfilDoLink) ? perfilDoLink : null,
+  );
+  const [nomeConta, setNomeConta] = useState("");
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -18,6 +48,10 @@ export function Register() {
     event.preventDefault();
     setErro(null);
 
+    if (!perfil) {
+      return;
+    }
+
     if (senha !== confirmacao) {
       setErro("A confirmação de senha não é igual à senha.");
       return;
@@ -27,7 +61,9 @@ export function Register() {
 
     try {
       await authService.registrar({
-        nome_oficina: nomeOficina,
+        perfil,
+        ...(perfil === "oficina" ? { nome_oficina: nomeConta } : {}),
+        ...(perfil === "frota" ? { nome_frota: nomeConta } : {}),
         name: nome,
         email,
         password: senha,
@@ -70,51 +106,121 @@ export function Register() {
     );
   }
 
+  // Passo 1: o que a pessoa vai fazer no MyCar.
+  if (!perfil) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-10">
+        <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
+          <div className="mb-6 flex flex-col items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-600 text-white">
+              <Car size={22} />
+            </div>
+
+            <div className="text-center">
+              <h1 className="text-xl font-bold text-gray-900">
+                Criar conta no MyCar
+              </h1>
+              <p className="mt-1 text-sm text-gray-500">
+                Como você vai usar o MyCar?
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            {ORDEM_PERFIS.map((chave) => (
+              <button
+                key={chave}
+                type="button"
+                onClick={() => setPerfil(chave)}
+                className="flex items-start gap-3 rounded-xl border border-gray-200 p-4 text-left transition hover:border-blue-500 hover:bg-blue-50"
+              >
+                <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                  {ICONES[chave]}
+                </span>
+
+                <span>
+                  <span className="block text-sm font-semibold text-gray-900">
+                    {PERFIS[chave].produto}
+                  </span>
+                  <span className="mt-1 block text-xs leading-relaxed text-gray-500">
+                    {PERFIS[chave].descricao}
+                  </span>
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <p className="mt-6 text-center text-xs text-gray-500">
+            Já tem uma conta?{" "}
+            <Link
+              to="/login"
+              className="font-semibold text-blue-600 hover:text-blue-700"
+            >
+              Entrar
+            </Link>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Passo 2: os dados da conta.
+  const nomeDaContaRotulo =
+    perfil === "oficina" ? "Nome da oficina" : "Nome da frota ou empresa";
+  const nomeDaContaExemplo =
+    perfil === "oficina" ? "Ex.: Oficina do João" : "Ex.: Transportes Silva";
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-10">
       <div className="w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
+        <button
+          type="button"
+          onClick={() => {
+            setPerfil(null);
+            setErro(null);
+          }}
+          className="mb-4 flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-700"
+        >
+          <ArrowLeft size={14} />
+          Trocar tipo de conta
+        </button>
+
         <div className="mb-8 flex flex-col items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-600 text-white">
-            <Car size={22} />
+            {ICONES[perfil]}
           </div>
 
           <div className="text-center">
             <h1 className="text-xl font-bold text-gray-900">
-              Criar conta no MyCar
+              {PERFIS[perfil].produto}
             </h1>
 
-            <p className="mt-1 text-sm text-gray-500">
-              Cadastre sua oficina para começar
-            </p>
+            <p className="mt-1 text-sm text-gray-500">{CHAMADA[perfil]}</p>
           </div>
         </div>
 
-        <form
-          className="flex flex-col gap-4"
-          onSubmit={handleSubmit}
-        >
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-gray-600">
-              Nome da oficina
-            </label>
+        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+          {perfil !== "pessoa" && (
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-gray-600">
+                {nomeDaContaRotulo}
+              </label>
 
-            <div className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 focus-within:border-blue-500">
-              <Building2
-                size={16}
-                className="text-gray-400"
-              />
+              <div className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 focus-within:border-blue-500">
+                <Building2 size={16} className="text-gray-400" />
 
-              <input
-                type="text"
-                required
-                autoFocus
-                value={nomeOficina}
-                onChange={(event) => setNomeOficina(event.target.value)}
-                placeholder="Ex.: Oficina do João"
-                className="w-full text-sm outline-none"
-              />
+                <input
+                  type="text"
+                  required
+                  autoFocus
+                  value={nomeConta}
+                  onChange={(event) => setNomeConta(event.target.value)}
+                  placeholder={nomeDaContaExemplo}
+                  className="w-full text-sm outline-none"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           <div>
             <label className="mb-1 block text-xs font-semibold text-gray-600">
@@ -122,14 +228,12 @@ export function Register() {
             </label>
 
             <div className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 focus-within:border-blue-500">
-              <User
-                size={16}
-                className="text-gray-400"
-              />
+              <User size={16} className="text-gray-400" />
 
               <input
                 type="text"
                 required
+                autoFocus={perfil === "pessoa"}
                 value={nome}
                 onChange={(event) => setNome(event.target.value)}
                 placeholder="Seu nome completo"
@@ -144,10 +248,7 @@ export function Register() {
             </label>
 
             <div className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 focus-within:border-blue-500">
-              <Mail
-                size={16}
-                className="text-gray-400"
-              />
+              <Mail size={16} className="text-gray-400" />
 
               <input
                 type="email"
@@ -166,10 +267,7 @@ export function Register() {
             </label>
 
             <div className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 focus-within:border-blue-500">
-              <Lock
-                size={16}
-                className="text-gray-400"
-              />
+              <Lock size={16} className="text-gray-400" />
 
               <input
                 type="password"
@@ -189,10 +287,7 @@ export function Register() {
             </label>
 
             <div className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 focus-within:border-blue-500">
-              <Lock
-                size={16}
-                className="text-gray-400"
-              />
+              <Lock size={16} className="text-gray-400" />
 
               <input
                 type="password"

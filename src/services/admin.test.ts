@@ -15,6 +15,8 @@ describe("admin service", () => {
 
     expect(resumo).toEqual({
       oficinas: 3,
+      contasPessoa: 0,
+      contasFrota: 0,
       usuarios: 4,
       emailPendente: 2,
       cadastros7Dias: 1,
@@ -42,5 +44,42 @@ describe("admin service", () => {
     expect(conta.oficina).toBeNull();
     expect(conta.ultimoAcessoEm).toBeNull();
     expect(conta.totais.ordensServico).toBe(0);
+    // Resposta antiga, sem perfil: é de oficina.
+    expect(conta.perfil).toBe("oficina");
+    expect(conta.conta).toBeNull();
+  });
+
+  it("lê as contas por perfil enviadas pelo backend", () => {
+    const resumo = mapearResumo({
+      oficinas: 1,
+      contas: { pessoa: 4, frota: 2 },
+      usuarios: 7,
+      email_pendente: 0,
+      cadastros_7_dias: 0,
+      cadastros_30_dias: 0,
+      ativos_7_dias: 0,
+      totais: { clientes: 0, veiculos: 0, ordens_servico: 0, manutencoes: 0 },
+    });
+
+    expect(resumo.contasPessoa).toBe(4);
+    expect(resumo.contasFrota).toBe(2);
+
+    const conta = mapearConta({
+      id: 3,
+      nome: "Vanessa",
+      email: "v@exemplo.com",
+      email_confirmado: true,
+      email_confirmado_em: null,
+      cadastro_em: null,
+      ultimo_acesso_em: null,
+      admin: false,
+      perfil: "pessoa",
+      conta: "Vanessa",
+      oficina: null,
+      totais: { clientes: 0, veiculos: 2, ordens_servico: 0, manutencoes: 0 },
+    });
+
+    expect(conta.perfil).toBe("pessoa");
+    expect(conta.conta).toBe("Vanessa");
   });
 });
