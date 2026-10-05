@@ -2,6 +2,13 @@ import type { Veiculo } from "./veiculo";
 
 export type StatusManutencao = "em_dia" | "proxima" | "atrasada";
 
+/** Peça usada em um serviço, registrada junto com a manutenção. */
+export interface PecaManutencao {
+  tipo: string;
+  especificacao: string;
+  marca: string | null;
+}
+
 export interface Manutencao {
   id: number;
   veiculoId: number;
@@ -13,6 +20,7 @@ export interface Manutencao {
   proximaData: string | null;
   proximaQuilometragem: number | null;
   status: StatusManutencao;
+  pecas: PecaManutencao[];
   veiculo?: Veiculo | null;
 }
 
@@ -25,4 +33,6 @@ export interface ManutencaoPayload {
   quilometragem?: number | null;
   proxima_data?: string | null;
   proxima_quilometragem?: number | null;
+  /** Ausente = não altera as peças já registradas; [] = remove; lista = substitui. */
+  pecas?: PecaManutencao[];
 }

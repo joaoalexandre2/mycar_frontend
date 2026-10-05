@@ -18,6 +18,11 @@ interface ManutencaoApi {
   quilometragem: number | null;
   proxima_data: string | null;
   proxima_quilometragem: number | null;
+  pecas?: {
+    tipo: string;
+    especificacao: string;
+    marca?: string | null;
+  }[];
   veiculo?: Parameters<typeof mapearVeiculo>[0] | null;
 }
 
@@ -93,6 +98,11 @@ export function mapearManutencao(item: ManutencaoApi): Manutencao {
     proximaData,
     proximaQuilometragem: item.proxima_quilometragem,
     status: statusPorData(proximaData),
+    pecas: (item.pecas ?? []).map((peca) => ({
+      tipo: peca.tipo,
+      especificacao: peca.especificacao,
+      marca: peca.marca ?? null,
+    })),
     veiculo: item.veiculo ? mapearVeiculo(item.veiculo) : null,
   };
 }

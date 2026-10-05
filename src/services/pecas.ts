@@ -4,6 +4,8 @@ export type FontePeca = "ficha" | "servico";
 
 export interface Peca {
   id: number;
+  /** Preenchido quando a peça foi registrada junto com uma manutenção. */
+  manutencao_id?: number | null;
   tipo: string;
   especificacao: string;
   marca: string | null;
