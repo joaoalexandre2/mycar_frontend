@@ -195,6 +195,7 @@ function Perfil() {
 
 function Oficina() {
   const [dados, setDados] = useState({ nome: "", cnpj: "", telefone: "", endereco: "" });
+  const [resumoSemanal, setResumoSemanal] = useState(true);
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
   const [aviso, setAviso] = useState<Aviso | null>(null);
@@ -212,6 +213,7 @@ function Oficina() {
           telefone: oficina.telefone ?? "",
           endereco: oficina.endereco ?? "",
         });
+        setResumoSemanal(oficina.resumo_semanal ?? true);
       })
       .catch((error) => {
         if (ativo) setAviso({ tipo: "erro", texto: mensagemErro(error) });
@@ -236,6 +238,7 @@ function Oficina() {
         cnpj: dados.cnpj.trim() || null,
         telefone: dados.telefone.trim() || null,
         endereco: dados.endereco.trim() || null,
+        resumo_semanal: resumoSemanal,
       });
       setAviso({ tipo: "ok", texto: "Dados da oficina atualizados." });
     } catch (error) {
@@ -266,6 +269,28 @@ function Oficina() {
           {campo("telefone", "Telefone")}
           {campo("endereco", "Endereço")}
         </div>
+
+        <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-4">
+          <input
+            type="checkbox"
+            checked={resumoSemanal}
+            onChange={(e) => setResumoSemanal(e.target.checked)}
+            disabled={carregando}
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 accent-blue-600"
+          />
+          <span>
+            <span className="block text-xs font-medium text-gray-700">
+              Receber o resumo semanal por e-mail
+            </span>
+            <span className="mt-1 block text-[11px] leading-relaxed text-gray-400">
+              Toda segunda-feira, às 8h, enviamos o que está atrasado ou vence nos
+              próximos 30 dias (manutenções, IPVA e licenciamento) e quais clientes
+              não têm e-mail cadastrado. Vai para os usuários da oficina com e-mail
+              confirmado.
+            </span>
+          </span>
+        </label>
+
         <Rodape aviso={aviso} salvando={salvando} rotulo="Salvar oficina" />
       </form>
     </Secao>

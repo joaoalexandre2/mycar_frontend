@@ -7,6 +7,8 @@ export interface DadosOficina {
   cnpj: string | null;
   telefone: string | null;
   endereco: string | null;
+  /** Resumo semanal por e-mail para a oficina. Ausente em respostas antigas. */
+  resumo_semanal?: boolean;
 }
 
 export interface AlterarSenhaPayload {
