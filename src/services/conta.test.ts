@@ -3,6 +3,8 @@ import api from "./api";
 import {
   abastecimentoService,
   contaService,
+  documentoService,
+  mapearDocumentos,
   mapearAbastecimentos,
   mapearResumoConta,
   mapearSeguros,
@@ -317,5 +319,67 @@ describe("seguroService", () => {
     expect(getSpy).toHaveBeenCalledWith("/conta/veiculos/7/seguros");
     expect(postSpy).toHaveBeenCalledWith("/conta/veiculos/7/seguros", expect.objectContaining({ tipo: "proposta" }));
     expect(deleteSpy).toHaveBeenCalledWith("/conta/veiculos/7/seguros/2");
+  });
+});
+
+describe("documentos do veículo", () => {
+  const resposta = {
+    documentos: [
+      {
+        id: 1,
+        tipo: "crlv" as const,
+        rotulo: "CRLV",
+        titulo: null,
+        vencimento: "2026-03-20",
+        observacoes: null,
+        dias_para_vencer: 15,
+        situacao: "vence_em_breve" as const,
+      },
+      {
+        id: 2,
+        tipo: "outro" as const,
+        rotulo: "Manual",
+        titulo: "Manual",
+        vencimento: null,
+        observacoes: "na gaveta",
+        dias_para_vencer: null,
+        situacao: "sem_data" as const,
+      },
+    ],
+    crlv: { vencimento: "2026-03-20", estimativa_licenciamento: "2026-05-31" },
+  };
+
+  it("converte documentos, datas e a data real do CRLV", () => {
+    const dados = mapearDocumentos(resposta);
+
+    expect(dados.documentos[0].diasParaVencer).toBe(15);
+    expect(dados.documentos[0].vencimento).toBe("2026-03-20");
+    expect(dados.documentos[1].vencimento).toBeNull();
+    expect(dados.crlvVencimento).toBe("2026-03-20");
+    expect(dados.estimativaLicenciamento).toBe("2026-05-31");
+  });
+
+  it("sem CRLV com data, a data real fica nula", () => {
+    const dados = mapearDocumentos({
+      documentos: [],
+      crlv: { vencimento: null, estimativa_licenciamento: null },
+    });
+
+    expect(dados.crlvVencimento).toBeNull();
+    expect(dados.estimativaLicenciamento).toBeNull();
+  });
+
+  it("lista, registra e remove nas rotas do veículo", async () => {
+    const getSpy = vi.spyOn(api, "get").mockResolvedValueOnce({ data: resposta } as never);
+    const postSpy = vi.spyOn(api, "post").mockResolvedValueOnce({ data: resposta } as never);
+    const deleteSpy = vi.spyOn(api, "delete").mockResolvedValueOnce({ data: resposta } as never);
+
+    await documentoService.listar(7);
+    await documentoService.registrar(7, { tipo: "crlv", vencimento: "2026-03-20" });
+    await documentoService.remover(7, 2);
+
+    expect(getSpy).toHaveBeenCalledWith("/conta/veiculos/7/documentos");
+    expect(postSpy).toHaveBeenCalledWith("/conta/veiculos/7/documentos", expect.objectContaining({ tipo: "crlv" }));
+    expect(deleteSpy).toHaveBeenCalledWith("/conta/veiculos/7/documentos/2");
   });
 });

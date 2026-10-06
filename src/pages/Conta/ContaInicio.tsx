@@ -13,6 +13,7 @@ const ROTULO_TIPO = {
   licenciamento: "Licenciamento",
   revisao: "Revisão",
   seguro: "Fim do seguro",
+  documento: "Documento",
 } as const;
 
 function textoDeDias(dias: number) {
@@ -98,7 +99,7 @@ export function ContaInicio() {
           value={resumo ? String(vencimentos.length) : "—"}
           description={
             resumo
-              ? `IPVA e licenciamento nos próximos ${resumo.diasAFrente} dias`
+              ? `IPVA, licenciamento, documentos e seguro nos próximos ${resumo.diasAFrente} dias`
               : "Carregando..."
           }
           icon={<CalendarClock size={19} />}
@@ -111,8 +112,9 @@ export function ContaInicio() {
             O que vence em breve
           </h3>
           <p className="mt-1 text-[11px] text-gray-400">
-            As datas são <strong>estimativas</strong> pelo final da placa e
-            variam por estado: confirme no site do Detran/Sefaz.
+            As datas de IPVA e licenciamento são <strong>estimativas</strong>{" "}
+            pelo final da placa e variam por estado: confirme no site do
+            Detran/Sefaz. Cadastre o CRLV do veículo para usar a data real.
           </p>
         </div>
 
@@ -139,12 +141,12 @@ export function ContaInicio() {
           <ul className="divide-y divide-gray-100">
             {vencimentos.map((item) => (
               <li
-                key={`${item.tipo}-${item.veiculoId}`}
+                key={`${item.tipo}-${item.rotulo ?? ""}-${item.veiculoId}-${item.data}`}
                 className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"
               >
                 <div>
                   <p className="text-xs font-semibold text-gray-900">
-                    {ROTULO_TIPO[item.tipo]} · {item.veiculo}
+                    {item.rotulo ?? ROTULO_TIPO[item.tipo]} · {item.veiculo}
                   </p>
                   <p className="mt-1 text-[10px] text-gray-400">
                     Placa {item.placa}
