@@ -38,7 +38,61 @@ export type TipoVencimento =
   | "licenciamento"
   | "revisao"
   | "seguro"
-  | "documento";
+  | "documento"
+  | "servico";
+
+export type SituacaoServico =
+  | "em_dia"
+  | "vence_em_breve"
+  | "vencido"
+  | "sem_aviso"
+  | "anterior";
+
+export interface TipoServico {
+  tipo: string;
+  rotulo: string;
+}
+
+export interface Servico {
+  id: number;
+  veiculoContaId: number;
+  veiculo: string | null;
+  placa: string | null;
+  tipo: string;
+  rotulo: string;
+  titulo: string | null;
+  realizadoEm: string;
+  km: number | null;
+  valor: number | null;
+  observacoes: string | null;
+  intervaloMeses: number | null;
+  intervaloKm: number | null;
+  proximoEm: string | null;
+  proximaKm: number | null;
+  /** Só o serviço mais recente de cada tipo vale para os avisos. */
+  vigente: boolean;
+  kmAtual: number | null;
+  diasRestantes: number | null;
+  kmRestante: number | null;
+  situacao: SituacaoServico;
+}
+
+export interface ServicosDaConta {
+  tipos: TipoServico[];
+  servicos: Servico[];
+}
+
+export interface NovoServico {
+  veiculo_conta_id: number;
+  tipo: string;
+  titulo?: string | null;
+  realizado_em: string;
+  km?: number | null;
+  valor?: number | null;
+  observacoes?: string | null;
+  intervalo_meses?: number | null;
+  intervalo_km?: number | null;
+}
 
 export type TipoDocumento = "crlv" | "vistoria" | "outro";
 
@@ -81,8 +135,13 @@ export interface PreferenciasConta {
 
 export interface Vencimento {
   tipo: TipoVencimento;
-  /** Nome do documento, quando tipo = "documento". */
+  /** Nome do documento ou serviço, quando tipo = "documento" | "servico". */
   rotulo?: string;
+  /** Serviços: km que faltam para a próxima troca e o km alvo. */
+  kmRestante?: number | null;
+  proximaKm?: number | null;
+  /** Serviço que só vence por quilometragem (sem data própria). */
+  porKm?: boolean;
   veiculoId: number;
   veiculo: string;
   placa: string;

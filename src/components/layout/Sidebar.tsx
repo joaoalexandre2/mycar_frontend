@@ -101,6 +101,13 @@ import {
                   label={perfil === "frota" ? "Veículos da frota" : "Meus veículos"}
                   aoNavegar={aoFechar}
                 />
+
+                <SidebarItem
+                  to="/servicos"
+                  icon={<Wrench size={19} />}
+                  label="Serviços"
+                  aoNavegar={aoFechar}
+                />
               </>
             ) : (
               <>

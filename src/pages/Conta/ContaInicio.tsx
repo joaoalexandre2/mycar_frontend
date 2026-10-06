@@ -5,7 +5,7 @@ import { StatCard } from "../../components/dashboard/StatCard";
 import { contaService } from "../../services/conta";
 import { mensagemErro } from "../../services/api";
 import { useAuth } from "../../hooks/useAuth";
-import { formatarData, formatarMoeda } from "../../utils/formatters";
+import { formatarData, formatarKm, formatarMoeda } from "../../utils/formatters";
 import type { ResumoConta, Vencimento } from "../../types/conta";
 
 const ROTULO_TIPO = {
@@ -14,6 +14,7 @@ const ROTULO_TIPO = {
   revisao: "Revisão",
   seguro: "Fim do seguro",
   documento: "Documento",
+  servico: "Serviço",
 } as const;
 
 function textoDeDias(dias: number) {
@@ -156,16 +157,39 @@ export function ContaInicio() {
                 </div>
 
                 <div className="text-right">
-                  <p className="text-xs font-semibold text-gray-900">
-                    {formatarData(item.data)}
-                  </p>
-                  <p
-                    className={`mt-1 text-[10px] ${
-                      item.dias < 0 ? "font-semibold text-red-600" : "text-gray-400"
-                    }`}
-                  >
-                    {textoDeDias(item.dias)}
-                  </p>
+                  {item.porKm ? (
+                    <>
+                      <p className="text-xs font-semibold text-gray-900">
+                        {formatarKm(item.proximaKm)}
+                      </p>
+                      <p
+                        className={`mt-1 text-[10px] ${
+                          (item.kmRestante ?? 0) <= 0
+                            ? "font-semibold text-red-600"
+                            : "text-gray-400"
+                        }`}
+                      >
+                        {(item.kmRestante ?? 0) <= 0
+                          ? "já passou do km"
+                          : `faltam ${formatarKm(item.kmRestante)}`}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-xs font-semibold text-gray-900">
+                        {formatarData(item.data)}
+                      </p>
+                      <p
+                        className={`mt-1 text-[10px] ${
+                          item.dias < 0
+                            ? "font-semibold text-red-600"
+                            : "text-gray-400"
+                        }`}
+                      >
+                        {textoDeDias(item.dias)}
+                      </p>
+                    </>
+                  )}
                 </div>
               </li>
             ))}
