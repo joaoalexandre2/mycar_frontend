@@ -4,6 +4,8 @@ import {
   abastecimentoService,
   contaService,
   documentoService,
+  mapearServicos,
+  servicoService,
   mapearDocumentos,
   mapearAbastecimentos,
   mapearResumoConta,
@@ -381,5 +383,70 @@ describe("documentos do veículo", () => {
     expect(getSpy).toHaveBeenCalledWith("/conta/veiculos/7/documentos");
     expect(postSpy).toHaveBeenCalledWith("/conta/veiculos/7/documentos", expect.objectContaining({ tipo: "crlv" }));
     expect(deleteSpy).toHaveBeenCalledWith("/conta/veiculos/7/documentos/2");
+  });
+});
+
+describe("serviços da conta", () => {
+  const resposta = {
+    tipos: [{ tipo: "oleo", rotulo: "Troca de óleo" }],
+    servicos: [
+      {
+        id: 1,
+        veiculo_conta_id: 7,
+        veiculo: "Uno",
+        placa: "AAA1B25",
+        tipo: "oleo",
+        rotulo: "Troca de óleo",
+        titulo: null,
+        realizado_em: "2026-03-01",
+        km: 50000,
+        valor: "250.00",
+        observacoes: null,
+        intervalo_meses: 6,
+        intervalo_km: 10000,
+        proximo_em: "2026-09-01",
+        proxima_km: 60000,
+        vigente: true,
+        km_atual: 59500,
+        dias_restantes: 180,
+        km_restante: 500,
+        situacao: "vence_em_breve" as const,
+      },
+    ],
+  };
+
+  it("converte valor, datas e os critérios de aviso", () => {
+    const [servico] = mapearServicos(resposta).servicos;
+
+    expect(servico.valor).toBe(250);
+    expect(servico.proximoEm).toBe("2026-09-01");
+    expect(servico.proximaKm).toBe(60000);
+    expect(servico.kmRestante).toBe(500);
+    expect(servico.situacao).toBe("vence_em_breve");
+  });
+
+  it("serviço sem valor nem aviso fica com campos nulos", () => {
+    const [servico] = mapearServicos({
+      ...resposta,
+      servicos: [{ ...resposta.servicos[0], valor: null, proximo_em: null, proxima_km: null }],
+    }).servicos;
+
+    expect(servico.valor).toBeNull();
+    expect(servico.proximoEm).toBeNull();
+    expect(servico.proximaKm).toBeNull();
+  });
+
+  it("lista, registra e remove nas rotas da conta", async () => {
+    const getSpy = vi.spyOn(api, "get").mockResolvedValueOnce({ data: resposta } as never);
+    const postSpy = vi.spyOn(api, "post").mockResolvedValueOnce({ data: resposta } as never);
+    const deleteSpy = vi.spyOn(api, "delete").mockResolvedValueOnce({ data: resposta } as never);
+
+    await servicoService.listar();
+    await servicoService.registrar({ veiculo_conta_id: 7, tipo: "oleo", realizado_em: "2026-03-01" });
+    await servicoService.remover(1);
+
+    expect(getSpy).toHaveBeenCalledWith("/conta/servicos");
+    expect(postSpy).toHaveBeenCalledWith("/conta/servicos", expect.objectContaining({ tipo: "oleo" }));
+    expect(deleteSpy).toHaveBeenCalledWith("/conta/servicos/1");
   });
 });

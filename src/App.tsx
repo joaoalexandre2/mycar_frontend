@@ -29,6 +29,7 @@ import { Configuracoes } from "./pages/Configuracoes/Configuracoes";
 import { Admin } from "./pages/Admin/Admin";
 import { ContaInicio } from "./pages/Conta/ContaInicio";
 import { MeusVeiculos } from "./pages/Conta/MeusVeiculos";
+import { Servicos } from "./pages/Conta/Servicos";
 import { ehConta, perfilDe } from "./utils/perfil";
 
 /** Telas do perfil Oficina (MyCar Oficina). */
@@ -97,6 +98,11 @@ function RotasConta() {
       <Route
         path="/veiculos"
         element={<MeusVeiculos />}
+      />
+
+      <Route
+        path="/servicos"
+        element={<Servicos />}
       />
 
       <Route
