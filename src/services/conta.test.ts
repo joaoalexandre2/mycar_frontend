@@ -1,6 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import api from "./api";
-import { contaService, mapearResumoConta, mapearVeiculoConta } from "./conta";
+import {
+  abastecimentoService,
+  contaService,
+  mapearAbastecimentos,
+  mapearResumoConta,
+  mapearVeiculoConta,
+} from "./conta";
 
 describe("mapearVeiculoConta", () => {
   it("converte o veículo da API e normaliza campos ausentes", () => {
@@ -181,5 +187,64 @@ describe("contaService", () => {
     expect(putSpy).toHaveBeenCalledWith("/conta/veiculos/7", payload);
     expect(deleteSpy).toHaveBeenCalledWith("/conta/veiculos/7");
     expect(postSpy).toHaveBeenCalledWith("/conta/veiculos/7/fipe");
+  });
+});
+
+describe("abastecimentoService", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const resposta = {
+    abastecimentos: [
+      {
+        id: 2,
+        data: "2026-05-15",
+        km: 10400,
+        litros: "40.000",
+        valor_total: "240.00",
+        tanque_cheio: true,
+        combustivel: "gasolina",
+        posto: null,
+        preco_litro: 6,
+        consumo_km_l: 10,
+        custo_por_km: 0.6,
+      },
+    ],
+    resumo: {
+      consumo_medio_km_l: 10,
+      custo_por_km: 0.6,
+      total_gasto: 420,
+      total_litros: 70,
+      preco_medio_litro: 6,
+      km_atual: 10400,
+      quantidade: 2,
+    },
+  };
+
+  it("converte litros e valor (que chegam como texto) para número", () => {
+    const dados = mapearAbastecimentos(resposta);
+
+    expect(dados.abastecimentos[0].litros).toBe(40);
+    expect(dados.abastecimentos[0].valorTotal).toBe(240);
+    expect(dados.abastecimentos[0].consumoKmL).toBe(10);
+    expect(dados.resumo.consumoMedioKmL).toBe(10);
+    expect(dados.resumo.kmAtual).toBe(10400);
+  });
+
+  it("lista, registra e remove nas rotas do veículo", async () => {
+    const getSpy = vi.spyOn(api, "get").mockResolvedValueOnce({ data: resposta } as never);
+    const postSpy = vi.spyOn(api, "post").mockResolvedValueOnce({ data: resposta } as never);
+    const deleteSpy = vi.spyOn(api, "delete").mockResolvedValueOnce({ data: resposta } as never);
+
+    await abastecimentoService.listar(7);
+    await abastecimentoService.registrar(7, {
+      data: "2026-05-15", km: 10400, litros: 40, valor_total: 240, tanque_cheio: true,
+    });
+    await abastecimentoService.remover(7, 2);
+
+    expect(getSpy).toHaveBeenCalledWith("/conta/veiculos/7/abastecimentos");
+    expect(postSpy).toHaveBeenCalledWith("/conta/veiculos/7/abastecimentos", expect.objectContaining({ km: 10400 }));
+    expect(deleteSpy).toHaveBeenCalledWith("/conta/veiculos/7/abastecimentos/2");
   });
 });

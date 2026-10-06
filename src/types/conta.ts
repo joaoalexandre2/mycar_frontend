@@ -59,3 +59,51 @@ export interface ResumoConta {
   vencimentos: Vencimento[];
   diasAFrente: number;
 }
+
+export const COMBUSTIVEIS = [
+  { valor: "gasolina", rotulo: "Gasolina" },
+  { valor: "etanol", rotulo: "Etanol" },
+  { valor: "diesel", rotulo: "Diesel" },
+  { valor: "gnv", rotulo: "GNV" },
+  { valor: "outro", rotulo: "Outro" },
+] as const;
+
+export interface Abastecimento {
+  id: number;
+  data: string;
+  km: number;
+  litros: number;
+  valorTotal: number;
+  tanqueCheio: boolean;
+  combustivel: string | null;
+  posto: string | null;
+  precoLitro: number | null;
+  /** Só nos tanques cheios que fecham um intervalo. */
+  consumoKmL: number | null;
+  custoPorKm: number | null;
+}
+
+export interface ResumoAbastecimentos {
+  consumoMedioKmL: number | null;
+  custoPorKm: number | null;
+  totalGasto: number;
+  totalLitros: number;
+  precoMedioLitro: number | null;
+  kmAtual: number | null;
+  quantidade: number;
+}
+
+export interface AbastecimentosDoVeiculo {
+  abastecimentos: Abastecimento[];
+  resumo: ResumoAbastecimentos;
+}
+
+export interface NovoAbastecimento {
+  data: string;
+  km: number;
+  litros: number;
+  valor_total: number;
+  tanque_cheio: boolean;
+  combustivel?: string | null;
+  posto?: string | null;
+}
