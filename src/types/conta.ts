@@ -11,6 +11,8 @@ export interface VeiculoConta {
   licenciamentoValor: number | null;
   proximoVencimentoIpva: string | null;
   proximoVencimentoLicenciamento: string | null;
+  /** Próxima revisão, informada pelo dono. */
+  revisaoPrevistaEm: string | null;
   fipeMarcaId: number | null;
   fipeModeloId: number | null;
   fipeAno: string | null;
@@ -25,12 +27,19 @@ export interface VeiculoContaPayload {
   modelo: string;
   ano: number;
   uf?: string | null;
+  revisao_prevista_em?: string | null;
   fipe_marca_id?: number | null;
   fipe_modelo_id?: number | null;
   fipe_ano?: string | null;
 }
 
-export type TipoVencimento = "ipva" | "licenciamento";
+export type TipoVencimento = "ipva" | "licenciamento" | "revisao";
+
+export interface PreferenciasConta {
+  nome: string | null;
+  tipo: "pessoa" | "frota" | null;
+  lembretesEmail: boolean;
+}
 
 export interface Vencimento {
   tipo: TipoVencimento;

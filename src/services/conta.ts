@@ -2,6 +2,7 @@ import api from "./api";
 import { obterItensPorPagina } from "../utils/preferencias";
 import { dataISO } from "../utils/formatters";
 import type {
+  PreferenciasConta,
   ResumoConta,
   TipoVencimento,
   VeiculoConta,
@@ -16,6 +17,7 @@ interface VeiculoContaApi {
   modelo: string;
   ano: number;
   uf?: string | null;
+  revisao_prevista_em?: string | null;
   ipva_estimado?: number | null;
   licenciamento_valor?: number | null;
   proximo_vencimento_ipva?: string | null;
@@ -85,6 +87,9 @@ export function mapearVeiculoConta(item: VeiculoContaApi): VeiculoConta {
     proximoVencimentoLicenciamento: item.proximo_vencimento_licenciamento
       ? dataISO(item.proximo_vencimento_licenciamento)
       : null,
+    revisaoPrevistaEm: item.revisao_prevista_em
+      ? dataISO(item.revisao_prevista_em)
+      : null,
     fipeMarcaId: item.fipe_marca_id ?? null,
     fipeModeloId: item.fipe_modelo_id ?? null,
     fipeAno: item.fipe_ano ?? null,
@@ -113,6 +118,16 @@ export function mapearResumoConta(resumo: ResumoContaApi): ResumoConta {
       valorEstimado: item.valor_estimado,
     })),
   };
+}
+
+interface PreferenciasContaApi {
+  nome: string | null;
+  tipo: "pessoa" | "frota" | null;
+  lembretes_email: boolean;
+}
+
+export function mapearPreferencias(p: PreferenciasContaApi): PreferenciasConta {
+  return { nome: p.nome, tipo: p.tipo, lembretesEmail: p.lembretes_email };
 }
 
 export const contaService = {
@@ -159,6 +174,18 @@ export const contaService = {
 
   async removerVeiculo(id: number): Promise<void> {
     await api.delete(`/conta/veiculos/${id}`);
+  },
+
+  async preferencias(): Promise<PreferenciasConta> {
+    const { data } = await api.get<PreferenciasContaApi>("/conta/preferencias");
+    return mapearPreferencias(data);
+  },
+
+  async atualizarPreferencias(lembretesEmail: boolean): Promise<PreferenciasConta> {
+    const { data } = await api.put<PreferenciasContaApi>("/conta/preferencias", {
+      lembretes_email: lembretesEmail,
+    });
+    return mapearPreferencias(data);
   },
 
   async consultarFipe(id: number): Promise<VeiculoConta> {

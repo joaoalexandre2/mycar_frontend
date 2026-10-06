@@ -8,7 +8,11 @@ import { useAuth } from "../../hooks/useAuth";
 import { formatarData, formatarMoeda } from "../../utils/formatters";
 import type { ResumoConta, Vencimento } from "../../types/conta";
 
-const ROTULO_TIPO = { ipva: "IPVA", licenciamento: "Licenciamento" } as const;
+const ROTULO_TIPO = {
+  ipva: "IPVA",
+  licenciamento: "Licenciamento",
+  revisao: "Revisão",
+} as const;
 
 function textoDeDias(dias: number) {
   if (dias < 0) return `${Math.abs(dias)} dia(s) de atraso`;
