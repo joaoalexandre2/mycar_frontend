@@ -2,6 +2,8 @@ import api from "./api";
 import { obterItensPorPagina } from "../utils/preferencias";
 import { dataISO } from "../utils/formatters";
 import type {
+  CatalogoDePecas,
+  FiltroPecas,
   Despesas,
   FiltroDespesas,
   NovoServico,
@@ -550,5 +552,61 @@ export const despesaService = {
     });
 
     return mapearDespesas(data);
+  },
+};
+
+interface CatalogoPecasApi {
+  veiculo: { id: number; nome: string; placa: string } | null;
+  modelo: { nome: string; categoria: string; categoria_rotulo: string } | null;
+  escopo: "modelo" | "geral" | "catalogo";
+  total: number;
+  sistemas: { chave: string; rotulo: string; total: number }[];
+  pecas: {
+    id: string;
+    sistema: string;
+    sistema_rotulo: string;
+    nome: string;
+    posicao: "dianteiro" | "traseiro" | null;
+    intervalo_km: number | null;
+    observacao: string | null;
+  }[];
+  modelos_no_catalogo: number;
+  aviso: string;
+}
+
+export function mapearCatalogoPecas(resposta: CatalogoPecasApi): CatalogoDePecas {
+  return {
+    veiculo: resposta.veiculo,
+    modelo: resposta.modelo
+      ? { nome: resposta.modelo.nome, categoriaRotulo: resposta.modelo.categoria_rotulo }
+      : null,
+    escopo: resposta.escopo,
+    total: resposta.total,
+    sistemas: resposta.sistemas,
+    pecas: resposta.pecas.map((peca) => ({
+      id: peca.id,
+      sistema: peca.sistema,
+      sistemaRotulo: peca.sistema_rotulo,
+      nome: peca.nome,
+      posicao: peca.posicao,
+      intervaloKm: peca.intervalo_km,
+      observacao: peca.observacao,
+    })),
+    modelosNoCatalogo: resposta.modelos_no_catalogo,
+    aviso: resposta.aviso,
+  };
+}
+
+export const catalogoPecasService = {
+  async buscar(filtro: FiltroPecas = {}): Promise<CatalogoDePecas> {
+    const { data } = await api.get<CatalogoPecasApi>("/conta/pecas-catalogo", {
+      params: {
+        q: filtro.q || undefined,
+        veiculo_id: filtro.veiculoId || undefined,
+        sistema: filtro.sistema || undefined,
+      },
+    });
+
+    return mapearCatalogoPecas(data);
   },
 };
