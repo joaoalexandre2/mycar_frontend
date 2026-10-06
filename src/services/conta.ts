@@ -3,6 +3,10 @@ import { obterItensPorPagina } from "../utils/preferencias";
 import { dataISO } from "../utils/formatters";
 import type {
   AbastecimentosDoVeiculo,
+  DocumentosDoVeiculo,
+  NovoDocumento,
+  SituacaoDocumento,
+  TipoDocumento,
   NovoAbastecimento,
   NovoSeguro,
   SegurosDoVeiculo,
@@ -41,6 +45,7 @@ interface ResumoContaApi {
   dias_a_frente: number;
   vencimentos: {
     tipo: TipoVencimento;
+    rotulo?: string;
     veiculo_id: number;
     veiculo: string;
     placa: string;
@@ -115,6 +120,7 @@ export function mapearResumoConta(resumo: ResumoContaApi): ResumoConta {
     diasAFrente: resumo.dias_a_frente,
     vencimentos: resumo.vencimentos.map((item) => ({
       tipo: item.tipo,
+      rotulo: item.rotulo,
       veiculoId: item.veiculo_id,
       veiculo: item.veiculo,
       placa: item.placa,
@@ -326,6 +332,58 @@ export function mapearSeguros(resposta: SegurosApi): SegurosDoVeiculo {
     aviso: resposta.aviso,
   };
 }
+
+interface DocumentosApi {
+  documentos: {
+    id: number;
+    tipo: TipoDocumento;
+    rotulo: string;
+    titulo: string | null;
+    vencimento: string | null;
+    observacoes: string | null;
+    dias_para_vencer: number | null;
+    situacao: SituacaoDocumento;
+  }[];
+  crlv: { vencimento: string | null; estimativa_licenciamento: string | null };
+}
+
+export function mapearDocumentos(resposta: DocumentosApi): DocumentosDoVeiculo {
+  return {
+    documentos: resposta.documentos.map((item) => ({
+      id: item.id,
+      tipo: item.tipo,
+      rotulo: item.rotulo,
+      titulo: item.titulo,
+      vencimento: item.vencimento ? dataISO(item.vencimento) : null,
+      observacoes: item.observacoes,
+      diasParaVencer: item.dias_para_vencer,
+      situacao: item.situacao,
+    })),
+    crlvVencimento: resposta.crlv.vencimento
+      ? dataISO(resposta.crlv.vencimento)
+      : null,
+    estimativaLicenciamento: resposta.crlv.estimativa_licenciamento
+      ? dataISO(resposta.crlv.estimativa_licenciamento)
+      : null,
+  };
+}
+
+export const documentoService = {
+  async listar(veiculoId: number): Promise<DocumentosDoVeiculo> {
+    const { data } = await api.get<DocumentosApi>(`/conta/veiculos/${veiculoId}/documentos`);
+    return mapearDocumentos(data);
+  },
+
+  async registrar(veiculoId: number, documento: NovoDocumento): Promise<DocumentosDoVeiculo> {
+    const { data } = await api.post<DocumentosApi>(`/conta/veiculos/${veiculoId}/documentos`, documento);
+    return mapearDocumentos(data);
+  },
+
+  async remover(veiculoId: number, documentoId: number): Promise<DocumentosDoVeiculo> {
+    const { data } = await api.delete<DocumentosApi>(`/conta/veiculos/${veiculoId}/documentos/${documentoId}`);
+    return mapearDocumentos(data);
+  },
+};
 
 export const seguroService = {
   async listar(veiculoId: number): Promise<SegurosDoVeiculo> {

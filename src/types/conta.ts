@@ -33,7 +33,45 @@ export interface VeiculoContaPayload {
   fipe_ano?: string | null;
 }
 
-export type TipoVencimento = "ipva" | "licenciamento" | "revisao" | "seguro";
+export type TipoVencimento =
+  | "ipva"
+  | "licenciamento"
+  | "revisao"
+  | "seguro"
+  | "documento";
+
+export type TipoDocumento = "crlv" | "vistoria" | "outro";
+
+export type SituacaoDocumento =
+  | "em_dia"
+  | "vence_em_breve"
+  | "vencido"
+  | "sem_data";
+
+export interface Documento {
+  id: number;
+  tipo: TipoDocumento;
+  rotulo: string;
+  titulo: string | null;
+  vencimento: string | null;
+  observacoes: string | null;
+  diasParaVencer: number | null;
+  situacao: SituacaoDocumento;
+}
+
+export interface DocumentosDoVeiculo {
+  documentos: Documento[];
+  /** Data real do CRLV (quando cadastrada) e a estimativa pela placa. */
+  crlvVencimento: string | null;
+  estimativaLicenciamento: string | null;
+}
+
+export interface NovoDocumento {
+  tipo: TipoDocumento;
+  titulo?: string | null;
+  vencimento?: string | null;
+  observacoes?: string | null;
+}
 
 export interface PreferenciasConta {
   nome: string | null;
@@ -43,6 +81,8 @@ export interface PreferenciasConta {
 
 export interface Vencimento {
   tipo: TipoVencimento;
+  /** Nome do documento, quando tipo = "documento". */
+  rotulo?: string;
   veiculoId: number;
   veiculo: string;
   placa: string;
