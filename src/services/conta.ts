@@ -2,6 +2,8 @@ import api from "./api";
 import { obterItensPorPagina } from "../utils/preferencias";
 import { dataISO } from "../utils/formatters";
 import type {
+  CodigoPeca,
+  NovoCodigoPeca,
   CatalogoDePecas,
   FiltroPecas,
   Despesas,
@@ -555,9 +557,27 @@ export const despesaService = {
   },
 };
 
+interface CodigoPecaApi {
+  id: number;
+  peca_id: string;
+  marca: string | null;
+  codigo: string;
+  observacoes: string | null;
+}
+
+function mapearCodigoPeca(item: CodigoPecaApi): CodigoPeca {
+  return {
+    id: item.id,
+    pecaId: item.peca_id,
+    marca: item.marca,
+    codigo: item.codigo,
+    observacoes: item.observacoes,
+  };
+}
+
 interface CatalogoPecasApi {
   veiculo: { id: number; nome: string; placa: string } | null;
-  modelo: { nome: string; categoria: string; categoria_rotulo: string } | null;
+  modelo: { nome: string; categoria: string; categoria_rotulo: string; original: string | null } | null;
   escopo: "modelo" | "geral" | "catalogo";
   total: number;
   sistemas: { chave: string; rotulo: string; total: number }[];
@@ -569,6 +589,8 @@ interface CatalogoPecasApi {
     posicao: "dianteiro" | "traseiro" | null;
     intervalo_km: number | null;
     observacao: string | null;
+    marcas: string[];
+    meus_codigos: CodigoPecaApi[];
   }[];
   modelos_no_catalogo: number;
   aviso: string;
@@ -578,7 +600,11 @@ export function mapearCatalogoPecas(resposta: CatalogoPecasApi): CatalogoDePecas
   return {
     veiculo: resposta.veiculo,
     modelo: resposta.modelo
-      ? { nome: resposta.modelo.nome, categoriaRotulo: resposta.modelo.categoria_rotulo }
+      ? {
+          nome: resposta.modelo.nome,
+          categoriaRotulo: resposta.modelo.categoria_rotulo,
+          original: resposta.modelo.original,
+        }
       : null,
     escopo: resposta.escopo,
     total: resposta.total,
@@ -591,6 +617,8 @@ export function mapearCatalogoPecas(resposta: CatalogoPecasApi): CatalogoDePecas
       posicao: peca.posicao,
       intervaloKm: peca.intervalo_km,
       observacao: peca.observacao,
+      marcas: peca.marcas,
+      meusCodigos: peca.meus_codigos.map(mapearCodigoPeca),
     })),
     modelosNoCatalogo: resposta.modelos_no_catalogo,
     aviso: resposta.aviso,
@@ -608,5 +636,20 @@ export const catalogoPecasService = {
     });
 
     return mapearCatalogoPecas(data);
+  },
+};
+
+export const codigoPecaService = {
+  async registrar(veiculoId: number, codigo: NovoCodigoPeca): Promise<CodigoPeca> {
+    const { data } = await api.post<CodigoPecaApi>(
+      `/conta/veiculos/${veiculoId}/codigos-pecas`,
+      codigo,
+    );
+
+    return mapearCodigoPeca(data);
+  },
+
+  async remover(veiculoId: number, codigoId: number): Promise<void> {
+    await api.delete(`/conta/veiculos/${veiculoId}/codigos-pecas/${codigoId}`);
   },
 };

@@ -6,6 +6,7 @@ import {
   documentoService,
   catalogoPecasService,
   mapearCatalogoPecas,
+  codigoPecaService,
   despesaService,
   mapearDespesas,
   mapearServicos,
@@ -505,7 +506,7 @@ describe("despesas da conta", () => {
 describe("catálogo de peças", () => {
   const resposta = {
     veiculo: { id: 7, nome: "Fiat Uno", placa: "AAA1B25" },
-    modelo: { nome: "Fiat Uno", categoria: "hatch", categoria_rotulo: "Hatch" },
+    modelo: { nome: "Fiat Uno", categoria: "hatch", categoria_rotulo: "Hatch", original: "Mopar" },
     escopo: "modelo" as const,
     total: 1,
     sistemas: [{ chave: "suspensao", rotulo: "Suspensão", total: 1 }],
@@ -518,6 +519,8 @@ describe("catálogo de peças", () => {
         posicao: "dianteiro" as const,
         intervalo_km: 70000,
         observacao: null,
+        marcas: ["Cofap", "Monroe"],
+        meus_codigos: [{ id: 5, peca_id: "amortecedor-dianteiro", marca: "Cofap", codigo: "GP 123", observacoes: null }],
       },
     ],
     modelos_no_catalogo: 86,
@@ -527,7 +530,9 @@ describe("catálogo de peças", () => {
   it("converte o modelo achado e as peças", () => {
     const dados = mapearCatalogoPecas(resposta);
 
-    expect(dados.modelo).toEqual({ nome: "Fiat Uno", categoriaRotulo: "Hatch" });
+    expect(dados.modelo).toEqual({ nome: "Fiat Uno", categoriaRotulo: "Hatch", original: "Mopar" });
+    expect(dados.pecas[0].marcas).toEqual(["Cofap", "Monroe"]);
+    expect(dados.pecas[0].meusCodigos[0]).toEqual({ id: 5, pecaId: "amortecedor-dianteiro", marca: "Cofap", codigo: "GP 123", observacoes: null });
     expect(dados.escopo).toBe("modelo");
     expect(dados.pecas[0].sistemaRotulo).toBe("Suspensão");
     expect(dados.pecas[0].intervaloKm).toBe(70000);
@@ -551,5 +556,21 @@ describe("catálogo de peças", () => {
     expect(getSpy).toHaveBeenNthCalledWith(2, "/conta/pecas-catalogo", {
       params: { q: undefined, veiculo_id: undefined, sistema: undefined },
     });
+  });
+});
+
+describe("meu código de peça", () => {
+  it("registra e remove nas rotas do veículo", async () => {
+    const postSpy = vi.spyOn(api, "post").mockResolvedValueOnce({
+      data: { id: 9, peca_id: "bateria", marca: "Moura", codigo: "M60", observacoes: null },
+    } as never);
+    const deleteSpy = vi.spyOn(api, "delete").mockResolvedValueOnce({ data: {} } as never);
+
+    const codigo = await codigoPecaService.registrar(7, { peca_id: "bateria", marca: "Moura", codigo: "M60" });
+    await codigoPecaService.remover(7, 9);
+
+    expect(codigo).toEqual({ id: 9, pecaId: "bateria", marca: "Moura", codigo: "M60", observacoes: null });
+    expect(postSpy).toHaveBeenCalledWith("/conta/veiculos/7/codigos-pecas", expect.objectContaining({ peca_id: "bateria" }));
+    expect(deleteSpy).toHaveBeenCalledWith("/conta/veiculos/7/codigos-pecas/9");
   });
 });
