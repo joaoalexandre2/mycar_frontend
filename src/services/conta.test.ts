@@ -36,6 +36,53 @@ describe("mapearVeiculoConta", () => {
   });
 });
 
+describe("revisão e preferências da conta", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("lê a próxima revisão do veículo e trata ausência como nula", () => {
+    const base = { id: 1, placa: "AAA1B11", marca: "Fiat", modelo: "Uno", ano: 2018 };
+
+    expect(
+      mapearVeiculoConta({ ...base, revisao_prevista_em: "2026-03-20" }).revisaoPrevistaEm,
+    ).toBe("2026-03-20");
+    expect(mapearVeiculoConta(base).revisaoPrevistaEm).toBeNull();
+  });
+
+  it("aceita revisão entre os vencimentos do resumo", () => {
+    const resumo = mapearResumoConta({
+      conta: { nome: "Carlos", tipo: "pessoa" },
+      total_veiculos: 1,
+      valor_total_fipe: 0,
+      dias_a_frente: 60,
+      vencimentos: [
+        { tipo: "revisao", veiculo_id: 1, veiculo: "Uno", placa: "AAA1B11", data: "2026-03-20", dias: -3, valor_estimado: null },
+      ],
+    });
+
+    expect(resumo.vencimentos[0].tipo).toBe("revisao");
+    expect(resumo.vencimentos[0].dias).toBe(-3);
+  });
+
+  it("lê e grava a preferência de lembretes por e-mail", async () => {
+    const getSpy = vi.spyOn(api, "get").mockResolvedValueOnce({
+      data: { nome: "Carlos", tipo: "pessoa", lembretes_email: false },
+    } as never);
+    const putSpy = vi.spyOn(api, "put").mockResolvedValueOnce({
+      data: { nome: "Carlos", tipo: "pessoa", lembretes_email: true },
+    } as never);
+
+    const lida = await contaService.preferencias();
+    const salva = await contaService.atualizarPreferencias(true);
+
+    expect(getSpy).toHaveBeenCalledWith("/conta/preferencias");
+    expect(lida.lembretesEmail).toBe(false);
+    expect(putSpy).toHaveBeenCalledWith("/conta/preferencias", { lembretes_email: true });
+    expect(salva.lembretesEmail).toBe(true);
+  });
+});
+
 describe("mapearResumoConta", () => {
   it("converte o resumo e os vencimentos", () => {
     const resumo = mapearResumoConta({

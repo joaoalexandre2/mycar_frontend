@@ -30,6 +30,7 @@ interface DadosForm {
   modelo: string;
   ano: number;
   uf: string;
+  revisao: string;
   fipe: FipeSelecao;
 }
 
@@ -105,6 +106,7 @@ export function MeusVeiculos() {
       modelo: dados.modelo,
       ano: dados.ano,
       uf: dados.uf || null,
+      revisao_prevista_em: dados.revisao || null,
       fipe_marca_id: dados.fipe.marcaId ? Number(dados.fipe.marcaId) : null,
       fipe_modelo_id: dados.fipe.modeloId ? Number(dados.fipe.modeloId) : null,
       fipe_ano: dados.fipe.ano || null,
@@ -322,6 +324,14 @@ export function MeusVeiculos() {
                         Informe o estado
                       </span>
                     )}
+                    {veiculo.revisaoPrevistaEm && (
+                      <p className="mt-1 text-[11px] text-gray-600">
+                        Revisão{" "}
+                        <span className="font-semibold text-gray-900">
+                          {formatarData(veiculo.revisaoPrevistaEm)}
+                        </span>
+                      </p>
+                    )}
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center justify-end gap-1">
@@ -437,6 +447,7 @@ function VeiculoContaModal({
   const [modelo, setModelo] = useState(veiculo?.modelo ?? "");
   const [ano, setAno] = useState(veiculo?.ano?.toString() ?? "");
   const [uf, setUf] = useState(veiculo?.uf ?? "");
+  const [revisao, setRevisao] = useState(veiculo?.revisaoPrevistaEm ?? "");
   const [fipe, setFipe] = useState<FipeSelecao>({
     marcaId: veiculo?.fipeMarcaId?.toString() ?? "",
     modeloId: veiculo?.fipeModeloId?.toString() ?? "",
@@ -468,6 +479,7 @@ function VeiculoContaModal({
       modelo: modelo.trim(),
       ano: anoNumerico,
       uf,
+      revisao,
       fipe,
     });
   }
@@ -595,6 +607,21 @@ function VeiculoContaModal({
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+                Próxima revisão (opcional)
+              </label>
+              <input
+                type="date"
+                value={revisao}
+                onChange={(event) => setRevisao(event.target.value)}
+                className={classeCampo}
+              />
+              <p className="mt-1 text-[11px] text-gray-400">
+                Avisamos por e-mail quando faltar até 30 dias.
+              </p>
             </div>
           </div>
 

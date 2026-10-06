@@ -1,8 +1,9 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Building2, Check, Palette, Settings, User } from "lucide-react";
+import { Bell, Building2, Check, Palette, Settings, User } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { mensagemErro } from "../../services/api";
 import { configuracaoService } from "../../services/configuracao";
+import { contaService } from "../../services/conta";
 import { perfilDe } from "../../utils/perfil";
 import {
   OPCOES_ITENS_POR_PAGINA,
@@ -15,11 +16,12 @@ import {
   type Tema,
 } from "../../utils/preferencias";
 
-type Aba = "perfil" | "oficina" | "sistema" | "aparencia";
+type Aba = "perfil" | "oficina" | "lembretes" | "sistema" | "aparencia";
 
 const ABAS: { chave: Aba; rotulo: string; icone: React.ReactNode }[] = [
   { chave: "perfil", rotulo: "Perfil", icone: <User size={17} /> },
   { chave: "oficina", rotulo: "Oficina", icone: <Building2 size={17} /> },
+  { chave: "lembretes", rotulo: "Lembretes", icone: <Bell size={17} /> },
   { chave: "sistema", rotulo: "Sistema", icone: <Settings size={17} /> },
   { chave: "aparencia", rotulo: "Aparência", icone: <Palette size={17} /> },
 ];
@@ -28,9 +30,16 @@ export function Configuracoes() {
   const { usuario } = useAuth();
   const [aba, setAba] = useState<Aba>("perfil");
 
-  // Os dados da oficina só existem para o perfil Oficina.
+  // Os dados da oficina só existem para o perfil Oficina; os lembretes por
+  // e-mail de IPVA, licenciamento e revisão, para pessoa e frota.
   const daOficina = perfilDe(usuario) === "oficina";
-  const abas = daOficina ? ABAS : ABAS.filter((item) => item.chave !== "oficina");
+  const abas = ABAS.filter((item) =>
+    item.chave === "oficina"
+      ? daOficina
+      : item.chave === "lembretes"
+        ? !daOficina
+        : true,
+  );
 
   return (
     <div className="p-4 md:p-8">
@@ -64,6 +73,7 @@ export function Configuracoes() {
         <div className="min-w-0 rounded-xl border border-gray-200 bg-white">
           {aba === "perfil" && <Perfil />}
           {aba === "oficina" && daOficina && <Oficina />}
+          {aba === "lembretes" && !daOficina && <Lembretes />}
           {aba === "sistema" && <Sistema />}
           {aba === "aparencia" && <Aparencia />}
         </div>
@@ -300,6 +310,82 @@ function Oficina() {
         </label>
 
         <Rodape aviso={aviso} salvando={salvando} rotulo="Salvar oficina" />
+      </form>
+    </Secao>
+  );
+}
+
+/* ---------------------------- Lembretes ---------------------------- */
+
+function Lembretes() {
+  const [ligado, setLigado] = useState(true);
+  const [carregando, setCarregando] = useState(true);
+  const [salvando, setSalvando] = useState(false);
+  const [aviso, setAviso] = useState<Aviso | null>(null);
+
+  useEffect(() => {
+    let ativo = true;
+
+    contaService
+      .preferencias()
+      .then((preferencias) => {
+        if (ativo) setLigado(preferencias.lembretesEmail);
+      })
+      .catch((error) => {
+        if (ativo) setAviso({ tipo: "erro", texto: mensagemErro(error) });
+      })
+      .finally(() => {
+        if (ativo) setCarregando(false);
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, []);
+
+  async function salvar(event: FormEvent) {
+    event.preventDefault();
+    setAviso(null);
+
+    try {
+      setSalvando(true);
+      await contaService.atualizarPreferencias(ligado);
+      setAviso({ tipo: "ok", texto: "Preferência salva." });
+    } catch (error) {
+      setAviso({ tipo: "erro", texto: mensagemErro(error) });
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  return (
+    <Secao
+      titulo="Lembretes"
+      descricao="Avisos por e-mail dos vencimentos dos seus veículos."
+    >
+      <form onSubmit={(e) => void salvar(e)} className="space-y-5">
+        <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-4">
+          <input
+            type="checkbox"
+            checked={ligado}
+            onChange={(e) => setLigado(e.target.checked)}
+            disabled={carregando}
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 accent-blue-600"
+          />
+          <span>
+            <span className="block text-xs font-medium text-gray-700">
+              Receber lembretes por e-mail
+            </span>
+            <span className="mt-1 block text-[11px] leading-relaxed text-gray-400">
+              Enviamos um e-mail quando faltar até 30 dias para o IPVA, o
+              licenciamento (datas estimadas pelo final da placa) ou a revisão
+              que você informou no veículo. Cada vencimento é avisado uma vez.
+              Vai para os usuários da conta com e-mail confirmado.
+            </span>
+          </span>
+        </label>
+
+        <Rodape aviso={aviso} salvando={salvando} rotulo="Salvar" />
       </form>
     </Secao>
   );
