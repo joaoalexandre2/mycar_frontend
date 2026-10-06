@@ -286,3 +286,38 @@ export interface FiltroDespesas {
   ate?: string;
   veiculoId?: number;
 }
+
+export interface PecaCatalogo {
+  id: string;
+  sistema: string;
+  sistemaRotulo: string;
+  nome: string;
+  posicao: "dianteiro" | "traseiro" | null;
+  intervaloKm: number | null;
+  observacao: string | null;
+}
+
+export interface SistemaCatalogo {
+  chave: string;
+  rotulo: string;
+  total: number;
+}
+
+export interface CatalogoDePecas {
+  veiculo: { id: number; nome: string; placa: string } | null;
+  /** Modelo do catálogo achado para o veículo, se houver. */
+  modelo: { nome: string; categoriaRotulo: string } | null;
+  /** modelo: peças do modelo; geral: só as comuns a qualquer carro; catalogo: tudo. */
+  escopo: "modelo" | "geral" | "catalogo";
+  total: number;
+  sistemas: SistemaCatalogo[];
+  pecas: PecaCatalogo[];
+  modelosNoCatalogo: number;
+  aviso: string;
+}
+
+export interface FiltroPecas {
+  q?: string;
+  veiculoId?: number;
+  sistema?: string;
+}

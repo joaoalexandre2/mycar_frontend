@@ -3,6 +3,7 @@ import {
     Users,
     Car,
     Wrench,
+    Package,
     ClipboardList,
     Settings,
     ShieldCheck,
@@ -106,6 +107,13 @@ import {
                   to="/servicos"
                   icon={<Wrench size={19} />}
                   label="Serviços"
+                  aoNavegar={aoFechar}
+                />
+
+                <SidebarItem
+                  to="/pecas"
+                  icon={<Package size={19} />}
+                  label="Peças"
                   aoNavegar={aoFechar}
                 />
               </>

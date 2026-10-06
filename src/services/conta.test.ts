@@ -4,6 +4,8 @@ import {
   abastecimentoService,
   contaService,
   documentoService,
+  catalogoPecasService,
+  mapearCatalogoPecas,
   despesaService,
   mapearDespesas,
   mapearServicos,
@@ -496,6 +498,58 @@ describe("despesas da conta", () => {
     });
     expect(getSpy).toHaveBeenNthCalledWith(2, "/conta/despesas", {
       params: { de: undefined, ate: undefined, veiculo_id: undefined },
+    });
+  });
+});
+
+describe("catálogo de peças", () => {
+  const resposta = {
+    veiculo: { id: 7, nome: "Fiat Uno", placa: "AAA1B25" },
+    modelo: { nome: "Fiat Uno", categoria: "hatch", categoria_rotulo: "Hatch" },
+    escopo: "modelo" as const,
+    total: 1,
+    sistemas: [{ chave: "suspensao", rotulo: "Suspensão", total: 1 }],
+    pecas: [
+      {
+        id: "amortecedor-dianteiro",
+        sistema: "suspensao",
+        sistema_rotulo: "Suspensão",
+        nome: "Amortecedor dianteiro",
+        posicao: "dianteiro" as const,
+        intervalo_km: 70000,
+        observacao: null,
+      },
+    ],
+    modelos_no_catalogo: 86,
+    aviso: "Confirme pelo chassi.",
+  };
+
+  it("converte o modelo achado e as peças", () => {
+    const dados = mapearCatalogoPecas(resposta);
+
+    expect(dados.modelo).toEqual({ nome: "Fiat Uno", categoriaRotulo: "Hatch" });
+    expect(dados.escopo).toBe("modelo");
+    expect(dados.pecas[0].sistemaRotulo).toBe("Suspensão");
+    expect(dados.pecas[0].intervaloKm).toBe(70000);
+    expect(dados.modelosNoCatalogo).toBe(86);
+  });
+
+  it("sem modelo no catálogo, o modelo fica nulo", () => {
+    expect(mapearCatalogoPecas({ ...resposta, modelo: null, escopo: "geral" }).modelo).toBeNull();
+  });
+
+  it("envia só os filtros informados", async () => {
+    const getSpy = vi.spyOn(api, "get").mockResolvedValue({ data: resposta } as never);
+    getSpy.mockClear();
+
+    await catalogoPecasService.buscar({ q: "coifa", veiculoId: 7, sistema: "suspensao" });
+    await catalogoPecasService.buscar();
+
+    expect(getSpy).toHaveBeenNthCalledWith(1, "/conta/pecas-catalogo", {
+      params: { q: "coifa", veiculo_id: 7, sistema: "suspensao" },
+    });
+    expect(getSpy).toHaveBeenNthCalledWith(2, "/conta/pecas-catalogo", {
+      params: { q: undefined, veiculo_id: undefined, sistema: undefined },
     });
   });
 });
