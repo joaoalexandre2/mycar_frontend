@@ -12,6 +12,7 @@ const ROTULO_TIPO = {
   ipva: "IPVA",
   licenciamento: "Licenciamento",
   revisao: "Revisão",
+  seguro: "Fim do seguro",
 } as const;
 
 function textoDeDias(dias: number) {

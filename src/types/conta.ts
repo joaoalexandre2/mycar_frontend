@@ -33,7 +33,7 @@ export interface VeiculoContaPayload {
   fipe_ano?: string | null;
 }
 
-export type TipoVencimento = "ipva" | "licenciamento" | "revisao";
+export type TipoVencimento = "ipva" | "licenciamento" | "revisao" | "seguro";
 
 export interface PreferenciasConta {
   nome: string | null;
@@ -106,4 +106,38 @@ export interface NovoAbastecimento {
   tanque_cheio: boolean;
   combustivel?: string | null;
   posto?: string | null;
+}
+
+export type TipoSeguro = "apolice" | "proposta";
+
+export interface Seguro {
+  id: number;
+  tipo: TipoSeguro;
+  seguradora: string;
+  valorAnual: number;
+  franquia: number | null;
+  vigenciaFim: string | null;
+  observacoes: string | null;
+  valorMensal: number;
+  /** % em relação à referência pelo valor FIPE (positivo = acima). */
+  vsReferenciaPct: number | null;
+  /** Só nas propostas: quanto sobra (ou falta) em relação ao que se paga hoje. */
+  economiaVsApolice: number | null;
+}
+
+export interface SegurosDoVeiculo {
+  seguros: Seguro[];
+  referencia: { baixo: number; medio: number; alto: number } | null;
+  apoliceAtualId: number | null;
+  melhorPropostaId: number | null;
+  aviso: string;
+}
+
+export interface NovoSeguro {
+  tipo: TipoSeguro;
+  seguradora: string;
+  valor_anual: number;
+  franquia?: number | null;
+  vigencia_fim?: string | null;
+  observacoes?: string | null;
 }

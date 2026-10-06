@@ -8,6 +8,7 @@ import {
   Plus,
   RefreshCw,
   Search,
+  ShieldCheck,
   Trash2,
   Wallet,
   X,
@@ -18,6 +19,7 @@ import {
 } from "../../components/veiculos/FipeSeletor";
 import { StatCard } from "../../components/dashboard/StatCard";
 import { AbastecimentosModal } from "./AbastecimentosModal";
+import { SegurosModal } from "./SegurosModal";
 import { contaService } from "../../services/conta";
 import { mensagemErro } from "../../services/api";
 import { useAuth } from "../../hooks/useAuth";
@@ -57,6 +59,7 @@ export function MeusVeiculos() {
   const [editando, setEditando] = useState<VeiculoConta | null>(null);
   const [consultandoId, setConsultandoId] = useState<number | null>(null);
   const [abastecendo, setAbastecendo] = useState<VeiculoConta | null>(null);
+  const [segurando, setSegurando] = useState<VeiculoConta | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -356,6 +359,13 @@ export function MeusVeiculos() {
                           </button>
                         )}
                       <button
+                        onClick={() => setSegurando(veiculo)}
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-blue-50 hover:text-blue-600"
+                        title="Seguro: apólice e propostas"
+                      >
+                        <ShieldCheck size={15} />
+                      </button>
+                      <button
                         onClick={() => setAbastecendo(veiculo)}
                         className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-blue-50 hover:text-blue-600"
                         title="Abastecimentos e consumo"
@@ -427,6 +437,13 @@ export function MeusVeiculos() {
           </div>
         </div>
       </div>
+
+      {segurando && (
+        <SegurosModal
+          veiculo={segurando}
+          onClose={() => setSegurando(null)}
+        />
+      )}
 
       {abastecendo && (
         <AbastecimentosModal

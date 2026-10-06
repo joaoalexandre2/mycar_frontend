@@ -5,6 +5,8 @@ import {
   contaService,
   mapearAbastecimentos,
   mapearResumoConta,
+  mapearSeguros,
+  seguroService,
   mapearVeiculoConta,
 } from "./conta";
 
@@ -246,5 +248,74 @@ describe("abastecimentoService", () => {
     expect(getSpy).toHaveBeenCalledWith("/conta/veiculos/7/abastecimentos");
     expect(postSpy).toHaveBeenCalledWith("/conta/veiculos/7/abastecimentos", expect.objectContaining({ km: 10400 }));
     expect(deleteSpy).toHaveBeenCalledWith("/conta/veiculos/7/abastecimentos/2");
+  });
+});
+
+describe("seguroService", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const resposta = {
+    seguros: [
+      {
+        id: 1,
+        tipo: "apolice" as const,
+        seguradora: "Atual",
+        valor_anual: "3000.00",
+        franquia: "2500.00",
+        vigencia_fim: "2026-06-30",
+        observacoes: null,
+        valor_mensal: 250,
+        vs_referencia_pct: 27.7,
+        economia_vs_apolice: null,
+      },
+      {
+        id: 2,
+        tipo: "proposta" as const,
+        seguradora: "Barata",
+        valor_anual: "2400.00",
+        franquia: null,
+        vigencia_fim: null,
+        observacoes: "Compreensiva",
+        valor_mensal: 200,
+        vs_referencia_pct: 2.1,
+        economia_vs_apolice: 600,
+      },
+    ],
+    referencia: { baixo: 1500, medio: 2350, alto: 4000 },
+    apolice_atual_id: 1,
+    melhor_proposta_id: 2,
+    aviso: "Referência, não é cotação.",
+  };
+
+  it("converte valores que chegam como texto e mantém a comparação", () => {
+    const dados = mapearSeguros(resposta);
+
+    expect(dados.seguros[0].valorAnual).toBe(3000);
+    expect(dados.seguros[0].franquia).toBe(2500);
+    expect(dados.seguros[1].franquia).toBeNull();
+    expect(dados.seguros[1].economiaVsApolice).toBe(600);
+    expect(dados.referencia?.medio).toBe(2350);
+    expect(dados.apoliceAtualId).toBe(1);
+    expect(dados.melhorPropostaId).toBe(2);
+  });
+
+  it("aceita resposta sem referência (veículo sem valor FIPE)", () => {
+    expect(mapearSeguros({ ...resposta, referencia: null }).referencia).toBeNull();
+  });
+
+  it("lista, registra e remove nas rotas do veículo", async () => {
+    const getSpy = vi.spyOn(api, "get").mockResolvedValueOnce({ data: resposta } as never);
+    const postSpy = vi.spyOn(api, "post").mockResolvedValueOnce({ data: resposta } as never);
+    const deleteSpy = vi.spyOn(api, "delete").mockResolvedValueOnce({ data: resposta } as never);
+
+    await seguroService.listar(7);
+    await seguroService.registrar(7, { tipo: "proposta", seguradora: "X", valor_anual: 2400 });
+    await seguroService.remover(7, 2);
+
+    expect(getSpy).toHaveBeenCalledWith("/conta/veiculos/7/seguros");
+    expect(postSpy).toHaveBeenCalledWith("/conta/veiculos/7/seguros", expect.objectContaining({ tipo: "proposta" }));
+    expect(deleteSpy).toHaveBeenCalledWith("/conta/veiculos/7/seguros/2");
   });
 });
