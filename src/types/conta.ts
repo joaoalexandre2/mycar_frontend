@@ -295,6 +295,10 @@ export interface PecaCatalogo {
   posicao: "dianteiro" | "traseiro" | null;
   intervaloKm: number | null;
   observacao: string | null;
+  /** Marcas de reposição comuns (não garantem compatibilidade). */
+  marcas: string[];
+  /** Códigos que a própria pessoa confirmou para este veículo. */
+  meusCodigos: CodigoPeca[];
 }
 
 export interface SistemaCatalogo {
@@ -306,7 +310,7 @@ export interface SistemaCatalogo {
 export interface CatalogoDePecas {
   veiculo: { id: number; nome: string; placa: string } | null;
   /** Modelo do catálogo achado para o veículo, se houver. */
-  modelo: { nome: string; categoriaRotulo: string } | null;
+  modelo: { nome: string; categoriaRotulo: string; original: string | null } | null;
   /** modelo: peças do modelo; geral: só as comuns a qualquer carro; catalogo: tudo. */
   escopo: "modelo" | "geral" | "catalogo";
   total: number;
@@ -320,4 +324,19 @@ export interface FiltroPecas {
   q?: string;
   veiculoId?: number;
   sistema?: string;
+}
+
+export interface CodigoPeca {
+  id: number;
+  pecaId: string;
+  marca: string | null;
+  codigo: string;
+  observacoes: string | null;
+}
+
+export interface NovoCodigoPeca {
+  peca_id: string;
+  marca?: string | null;
+  codigo: string;
+  observacoes?: string | null;
 }

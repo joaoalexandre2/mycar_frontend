@@ -1,11 +1,17 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { Info, Package, Search } from "lucide-react";
-import { catalogoPecasService, contaService } from "../../services/conta";
+import { ExternalLink, Info, Package, Search, Trash2 } from "lucide-react";
+import {
+  catalogoPecasService,
+  codigoPecaService,
+  contaService,
+} from "../../services/conta";
 import { mensagemErro } from "../../services/api";
 import { formatarKm } from "../../utils/formatters";
+import { linksDeBusca } from "../../utils/pecas";
 import type {
   CatalogoDePecas,
+  CodigoPeca,
   PecaCatalogo,
   VeiculoConta,
 } from "../../types/conta";
@@ -25,6 +31,200 @@ function agruparPorSistema(pecas: PecaCatalogo[]) {
   }
 
   return [...grupos.entries()];
+}
+
+const classeCampo =
+  "h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
+
+function PecaItem({
+  peca,
+  veiculo,
+  modeloCatalogo,
+  aoMudarCodigos,
+}: {
+  peca: PecaCatalogo;
+  veiculo: VeiculoConta | null;
+  modeloCatalogo?: string;
+  aoMudarCodigos: (pecaId: string, codigos: CodigoPeca[]) => void;
+}) {
+  const [aberto, setAberto] = useState(false);
+  const [marca, setMarca] = useState("");
+  const [codigo, setCodigo] = useState("");
+  const [erro, setErro] = useState<string | null>(null);
+  const [salvando, setSalvando] = useState(false);
+
+  const links = veiculo ? linksDeBusca(peca, veiculo, modeloCatalogo) : null;
+
+  async function salvar(event: FormEvent) {
+    event.preventDefault();
+    if (!veiculo) return;
+    setErro(null);
+
+    if (!codigo.trim()) {
+      setErro("Informe o código da peça.");
+      return;
+    }
+
+    try {
+      setSalvando(true);
+      const novo = await codigoPecaService.registrar(veiculo.id, {
+        peca_id: peca.id,
+        marca: marca.trim() || null,
+        codigo: codigo.trim(),
+      });
+      aoMudarCodigos(peca.id, [...peca.meusCodigos, novo]);
+      setMarca("");
+      setCodigo("");
+      setAberto(false);
+    } catch (error) {
+      setErro(mensagemErro(error));
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  async function remover(item: CodigoPeca) {
+    if (!veiculo || !window.confirm(`Remover o código ${item.codigo}?`)) return;
+
+    try {
+      await codigoPecaService.remover(veiculo.id, item.id);
+      aoMudarCodigos(
+        peca.id,
+        peca.meusCodigos.filter((c) => c.id !== item.id),
+      );
+    } catch (error) {
+      setErro(mensagemErro(error));
+    }
+  }
+
+  return (
+    <li className="px-5 py-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="text-xs font-semibold text-gray-900">{peca.nome}</p>
+        {peca.posicao && (
+          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[9px] font-bold uppercase text-gray-500">
+            {peca.posicao}
+          </span>
+        )}
+      </div>
+
+      {peca.intervaloKm !== null && (
+        <p className="mt-1 text-[11px] text-gray-500">
+          Troca típica a cada {formatarKm(peca.intervaloKm)}
+        </p>
+      )}
+      {peca.observacao && (
+        <p className="mt-0.5 text-[11px] text-gray-400">{peca.observacao}</p>
+      )}
+
+      {peca.marcas.length > 0 && (
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          <span className="text-[10px] text-gray-400">Marcas comuns:</span>
+          {peca.marcas.map((m) => (
+            <span
+              key={m}
+              className="rounded-full border border-gray-200 px-2 py-0.5 text-[10px] font-medium text-gray-600"
+            >
+              {m}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {peca.meusCodigos.length > 0 && (
+        <ul className="mt-2 space-y-1">
+          {peca.meusCodigos.map((item) => (
+            <li
+              key={item.id}
+              className="flex items-center justify-between gap-2 rounded-lg bg-emerald-50 px-3 py-1.5 text-[11px] text-emerald-800"
+            >
+              <span>
+                <strong>Meu código:</strong> {item.codigo}
+                {item.marca && ` · ${item.marca}`}
+              </span>
+              <button
+                type="button"
+                onClick={() => void remover(item)}
+                title="Remover"
+                className="text-emerald-700 hover:text-red-600"
+              >
+                <Trash2 size={13} />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {links && (
+        <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px]">
+          <a
+            href={links.google}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 font-semibold text-blue-600 hover:text-blue-700"
+          >
+            Achar o código <ExternalLink size={11} />
+          </a>
+          <a
+            href={links.mercadoLivre}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-gray-500 hover:text-gray-700"
+          >
+            Ver no Mercado Livre <ExternalLink size={11} />
+          </a>
+          <button
+            type="button"
+            onClick={() => setAberto((v) => !v)}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            {aberto ? "Cancelar" : "Anotar meu código"}
+          </button>
+        </div>
+      )}
+
+      {aberto && (
+        <form onSubmit={(e) => void salvar(e)} className="mt-2 space-y-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <input
+              type="text"
+              value={marca}
+              maxLength={60}
+              placeholder="Marca (ex.: Cofap)"
+              onChange={(e) => setMarca(e.target.value)}
+              className={classeCampo}
+            />
+            <input
+              type="text"
+              value={codigo}
+              maxLength={60}
+              placeholder="Código confirmado"
+              onChange={(e) => setCodigo(e.target.value)}
+              className={classeCampo}
+            />
+          </div>
+          {erro && (
+            <p role="alert" className="text-[11px] text-red-600">
+              {erro}
+            </p>
+          )}
+          <button
+            type="submit"
+            disabled={salvando}
+            className="h-8 rounded-lg bg-blue-600 px-3 text-[11px] font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+          >
+            {salvando ? "Salvando..." : "Salvar código"}
+          </button>
+        </form>
+      )}
+
+      {!aberto && erro && (
+        <p role="alert" className="mt-1 text-[11px] text-red-600">
+          {erro}
+        </p>
+      )}
+    </li>
+  );
 }
 
 export function Pecas() {
@@ -92,6 +292,22 @@ export function Pecas() {
   }, [veiculoId, buscaAplicada, sistema]);
 
   const grupos = useMemo(() => agruparPorSistema(dados?.pecas ?? []), [dados]);
+
+  const veiculoAtual =
+    (veiculos ?? []).find((v) => String(v.id) === veiculoId) ?? null;
+
+  function atualizarCodigos(pecaId: string, codigos: CodigoPeca[]) {
+    setDados((atual) =>
+      atual
+        ? {
+            ...atual,
+            pecas: atual.pecas.map((p) =>
+              p.id === pecaId ? { ...p, meusCodigos: codigos } : p,
+            ),
+          }
+        : atual,
+    );
+  }
 
   function trocarVeiculo(valor: string) {
     setVeiculoId(valor);
@@ -169,6 +385,8 @@ export function Pecas() {
                 Peças do <strong>{dados.modelo.nome}</strong> (
                 {dados.modelo.categoriaRotulo.toLowerCase()}), o modelo do seu
                 veículo.
+                {dados.modelo.original &&
+                  ` Marca da peça original da montadora: ${dados.modelo.original}.`}
               </p>
             )}
             {dados.escopo === "geral" && (
@@ -262,29 +480,13 @@ export function Pecas() {
 
             <ul className="divide-y divide-gray-100">
               {grupo.itens.map((peca) => (
-                <li key={peca.id} className="px-5 py-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-xs font-semibold text-gray-900">
-                      {peca.nome}
-                    </p>
-                    {peca.posicao && (
-                      <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[9px] font-bold uppercase text-gray-500">
-                        {peca.posicao}
-                      </span>
-                    )}
-                  </div>
-
-                  {peca.intervaloKm !== null && (
-                    <p className="mt-1 text-[11px] text-gray-500">
-                      Troca típica a cada {formatarKm(peca.intervaloKm)}
-                    </p>
-                  )}
-                  {peca.observacao && (
-                    <p className="mt-0.5 text-[11px] text-gray-400">
-                      {peca.observacao}
-                    </p>
-                  )}
-                </li>
+                <PecaItem
+                  key={peca.id}
+                  peca={peca}
+                  veiculo={veiculoAtual}
+                  modeloCatalogo={dados?.modelo?.nome}
+                  aoMudarCodigos={atualizarCodigos}
+                />
               ))}
             </ul>
           </div>
@@ -294,7 +496,9 @@ export function Pecas() {
       {dados && (
         <p className="mt-5 flex items-start gap-2 text-[11px] text-gray-400">
           <Info size={14} className="mt-0.5 shrink-0" />
-          {dados.aviso} Os intervalos de troca são típicos e variam por modelo e
+          {dados.aviso} As marcas são fabricantes comuns desse tipo de peça, não
+          garantia de que servem no seu carro: use “Achar o código” e confirme
+          pelo chassi, depois anote o código confirmado. Os intervalos de troca são típicos e variam por modelo e
           uso: vale o manual do veículo.
         </p>
       )}
