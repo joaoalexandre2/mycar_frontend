@@ -83,9 +83,18 @@ function Linha({
   );
 }
 
-export function DespesasModal({ onClose }: { onClose: () => void }) {
+export function DespesasModal({
+  onClose,
+  veiculoInicialId,
+}: {
+  onClose: () => void;
+  /** Abre já filtrado para este veículo (botão na linha do veículo). */
+  veiculoInicialId?: number;
+}) {
   const [periodo, setPeriodo] = useState<Periodo>("12m");
-  const [veiculoId, setVeiculoId] = useState("");
+  const [veiculoId, setVeiculoId] = useState(
+    veiculoInicialId ? String(veiculoInicialId) : "",
+  );
   const [veiculos, setVeiculos] = useState<VeiculoConta[]>([]);
   const [dados, setDados] = useState<Despesas | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -165,7 +174,7 @@ export function DespesasModal({ onClose }: { onClose: () => void }) {
               </button>
             ))}
 
-            {veiculos.length > 1 && (
+            {(veiculos.length > 1 || veiculoInicialId !== undefined) && (
               <select
                 value={veiculoId}
                 onChange={(e) => setVeiculoId(e.target.value)}

@@ -8,6 +8,7 @@ import {
   Plus,
   RefreshCw,
   Search,
+  CircleDollarSign,
   FileText,
   ShieldCheck,
   Trash2,
@@ -22,6 +23,7 @@ import { StatCard } from "../../components/dashboard/StatCard";
 import { AbastecimentosModal } from "./AbastecimentosModal";
 import { SegurosModal } from "./SegurosModal";
 import { DocumentosModal } from "./DocumentosModal";
+import { DespesasModal } from "../../components/layout/DespesasModal";
 import { contaService } from "../../services/conta";
 import { mensagemErro } from "../../services/api";
 import { useAuth } from "../../hooks/useAuth";
@@ -63,6 +65,7 @@ export function MeusVeiculos() {
   const [abastecendo, setAbastecendo] = useState<VeiculoConta | null>(null);
   const [segurando, setSegurando] = useState<VeiculoConta | null>(null);
   const [documentando, setDocumentando] = useState<VeiculoConta | null>(null);
+  const [gastando, setGastando] = useState<VeiculoConta | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -362,6 +365,13 @@ export function MeusVeiculos() {
                           </button>
                         )}
                       <button
+                        onClick={() => setGastando(veiculo)}
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-blue-50 hover:text-blue-600"
+                        title="Despesas: combustível, serviços e seguro"
+                      >
+                        <CircleDollarSign size={15} />
+                      </button>
+                      <button
                         onClick={() => setDocumentando(veiculo)}
                         className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-blue-50 hover:text-blue-600"
                         title="Documentos: CRLV e vencimentos"
@@ -447,6 +457,13 @@ export function MeusVeiculos() {
           </div>
         </div>
       </div>
+
+      {gastando && (
+        <DespesasModal
+          veiculoInicialId={gastando.id}
+          onClose={() => setGastando(null)}
+        />
+      )}
 
       {documentando && (
         <DocumentosModal
