@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Bell, Building2, Check, Palette, Settings, User } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { mensagemErro } from "../../services/api";
+import { authService } from "../../services/auth";
 import { configuracaoService } from "../../services/configuracao";
 import { contaService } from "../../services/conta";
 import { perfilDe } from "../../utils/perfil";
@@ -437,19 +438,30 @@ const CORES: { chave: Cor; classe: string; nome: string }[] = [
 ];
 
 function Aparencia() {
-  const [tema, setTema] = useState<Tema>(obterTema());
-  const [cor, setCor] = useState<Cor>(obterCor());
+  const { usuario, atualizarUsuario } = useAuth();
+  const [tema, setTema] = useState<Tema>(usuario?.tema ?? obterTema());
+  const [cor, setCor] = useState<Cor>(usuario?.cor ?? obterCor());
+  const [aviso, setAviso] = useState<string | null>(null);
 
-  function escolher(novoTema: Tema, novaCor: Cor) {
+  async function escolher(novoTema: Tema, novaCor: Cor) {
     setTema(novoTema);
     setCor(novaCor);
+    setAviso(null);
     salvarAparencia(novoTema, novaCor);
+
+    try {
+      atualizarUsuario(await authService.salvarAparencia(novoTema, novaCor));
+    } catch {
+      setAviso(
+        "Não foi possível salvar na sua conta agora. A escolha vale só neste navegador.",
+      );
+    }
   }
 
   return (
     <Secao
       titulo="Aparência"
-      descricao="Muda na hora e fica salvo neste navegador."
+      descricao="Muda na hora e fica salva na sua conta, em qualquer navegador. O login sempre usa o visual padrão."
     >
       <div className="space-y-6">
         <div>
@@ -463,7 +475,7 @@ function Aparencia() {
             ).map(([chave, titulo, descricao]) => (
               <button
                 key={chave}
-                onClick={() => escolher(chave, cor)}
+                onClick={() => void escolher(chave, cor)}
                 className={`rounded-lg border p-4 text-left transition ${
                   tema === chave
                     ? "border-blue-500 bg-blue-50"
@@ -492,7 +504,7 @@ function Aparencia() {
             {CORES.map((item) => (
               <button
                 key={item.chave}
-                onClick={() => escolher(tema, item.chave)}
+                onClick={() => void escolher(tema, item.chave)}
                 title={item.nome}
                 aria-label={item.nome}
                 className={`flex h-10 w-10 items-center justify-center rounded-full ${item.classe} ${
@@ -504,6 +516,12 @@ function Aparencia() {
             ))}
           </div>
         </div>
+
+        {aviso && (
+          <p role="alert" className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
+            {aviso}
+          </p>
+        )}
       </div>
     </Secao>
   );

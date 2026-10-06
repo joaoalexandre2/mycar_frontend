@@ -1,5 +1,6 @@
 import api from "./api";
 import type { LoginPayload, RegisterPayload, Usuario } from "../types/auth";
+import type { Cor, Tema } from "../utils/preferencias";
 import {
   limparSessao,
   salvarSessao,
@@ -34,6 +35,15 @@ export const authService = {
    */
   async atualizarSessao(): Promise<Usuario> {
     const { data } = await api.get<Usuario>("/me");
+
+    salvarUsuario(data);
+
+    return data;
+  },
+
+  /** Grava o tema e a cor na conta (valem em qualquer navegador). */
+  async salvarAparencia(tema: Tema, cor: Cor): Promise<Usuario> {
+    const { data } = await api.put<Usuario>("/me/aparencia", { tema, cor });
 
     salvarUsuario(data);
 

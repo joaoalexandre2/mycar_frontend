@@ -4,6 +4,8 @@ import {
   abastecimentoService,
   contaService,
   documentoService,
+  despesaService,
+  mapearDespesas,
   mapearServicos,
   servicoService,
   mapearDocumentos,
@@ -448,5 +450,52 @@ describe("serviços da conta", () => {
     expect(getSpy).toHaveBeenCalledWith("/conta/servicos");
     expect(postSpy).toHaveBeenCalledWith("/conta/servicos", expect.objectContaining({ tipo: "oleo" }));
     expect(deleteSpy).toHaveBeenCalledWith("/conta/servicos/1");
+  });
+});
+
+describe("despesas da conta", () => {
+  const resposta = {
+    total: 1300,
+    combustivel: {
+      total: 550,
+      litros: 108.5,
+      itens: [{ tipo: "gasolina", rotulo: "Gasolina", total: 400, litros: 68.5, quantidade: 2 }],
+    },
+    servicos: {
+      total: 750,
+      itens: [{ tipo: "oleo", rotulo: "Troca de óleo", total: 300, quantidade: 1 }],
+    },
+    seguro: {
+      valor_anual_total: 3000,
+      itens: [{ veiculo: "Fiat Uno", seguradora: "Atual", valor_anual: 3000, vigencia_fim: "2026-06-30" }],
+    },
+    por_veiculo: [
+      { veiculo_id: 7, veiculo: "Fiat Uno", placa: "AAA1B25", combustivel: 550, servicos: 750, total: 1300 },
+    ],
+  };
+
+  it("converte as categorias, o seguro anual e o resumo por veículo", () => {
+    const dados = mapearDespesas(resposta);
+
+    expect(dados.total).toBe(1300);
+    expect(dados.combustivel.itens[0].rotulo).toBe("Gasolina");
+    expect(dados.seguro.valorAnualTotal).toBe(3000);
+    expect(dados.seguro.itens[0].vigenciaFim).toBe("2026-06-30");
+    expect(dados.porVeiculo[0].veiculoId).toBe(7);
+  });
+
+  it("envia só os filtros informados", async () => {
+    const getSpy = vi.spyOn(api, "get").mockResolvedValue({ data: resposta } as never);
+    getSpy.mockClear();
+
+    await despesaService.listar({ de: "2026-01-01", veiculoId: 7 });
+    await despesaService.listar();
+
+    expect(getSpy).toHaveBeenNthCalledWith(1, "/conta/despesas", {
+      params: { de: "2026-01-01", ate: undefined, veiculo_id: 7 },
+    });
+    expect(getSpy).toHaveBeenNthCalledWith(2, "/conta/despesas", {
+      params: { de: undefined, ate: undefined, veiculo_id: undefined },
+    });
   });
 });

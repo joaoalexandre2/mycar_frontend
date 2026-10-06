@@ -1,9 +1,12 @@
-import {
+import { useState } from "react";
+  import {
     Bell,
+    CircleDollarSign,
     Menu,
     Search,
     CircleUserRound,
   } from "lucide-react";
+  import { DespesasModal } from "./DespesasModal";
   import { useLocation } from "react-router-dom";
   import { useAuth } from "../../hooks/useAuth";
   import { iniciais } from "../../utils/iniciais";
@@ -34,6 +37,7 @@ import {
   export function Header({ aoAbrirMenu }: HeaderProps) {
     const { usuario } = useAuth();
     const { pathname } = useLocation();
+    const [despesasAbertas, setDespesasAbertas] = useState(false);
     const titulos = ehConta(perfilDe(usuario)) ? TITULOS_CONTA : TITULOS;
     const { titulo, subtitulo } = titulos[pathname] ?? titulos["/"];
 
@@ -61,6 +65,18 @@ import {
         </div>
 
         <div className="flex items-center gap-3">
+          {ehConta(perfilDe(usuario)) && (
+            <button
+              type="button"
+              onClick={() => setDespesasAbertas(true)}
+              title="Despesas"
+              aria-label="Despesas"
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:bg-gray-50 hover:text-blue-600"
+            >
+              <CircleDollarSign size={19} />
+            </button>
+          )}
+
           <button className="hidden h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:bg-gray-50 sm:flex">
             <Search size={19} />
           </button>
@@ -79,6 +95,9 @@ import {
             <CircleUserRound size={18} />
           </div>
         </div>
+        {despesasAbertas && (
+          <DespesasModal onClose={() => setDespesasAbertas(false)} />
+        )}
       </header>
     );
   }
