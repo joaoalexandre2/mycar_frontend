@@ -11,6 +11,9 @@ export interface Usuario {
   conta?: string | null;
   /** Operador da plataforma. Só mostra/esconde o menu: o backend é quem barra. */
   admin?: boolean;
+  /** Aparência gravada na conta; null/ausente = nunca escolheu. */
+  tema?: "claro" | "escuro" | null;
+  cor?: "blue" | "green" | "purple" | "orange" | null;
 }
 
 export interface LoginPayload {

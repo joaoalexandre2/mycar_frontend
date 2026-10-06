@@ -13,6 +13,7 @@ import { useAuth } from "./hooks/useAuth";
 
 import { Header } from "./components/layout/Header";
 import { Sidebar } from "./components/layout/Sidebar";
+import { AparenciaDoUsuario } from "./components/layout/AparenciaDoUsuario";
 
 import { Dashboard } from "./components/dashboard/Dashboard";
 
@@ -155,6 +156,8 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <AparenciaDoUsuario />
+
         <Routes>
           <Route
             path="/login"

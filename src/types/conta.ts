@@ -240,3 +240,49 @@ export interface NovoSeguro {
   vigencia_fim?: string | null;
   observacoes?: string | null;
 }
+
+export interface DespesaCombustivel {
+  tipo: string;
+  rotulo: string;
+  total: number;
+  litros: number;
+  quantidade: number;
+}
+
+export interface DespesaServico {
+  tipo: string;
+  rotulo: string;
+  total: number;
+  quantidade: number;
+}
+
+export interface DespesaVeiculo {
+  veiculoId: number;
+  veiculo: string;
+  placa: string;
+  combustivel: number;
+  servicos: number;
+  total: number;
+}
+
+export interface DespesaSeguro {
+  veiculo: string | null;
+  seguradora: string;
+  valorAnual: number;
+  vigenciaFim: string | null;
+}
+
+export interface Despesas {
+  total: number;
+  combustivel: { total: number; litros: number; itens: DespesaCombustivel[] };
+  servicos: { total: number; itens: DespesaServico[] };
+  /** Valor anual da apólice atual: fica à parte, fora do total do período. */
+  seguro: { valorAnualTotal: number; itens: DespesaSeguro[] };
+  porVeiculo: DespesaVeiculo[];
+}
+
+export interface FiltroDespesas {
+  de?: string;
+  ate?: string;
+  veiculoId?: number;
+}
