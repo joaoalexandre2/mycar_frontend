@@ -4,6 +4,8 @@ import {
     Car,
     Wrench,
     Package,
+    Scale,
+    Lightbulb,
     ClipboardList,
     Settings,
     ShieldCheck,
@@ -123,6 +125,13 @@ import {
                   label="Ficha técnica"
                   aoNavegar={aoFechar}
                 />
+
+                <SidebarItem
+                  to="/comparador"
+                  icon={<Scale size={19} />}
+                  label="Comparador"
+                  aoNavegar={aoFechar}
+                />
               </>
             ) : (
               <>
@@ -166,6 +175,13 @@ import {
             <p className="mb-2 mt-7 px-2 text-[10px] font-bold tracking-widest text-gray-500">
               SISTEMA
             </p>
+
+            <SidebarItem
+              to="/sugestoes"
+              icon={<Lightbulb size={19} />}
+              label="Sugestões"
+              aoNavegar={aoFechar}
+            />
 
             <SidebarItem
               to="/configuracoes"
