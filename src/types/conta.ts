@@ -340,3 +340,63 @@ export interface NovoCodigoPeca {
   codigo: string;
   observacoes?: string | null;
 }
+
+export interface CampoFicha {
+  chave: string;
+  rotulo: string;
+  valor: string;
+}
+
+export interface DadosFipeFicha {
+  codigoFipe: string | null;
+  combustivel: string | null;
+  anoModelo: number | null;
+  valor: number | null;
+  mesReferencia: string | null;
+}
+
+/** Dados do MODELO coletados de uma fonte pública (hoje, a Wikipédia). */
+export interface DadosDoModelo {
+  modelo: string;
+  fonte: string;
+  pagina: string;
+  url: string;
+  licenca: string;
+  coletadoEm: string;
+  campos: CampoFicha[];
+}
+
+export type ManutencaoFicha = Partial<
+  Record<
+    | "oleo_viscosidade"
+    | "oleo_especificacao"
+    | "oleo_capacidade_litros"
+    | "filtro_oleo"
+    | "filtro_ar"
+    | "filtro_combustivel"
+    | "pneu_medida"
+    | "pneu_pressao_dianteira"
+    | "pneu_pressao_traseira"
+    | "observacoes",
+    string | number | null
+  >
+>;
+
+export interface FichaTecnicaConta {
+  veiculo: {
+    id: number;
+    nome: string;
+    placa: string;
+    marca: string;
+    modelo: string;
+    ano: number;
+    uf: string | null;
+  };
+  fipe: DadosFipeFicha | null;
+  /** ok: consultada agora; sem_codigo: veículo sem código FIPE; indisponivel: FIPE fora do ar. */
+  fipeStatus: "ok" | "sem_codigo" | "indisponivel";
+  /** Lido do nome da versão (ex.: "1.4 8V Flex 5p Mec."). */
+  especificacoes: CampoFicha[];
+  dadosModelo: DadosDoModelo | null;
+  manutencao: ManutencaoFicha | null;
+}

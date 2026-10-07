@@ -116,6 +116,13 @@ import {
                   label="Peças"
                   aoNavegar={aoFechar}
                 />
+
+                <SidebarItem
+                  to="/ficha-tecnica"
+                  icon={<ClipboardList size={19} />}
+                  label="Ficha técnica"
+                  aoNavegar={aoFechar}
+                />
               </>
             ) : (
               <>
