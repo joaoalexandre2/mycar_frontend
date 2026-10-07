@@ -18,6 +18,7 @@ import { useState } from "react";
     "/veiculos": { titulo: "Veículos", subtitulo: "Veículos, valor FIPE e impostos." },
     "/ordens-servico": { titulo: "Ordens de serviço", subtitulo: "Serviços dos veículos da oficina." },
     "/manutencoes": { titulo: "Manutenções", subtitulo: "Histórico e próximas manutenções." },
+    "/sugestoes": { titulo: "Sugestões", subtitulo: "Ajude a melhorar o MyCar." },
     "/configuracoes": { titulo: "Configurações", subtitulo: "Preferências do sistema." },
     "/admin": { titulo: "Administração", subtitulo: "Visão geral da plataforma." },
   };
@@ -29,6 +30,8 @@ import { useState } from "react";
     "/servicos": { titulo: "Serviços", subtitulo: "Troca de óleo, bateria e avisos da próxima vez." },
     "/pecas": { titulo: "Peças", subtitulo: "Catálogo de peças do seu carro." },
     "/ficha-tecnica": { titulo: "Ficha técnica", subtitulo: "Dados do seu carro e manutenção." },
+    "/comparador": { titulo: "Comparador", subtitulo: "Os menores preços para a peça que você procura." },
+    "/sugestoes": { titulo: "Sugestões", subtitulo: "Ajude a melhorar o MyCar." },
     "/configuracoes": { titulo: "Configurações", subtitulo: "Preferências do sistema." },
     "/admin": { titulo: "Administração", subtitulo: "Visão geral da plataforma." },
   };

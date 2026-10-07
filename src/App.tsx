@@ -33,6 +33,8 @@ import { MeusVeiculos } from "./pages/Conta/MeusVeiculos";
 import { Servicos } from "./pages/Conta/Servicos";
 import { Pecas } from "./pages/Conta/Pecas";
 import { FichaTecnica } from "./pages/Conta/FichaTecnica";
+import { Comparador } from "./pages/Conta/Comparador";
+import { Sugestoes } from "./pages/Sugestoes/Sugestoes";
 import { ehConta, perfilDe } from "./utils/perfil";
 
 /** Telas do perfil Oficina (MyCar Oficina). */
@@ -62,6 +64,11 @@ function RotasOficina() {
       <Route
         path="/manutencoes"
         element={<Manutencoes />}
+      />
+
+      <Route
+        path="/sugestoes"
+        element={<Sugestoes />}
       />
 
       <Route
@@ -116,6 +123,16 @@ function RotasConta() {
       <Route
         path="/ficha-tecnica"
         element={<FichaTecnica />}
+      />
+
+      <Route
+        path="/comparador"
+        element={<Comparador />}
+      />
+
+      <Route
+        path="/sugestoes"
+        element={<Sugestoes />}
       />
 
       <Route
