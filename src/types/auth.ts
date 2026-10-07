@@ -14,6 +14,8 @@ export interface Usuario {
   /** Aparência gravada na conta; null/ausente = nunca escolheu. */
   tema?: "claro" | "escuro" | null;
   cor?: "blue" | "green" | "purple" | "orange" | null;
+  /** Foto de perfil (data URI); null/ausente = mostra as iniciais. */
+  foto?: string | null;
 }
 
 export interface LoginPayload {

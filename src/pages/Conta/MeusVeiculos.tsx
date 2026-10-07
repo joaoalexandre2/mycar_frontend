@@ -8,6 +8,7 @@ import {
   Plus,
   RefreshCw,
   Search,
+  Camera,
   CircleDollarSign,
   FileText,
   ShieldCheck,
@@ -24,6 +25,7 @@ import { AbastecimentosModal } from "./AbastecimentosModal";
 import { SegurosModal } from "./SegurosModal";
 import { DocumentosModal } from "./DocumentosModal";
 import { DespesasModal } from "../../components/layout/DespesasModal";
+import { FotosModal } from "./FotosModal";
 import { contaService } from "../../services/conta";
 import { mensagemErro } from "../../services/api";
 import { useAuth } from "../../hooks/useAuth";
@@ -66,6 +68,7 @@ export function MeusVeiculos() {
   const [segurando, setSegurando] = useState<VeiculoConta | null>(null);
   const [documentando, setDocumentando] = useState<VeiculoConta | null>(null);
   const [gastando, setGastando] = useState<VeiculoConta | null>(null);
+  const [fotografando, setFotografando] = useState<VeiculoConta | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -365,6 +368,13 @@ export function MeusVeiculos() {
                           </button>
                         )}
                       <button
+                        onClick={() => setFotografando(veiculo)}
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-blue-50 hover:text-blue-600"
+                        title="Álbum de fotos"
+                      >
+                        <Camera size={15} />
+                      </button>
+                      <button
                         onClick={() => setGastando(veiculo)}
                         className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-blue-50 hover:text-blue-600"
                         title="Despesas: combustível, serviços e seguro"
@@ -457,6 +467,13 @@ export function MeusVeiculos() {
           </div>
         </div>
       </div>
+
+      {fotografando && (
+        <FotosModal
+          veiculo={fotografando}
+          onClose={() => setFotografando(null)}
+        />
+      )}
 
       {gastando && (
         <DespesasModal
