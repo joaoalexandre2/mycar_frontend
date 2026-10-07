@@ -9,7 +9,7 @@ import { useState } from "react";
   import { DespesasModal } from "./DespesasModal";
   import { useLocation } from "react-router-dom";
   import { useAuth } from "../../hooks/useAuth";
-  import { iniciais } from "../../utils/iniciais";
+  import { AvatarMenu } from "./AvatarMenu";
   import { ehConta, perfilDe } from "../../utils/perfil";
 
   const TITULOS: Record<string, { titulo: string; subtitulo: string }> = {
@@ -94,10 +94,8 @@ import { useState } from "react";
           </button>
   
           <div className="ml-1 flex items-center gap-2 text-gray-500">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-600">
-              {iniciais(usuario?.name)}
-            </div>
-  
+            <AvatarMenu />
+
             <CircleUserRound size={18} />
           </div>
         </div>

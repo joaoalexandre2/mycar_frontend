@@ -14,7 +14,7 @@ import {
   } from "lucide-react";
   import { NavLink, useNavigate } from "react-router-dom";
   import { useAuth } from "../../hooks/useAuth";
-  import { iniciais } from "../../utils/iniciais";
+  import { Avatar } from "./Avatar";
   import { ehConta, perfilDe } from "../../utils/perfil";
 
   interface SidebarProps {
@@ -203,9 +203,7 @@ import {
           {/* Usuário */}
           <div className="mt-auto border-t border-gray-800 pt-4">
             <div className="flex items-center gap-3 px-2">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-600">
-                {iniciais(usuario?.name)}
-              </div>
+              <Avatar nome={usuario?.name} foto={usuario?.foto} />
 
               <div className="flex min-w-0 flex-col">
                 <strong className="truncate text-xs">

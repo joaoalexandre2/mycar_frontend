@@ -41,6 +41,23 @@ export const authService = {
     return data;
   },
 
+  /** Foto de perfil já reduzida no navegador (data URI). */
+  async salvarFoto(foto: string): Promise<Usuario> {
+    const { data } = await api.put<Usuario>("/me/foto", { foto });
+
+    salvarUsuario(data);
+
+    return data;
+  },
+
+  async removerFoto(): Promise<Usuario> {
+    const { data } = await api.delete<Usuario>("/me/foto");
+
+    salvarUsuario(data);
+
+    return data;
+  },
+
   /** Grava o tema e a cor na conta (valem em qualquer navegador). */
   async salvarAparencia(tema: Tema, cor: Cor): Promise<Usuario> {
     const { data } = await api.put<Usuario>("/me/aparencia", { tema, cor });
