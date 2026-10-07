@@ -28,6 +28,7 @@ import { useState } from "react";
     "/veiculos": { titulo: "Veículos", subtitulo: "Valor, IPVA e licenciamento estimados." },
     "/servicos": { titulo: "Serviços", subtitulo: "Troca de óleo, bateria e avisos da próxima vez." },
     "/pecas": { titulo: "Peças", subtitulo: "Catálogo de peças do seu carro." },
+    "/ficha-tecnica": { titulo: "Ficha técnica", subtitulo: "Dados do seu carro e manutenção." },
     "/configuracoes": { titulo: "Configurações", subtitulo: "Preferências do sistema." },
     "/admin": { titulo: "Administração", subtitulo: "Visão geral da plataforma." },
   };

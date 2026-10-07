@@ -574,3 +574,51 @@ describe("meu código de peça", () => {
     expect(deleteSpy).toHaveBeenCalledWith("/conta/veiculos/7/codigos-pecas/9");
   });
 });
+
+describe("ficha técnica da conta", () => {
+  const resposta = {
+    veiculo: { id: 7, nome: "Fiat Uno", placa: "AAA1B25", marca: "Fiat", modelo: "Uno 1.0", ano: 2018, uf: null },
+    fipe: { codigo_fipe: "001004-9", combustivel: "Gasolina", ano_modelo: 2018, valor: 41000.5, mes_referencia: "outubro de 2026" },
+    fipe_status: "ok" as const,
+    especificacoes: [{ chave: "motor", rotulo: "Motor (cilindrada)", valor: "1.0 litros" }],
+    dados_modelo: {
+      modelo: "Fiat Uno", fonte: "Wikipédia", pagina: "Fiat Uno", url: "https://pt.wikipedia.org/wiki/Fiat_Uno",
+      licenca: "CC BY-SA 4.0", coletado_em: "2026-10-07", campos: [{ chave: "potencia", rotulo: "Potência", valor: "75 cv" }],
+    },
+    manutencao: { oleo_viscosidade: "5W30" },
+  };
+
+  it("converte a FIPE, os dados do modelo e a manutenção", async () => {
+    const { mapearFichaTecnicaConta } = await import("./conta");
+    const ficha = mapearFichaTecnicaConta(resposta);
+
+    expect(ficha.fipe?.codigoFipe).toBe("001004-9");
+    expect(ficha.fipe?.valor).toBe(41000.5);
+    expect(ficha.fipeStatus).toBe("ok");
+    expect(ficha.dadosModelo?.licenca).toBe("CC BY-SA 4.0");
+    expect(ficha.dadosModelo?.coletadoEm).toBe("2026-10-07");
+    expect(ficha.especificacoes[0].valor).toBe("1.0 litros");
+    expect(ficha.manutencao?.oleo_viscosidade).toBe("5W30");
+  });
+
+  it("sem FIPE nem dados do modelo, vêm nulos", async () => {
+    const { mapearFichaTecnicaConta } = await import("./conta");
+    const ficha = mapearFichaTecnicaConta({ ...resposta, fipe: null, fipe_status: "sem_codigo" as const, dados_modelo: null, manutencao: null });
+
+    expect(ficha.fipe).toBeNull();
+    expect(ficha.dadosModelo).toBeNull();
+    expect(ficha.manutencao).toBeNull();
+  });
+
+  it("busca e salva nas rotas do veículo", async () => {
+    const { fichaTecnicaContaService } = await import("./conta");
+    const getSpy = vi.spyOn(api, "get").mockResolvedValueOnce({ data: resposta } as never);
+    const putSpy = vi.spyOn(api, "put").mockResolvedValueOnce({ data: resposta } as never);
+
+    await fichaTecnicaContaService.buscar(7);
+    await fichaTecnicaContaService.salvar(7, { oleo_viscosidade: "5W30" });
+
+    expect(getSpy).toHaveBeenCalledWith("/conta/veiculos/7/ficha-tecnica");
+    expect(putSpy).toHaveBeenCalledWith("/conta/veiculos/7/ficha-tecnica", { oleo_viscosidade: "5W30" });
+  });
+});
