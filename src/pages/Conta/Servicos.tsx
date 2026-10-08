@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { Plus, Trash2, Wrench, X } from "lucide-react";
 import { contaService, servicoService } from "../../services/conta";
 import { mensagemErro } from "../../services/api";
+import { Quadro } from "../../components/dashboard/Quadro";
+import { CartaoServico } from "./CartaoServico";
 import {
   formatarData,
   formatarKm,
@@ -122,11 +124,28 @@ export function Servicos() {
     (s) => !filtroVeiculo || String(s.veiculoContaId) === filtroVeiculo,
   );
 
+  // Só o serviço mais recente de cada tipo vale para o aviso: esses viram cartões.
+  // Os mais urgentes primeiro (vencido, depois "em breve", depois em dia).
+  const ORDEM: Record<SituacaoServico, number> = {
+    vencido: 0,
+    vence_em_breve: 1,
+    em_dia: 2,
+    sem_aviso: 3,
+    anterior: 4,
+  };
+  const vigentes = lista
+    .filter((s) => s.vigente)
+    .sort((a, b) => ORDEM[a.situacao] - ORDEM[b.situacao]);
+  const contar = (situacao: SituacaoServico) =>
+    vigentes.filter((s) => s.situacao === situacao).length;
+
   return (
     <div className="p-4 md:p-8">
       <div className="mb-7 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-[21px] font-bold text-gray-900">Serviços</h2>
+          <h2 className="font-display text-[28px] leading-none font-bold tracking-wide text-gray-900 uppercase">
+            Serviços
+          </h2>
           <p className="mt-1 text-xs text-gray-500">
             Troca de óleo, bateria, palhetas e outros serviços, com aviso da
             próxima vez por prazo ou por quilometragem.
@@ -152,10 +171,36 @@ export function Servicos() {
         </p>
       )}
 
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+      {dados && vigentes.length > 0 && (
+        <>
+          <div className="mb-4 grid grid-cols-3 gap-3 sm:gap-4">
+            <Quadro
+              titulo="Vencidos"
+              valor={contar("vencido")}
+              tom={contar("vencido") > 0 ? "perigo" : "normal"}
+            />
+            <Quadro
+              titulo="Em breve"
+              valor={contar("vence_em_breve")}
+              tom={contar("vence_em_breve") > 0 ? "alerta" : "normal"}
+            />
+            <Quadro titulo="Em dia" valor={contar("em_dia")} />
+          </div>
+
+          <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {vigentes.map((servico) => (
+              <CartaoServico key={servico.id} servico={servico} />
+            ))}
+          </div>
+        </>
+      )}
+
+      <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white">
         <div className="flex flex-col gap-3 border-b border-gray-200 p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h3 className="text-sm font-semibold text-gray-900">Histórico</h3>
+            <h3 className="font-display text-xl leading-none font-bold tracking-wide text-gray-900 uppercase">
+              Histórico
+            </h3>
             <p className="mt-1 text-[11px] text-gray-400">
               O aviso vale para o serviço mais recente de cada tipo. O km atual
               vem dos abastecimentos e serviços que você registrou.
