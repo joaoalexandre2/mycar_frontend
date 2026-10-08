@@ -34,6 +34,7 @@ interface DadosVeiculoForm {
   marca: string;
   modelo: string;
   ano: number;
+  anoFabricacao: number | null;
   uf: string;
   fipe: FipeSelecao;
 }
@@ -160,6 +161,7 @@ export function Veiculos() {
       marca: payload.marca,
       modelo: payload.modelo,
       ano: payload.ano,
+      ano_fabricacao: payload.anoFabricacao,
       uf: payload.uf || null,
       fipe_marca_id: payload.fipe.marcaId ? Number(payload.fipe.marcaId) : null,
       fipe_modelo_id: payload.fipe.modeloId
@@ -302,7 +304,7 @@ export function Veiculos() {
                     {nomeCliente(veiculo)}
                   </td>
                   <td data-label="Ano modelo" className="px-5 py-4 text-xs text-gray-500">
-                    {veiculo.ano}
+                    {veiculo.anoCompleto}
                   </td>
                   <td data-label="Valor FIPE" className="px-5 py-4">
                     {veiculo.fipeValor !== null ? (
@@ -329,6 +331,11 @@ export function Veiculos() {
                               : "—"}
                           </span>
                         </p>
+                        {veiculo.possivelIsencaoIpva && (
+                          <p className="text-[10px] text-amber-600">
+                            Carro com 15+ anos: alguns estados isentam o IPVA. Confira na Sefaz.
+                          </p>
+                        )}
                         <p>
                           Lic.{" "}
                           <span className="font-semibold text-gray-900">
@@ -511,6 +518,7 @@ function VeiculoModal({
   const [marca, setMarca] = useState(veiculo?.marca ?? "");
   const [modelo, setModelo] = useState(veiculo?.modelo ?? "");
   const [ano, setAno] = useState(veiculo?.ano?.toString() ?? "");
+  const [anoFab, setAnoFab] = useState(veiculo?.anoFabricacao?.toString() ?? "");
   const [uf, setUf] = useState(veiculo?.uf ?? "");
   const [fipe, setFipe] = useState<FipeSelecao>({
     marcaId: veiculo?.fipeMarcaId?.toString() ?? "",
@@ -537,12 +545,25 @@ function VeiculoModal({
       return;
     }
 
+    const anoFabNumerico = anoFab.trim() === "" ? null : Number(anoFab);
+
+    if (
+      anoFabNumerico !== null &&
+      (!Number.isInteger(anoFabNumerico) ||
+        anoNumerico - anoFabNumerico < 0 ||
+        anoNumerico - anoFabNumerico > 1)
+    ) {
+      window.alert("O ano de fabricação deve ser igual ao ano modelo ou um ano antes dele (ex.: 2018/2019).");
+      return;
+    }
+
     onSave({
       clienteId: Number(clienteId),
       placa: placa.trim().toUpperCase(),
       marca: marca.trim(),
       modelo: modelo.trim(),
       ano: anoNumerico,
+      anoFabricacao: anoFabNumerico,
       uf,
       fipe,
     });
@@ -674,6 +695,24 @@ function VeiculoModal({
                 className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
                 required
               />
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+                Ano de fabricação (opcional)
+              </label>
+              <input
+                type="number"
+                min="1900"
+                max={new Date().getFullYear()}
+                value={anoFab}
+                placeholder="Ex.: 2018"
+                onChange={(event) => setAnoFab(event.target.value)}
+                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+              />
+              <p className="mt-1 text-[11px] text-gray-400">
+                Se for diferente do ano modelo, informe (como no documento: 2018/2019).
+              </p>
             </div>
           </div>
 

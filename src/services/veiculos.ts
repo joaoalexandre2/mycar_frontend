@@ -9,6 +9,9 @@ interface VeiculoApi {
   marca: string;
   modelo: string;
   ano: number | string;
+  ano_fabricacao?: number | null;
+  ano_completo?: string | null;
+  possivel_isencao_ipva?: boolean;
   uf?: string | null;
   ipva_estimado?: number | null;
   licenciamento_valor?: number | null;
@@ -66,6 +69,9 @@ export function mapearVeiculo(veiculo: VeiculoApi): Veiculo {
     marca: veiculo.marca,
     modelo: veiculo.modelo,
     ano: Number(veiculo.ano),
+    anoFabricacao: veiculo.ano_fabricacao ?? null,
+    anoCompleto: veiculo.ano_completo ?? String(veiculo.ano),
+    possivelIsencaoIpva: Boolean(veiculo.possivel_isencao_ipva),
     uf: veiculo.uf ?? null,
     ipvaEstimado: veiculo.ipva_estimado ?? null,
     licenciamentoValor: veiculo.licenciamento_valor ?? null,
