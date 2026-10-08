@@ -39,6 +39,18 @@ describe("mapearVeiculoConta", () => {
     expect(veiculo.ipvaEstimado).toBeNull();
   });
 
+  it("completa o link da capa com o endereço da API; sem foto, a capa é nula", () => {
+    const comFoto = mapearVeiculoConta({
+      id: 4, placa: "ABC1D23", marca: "Fiat", modelo: "Uno", ano: 2018,
+      foto_capa_url: "/api/fotos/7/miniatura?signature=abc",
+    });
+    const semFoto = mapearVeiculoConta({ id: 5, placa: "ABC1D24", marca: "Fiat", modelo: "Uno", ano: 2018, foto_capa_url: null });
+
+    expect(comFoto.fotoCapaUrl).toMatch(/^https?:\/\/.+\/api\/fotos\/7\/miniatura\?signature=abc$/);
+    expect(semFoto.fotoCapaUrl).toBeNull();
+    expect(mapearVeiculoConta({ id: 6, placa: "ABC1D25", marca: "Fiat", modelo: "Uno", ano: 2018 }).fotoCapaUrl).toBeNull();
+  });
+
   it("sem ano de fabricação, o ano completo é só o do modelo e não há aviso de isenção", () => {
     const veiculo = mapearVeiculoConta({ id: 4, placa: "ABC1D23", marca: "Fiat", modelo: "Uno", ano: 2018 });
 

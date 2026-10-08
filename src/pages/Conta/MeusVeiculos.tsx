@@ -1,26 +1,17 @@
 import { useEffect, useState } from "react";
 import {
-  Car,
-  Fuel,
   ChevronLeft,
   ChevronRight,
-  Pencil,
   Plus,
-  RefreshCw,
   Search,
-  Camera,
-  CircleDollarSign,
-  FileText,
-  ShieldCheck,
-  Trash2,
-  Wallet,
   X,
 } from "lucide-react";
 import {
   FipeSeletor,
   type FipeSelecao,
 } from "../../components/veiculos/FipeSeletor";
-import { StatCard } from "../../components/dashboard/StatCard";
+import { Quadro } from "../../components/dashboard/Quadro";
+import { CartaoVeiculo } from "./CartaoVeiculo";
 import { AbastecimentosModal } from "./AbastecimentosModal";
 import { SegurosModal } from "./SegurosModal";
 import { DocumentosModal } from "./DocumentosModal";
@@ -30,7 +21,7 @@ import { contaService } from "../../services/conta";
 import { mensagemErro } from "../../services/api";
 import { useAuth } from "../../hooks/useAuth";
 import { ESTADOS } from "../../utils/estados";
-import { formatarData, formatarMoeda } from "../../utils/formatters";
+import { formatarMoeda } from "../../utils/formatters";
 import type { VeiculoConta, VeiculoContaPayload } from "../../types/conta";
 
 interface DadosForm {
@@ -173,7 +164,7 @@ export function MeusVeiculos() {
     <div className="p-4 md:p-8">
       <div className="mb-7 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-[21px] font-bold text-gray-900">
+          <h2 className="font-display text-[28px] leading-none font-bold tracking-wide text-gray-900 uppercase">
             {ehFrota ? "Veículos da frota" : "Meus veículos"}
           </h2>
           <p className="mt-1 text-xs text-gray-500">
@@ -194,24 +185,22 @@ export function MeusVeiculos() {
       </div>
 
       <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-2">
-        <StatCard
-          title="Veículos"
-          value={String(totalRegistros)}
-          description={ehFrota ? "Na sua frota" : "Cadastrados"}
-          icon={<Car size={19} />}
+        <Quadro
+          titulo="Veículos"
+          valor={String(totalRegistros)}
+          detalhe={ehFrota ? "Na sua frota" : "Cadastrados"}
         />
-        <StatCard
-          title="Valor na tabela FIPE"
-          value={formatarMoeda(valorTotalFipe)}
-          description="Soma dos veículos com valor consultado"
-          icon={<Wallet size={19} />}
+        <Quadro
+          titulo="Valor na tabela FIPE"
+          valor={formatarMoeda(valorTotalFipe)}
+          detalhe="Soma dos veículos com valor consultado"
         />
       </div>
 
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
         <div className="flex flex-col gap-4 border-b border-gray-200 p-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h3 className="text-sm font-semibold text-gray-900">
+            <h3 className="font-display text-xl leading-none font-bold tracking-wide text-gray-900 uppercase">
               {ehFrota ? "Veículos cadastrados" : "Seus veículos"}
             </h3>
             <p className="mt-1 text-[11px] text-gray-400">
@@ -236,217 +225,37 @@ export function MeusVeiculos() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full tabela-cartoes">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                {["Veículo", "Placa", "Ano modelo", "Valor FIPE", "IPVA / Licenciamento"].map(
-                  (titulo) => (
-                    <th
-                      key={titulo}
-                      className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500"
-                    >
-                      {titulo}
-                    </th>
-                  ),
-                )}
-                <th className="w-32 px-5 py-3" />
-              </tr>
-            </thead>
-
-            <tbody>
-              {veiculos.map((veiculo) => (
-                <tr
-                  key={veiculo.id}
-                  className="border-b border-gray-100 transition last:border-0 hover:bg-gray-50"
-                >
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                        <Car size={18} />
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold text-gray-900">
-                          {nomeDoVeiculo(veiculo)}
-                        </p>
-                        {veiculo.apelido && (
-                          <p className="mt-1 text-[10px] text-gray-400">
-                            {veiculo.marca} {veiculo.modelo}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                  <td data-label="Placa" className="px-5 py-4">
-                    <span className="rounded-md border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-[10px] font-bold tracking-wider text-gray-700">
-                      {veiculo.placa}
-                    </span>
-                  </td>
-                  <td
-                    data-label="Ano modelo"
-                    className="px-5 py-4 text-xs text-gray-500"
-                  >
-                    {veiculo.anoCompleto}
-                  </td>
-                  <td data-label="Valor FIPE" className="px-5 py-4">
-                    {veiculo.fipeValor !== null ? (
-                      <>
-                        <p className="text-xs font-semibold text-gray-900">
-                          {formatarMoeda(veiculo.fipeValor)}
-                        </p>
-                        <p className="mt-1 text-[10px] text-gray-400">
-                          em {formatarData(veiculo.fipeConsultadoEm)}
-                        </p>
-                      </>
-                    ) : (
-                      <span className="text-xs text-gray-400">—</span>
-                    )}
-                  </td>
-                  <td data-label="IPVA / Lic." className="px-5 py-4">
-                    {veiculo.uf ? (
-                      <div className="space-y-1 text-[11px] text-gray-600">
-                        <p>
-                          IPVA{" "}
-                          <span className="font-semibold text-gray-900">
-                            {veiculo.ipvaEstimado !== null
-                              ? formatarMoeda(veiculo.ipvaEstimado)
-                              : "—"}
-                          </span>
-                          {veiculo.proximoVencimentoIpva && (
-                            <span className="text-gray-400">
-                              {" "}
-                              · vence (est.){" "}
-                              {formatarData(veiculo.proximoVencimentoIpva)}
-                            </span>
-                          )}
-                        </p>
-                        {veiculo.possivelIsencaoIpva && (
-                          <p className="text-[10px] text-amber-600">
-                            Carro com 15+ anos: alguns estados isentam o IPVA. Confira na Sefaz.
-                          </p>
-                        )}
-                        <p>
-                          Lic.{" "}
-                          <span className="font-semibold text-gray-900">
-                            {veiculo.licenciamentoValor !== null
-                              ? formatarMoeda(veiculo.licenciamentoValor)
-                              : "—"}
-                          </span>
-                          {veiculo.proximoVencimentoLicenciamento && (
-                            <span className="text-gray-400">
-                              {" "}
-                              · vence (est.){" "}
-                              {formatarData(veiculo.proximoVencimentoLicenciamento)}
-                            </span>
-                          )}
-                        </p>
-                      </div>
-                    ) : (
-                      <span className="text-xs text-gray-400">
-                        Informe o estado
-                      </span>
-                    )}
-                    {veiculo.revisaoPrevistaEm && (
-                      <p className="mt-1 text-[11px] text-gray-600">
-                        Revisão{" "}
-                        <span className="font-semibold text-gray-900">
-                          {formatarData(veiculo.revisaoPrevistaEm)}
-                        </span>
-                      </p>
-                    )}
-                  </td>
-                  <td className="px-5 py-4">
-                    <div className="flex items-center justify-end gap-1">
-                      {veiculo.fipeMarcaId &&
-                        veiculo.fipeModeloId &&
-                        veiculo.fipeAno && (
-                          <button
-                            onClick={() => void atualizarFipe(veiculo)}
-                            disabled={consultandoId === veiculo.id}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-50"
-                            title="Atualizar valor na FIPE"
-                          >
-                            <RefreshCw
-                              size={15}
-                              className={
-                                consultandoId === veiculo.id ? "animate-spin" : ""
-                              }
-                            />
-                          </button>
-                        )}
-                      <button
-                        onClick={() => setFotografando(veiculo)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-blue-50 hover:text-blue-600"
-                        title="Álbum de fotos"
-                      >
-                        <Camera size={15} />
-                      </button>
-                      <button
-                        onClick={() => setGastando(veiculo)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-blue-50 hover:text-blue-600"
-                        title="Despesas: combustível, serviços e seguro"
-                      >
-                        <CircleDollarSign size={15} />
-                      </button>
-                      <button
-                        onClick={() => setDocumentando(veiculo)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-blue-50 hover:text-blue-600"
-                        title="Documentos: CRLV e vencimentos"
-                      >
-                        <FileText size={15} />
-                      </button>
-                      <button
-                        onClick={() => setSegurando(veiculo)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-blue-50 hover:text-blue-600"
-                        title="Seguro: apólice e propostas"
-                      >
-                        <ShieldCheck size={15} />
-                      </button>
-                      <button
-                        onClick={() => setAbastecendo(veiculo)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-blue-50 hover:text-blue-600"
-                        title="Abastecimentos e consumo"
-                      >
-                        <Fuel size={15} />
-                      </button>
-                      <button
-                        onClick={() => {
-                          setEditando(veiculo);
-                          setModalAberto(true);
-                        }}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
-                        title="Editar"
-                      >
-                        <Pencil size={15} />
-                      </button>
-                      <button
-                        onClick={() => void remover(veiculo)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-red-50 hover:text-red-600"
-                        title="Remover"
-                      >
-                        <Trash2 size={15} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-
-              {!carregando && veiculos.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="px-5 py-12 text-center text-xs text-gray-400"
-                  >
-                    {buscaDebounced
-                      ? "Nenhum veículo encontrado."
-                      : "Você ainda não cadastrou nenhum veículo. Clique em “Novo veículo” para começar."}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
+        {!carregando && veiculos.length === 0 ? (
+          <p className="px-5 py-12 text-center text-xs text-gray-400">
+            {buscaDebounced
+              ? "Nenhum veículo encontrado."
+              : "Você ainda não cadastrou nenhum veículo. Clique em “Novo veículo” para começar."}
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 bg-gray-50 p-4 md:grid-cols-2 2xl:grid-cols-3">
+            {veiculos.map((veiculo) => (
+              <CartaoVeiculo
+                key={veiculo.id}
+                veiculo={veiculo}
+                nome={nomeDoVeiculo(veiculo)}
+                consultandoFipe={consultandoId === veiculo.id}
+                acoes={{
+                  atualizarFipe: () => void atualizarFipe(veiculo),
+                  fotos: () => setFotografando(veiculo),
+                  despesas: () => setGastando(veiculo),
+                  documentos: () => setDocumentando(veiculo),
+                  seguro: () => setSegurando(veiculo),
+                  abastecimentos: () => setAbastecendo(veiculo),
+                  editar: () => {
+                    setEditando(veiculo);
+                    setModalAberto(true);
+                  },
+                  remover: () => void remover(veiculo),
+                }}
+              />
+            ))}
+          </div>
+        )}
         <div className="flex items-center justify-between border-t border-gray-200 px-5 py-3">
           <p className="text-[11px] text-gray-400">
             Página {pagina} de {totalPaginas}
@@ -478,7 +287,10 @@ export function MeusVeiculos() {
       {fotografando && (
         <FotosModal
           veiculo={fotografando}
-          onClose={() => setFotografando(null)}
+          onClose={() => {
+            setFotografando(null);
+            recarregar(); // a capa do cartão acompanha as fotos do álbum
+          }}
         />
       )}
 

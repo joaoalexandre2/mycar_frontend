@@ -13,6 +13,8 @@ export interface VeiculoConta {
   anoCompleto: string;
   /** Aviso: com 15+ anos de fabricação, alguns estados isentam o IPVA (confira na Sefaz). */
   possivelIsencaoIpva: boolean;
+  /** Miniatura da foto mais recente do álbum (link temporário); nulo sem foto. */
+  fotoCapaUrl: string | null;
   uf: string | null;
   ipvaEstimado: number | null;
   licenciamentoValor: number | null;
