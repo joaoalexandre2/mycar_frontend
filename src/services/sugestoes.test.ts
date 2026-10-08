@@ -44,4 +44,27 @@ describe("sugestaoService", () => {
     expect(getSpy).toHaveBeenCalledWith("/admin/sugestoes", { params: { status: "planejada" } });
     expect(putSpy).toHaveBeenCalledWith("/admin/sugestoes/3", { status: "feita", resposta: "Pronto!" });
   });
+
+  it("converte os anexos e completa os links com o endereço da API", () => {
+    const s = mapearSugestao({ ...item, anexos: [{ id: 9, url: "/api/sugestoes/anexos/9?signature=abc" }] });
+
+    expect(s.anexos).toHaveLength(1);
+    expect(s.anexos[0].url).toMatch(/^https?:\/\/.+\/api\/sugestoes\/anexos\/9\?signature=abc$/);
+    expect(mapearSugestao(item).anexos).toEqual([]); // sem anexos na resposta
+  });
+
+  it("envia as imagens como formulário e sem imagens como JSON", async () => {
+    const postSpy = vi.spyOn(api, "post").mockResolvedValue({ data: item } as never);
+    const dados = { categoria: "problema" as const, titulo: "Erro na tela", descricao: "Descrição longa o bastante." };
+
+    await sugestaoService.enviar(dados);
+    await sugestaoService.enviar(dados, [new Blob(["a"], { type: "image/jpeg" }), new Blob(["b"], { type: "image/jpeg" })]);
+
+    expect(postSpy.mock.calls[0]).toEqual(["/sugestoes", dados]);
+
+    const corpo = postSpy.mock.calls[1][1] as FormData;
+    expect(corpo).toBeInstanceOf(FormData);
+    expect(corpo.get("titulo")).toBe("Erro na tela");
+    expect(corpo.getAll("imagens[]")).toHaveLength(2);
+  });
 });

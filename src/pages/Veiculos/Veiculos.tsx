@@ -261,7 +261,7 @@ export function Veiculos() {
                   Cliente
                 </th>
                 <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
-                  Ano
+                  Ano modelo
                 </th>
                 <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
                   Valor FIPE
@@ -301,7 +301,7 @@ export function Veiculos() {
                   <td data-label="Cliente" className="px-5 py-4 text-xs text-gray-500">
                     {nomeCliente(veiculo)}
                   </td>
-                  <td data-label="Ano" className="px-5 py-4 text-xs text-gray-500">
+                  <td data-label="Ano modelo" className="px-5 py-4 text-xs text-gray-500">
                     {veiculo.ano}
                   </td>
                   <td data-label="Valor FIPE" className="px-5 py-4">
@@ -522,7 +522,7 @@ function VeiculoModal({
     event.preventDefault();
 
     const anoNumerico = Number(ano);
-    const anoAtual = new Date().getFullYear();
+    const anoMaximo = new Date().getFullYear() + 1; // ano modelo pode ser o do ano seguinte
 
     if (
       !clienteId ||
@@ -531,9 +531,9 @@ function VeiculoModal({
       !modelo.trim() ||
       Number.isNaN(anoNumerico) ||
       anoNumerico < 1900 ||
-      anoNumerico > anoAtual
+      anoNumerico > anoMaximo
     ) {
-      window.alert(`Informe os dados do veículo com ano entre 1900 e ${anoAtual}.`);
+      window.alert(`Informe os dados do veículo com ano modelo entre 1900 e ${anoMaximo}.`);
       return;
     }
 
@@ -663,12 +663,12 @@ function VeiculoModal({
 
             <div>
               <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                Ano
+                Ano modelo
               </label>
               <input
                 type="number"
                 min="1900"
-                max={new Date().getFullYear()}
+                max={new Date().getFullYear() + 1}
                 value={ano}
                 onChange={(event) => setAno(event.target.value)}
                 className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
