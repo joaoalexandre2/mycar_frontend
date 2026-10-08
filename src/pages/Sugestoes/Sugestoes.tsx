@@ -1,14 +1,17 @@
-import { useEffect, useState, type FormEvent } from "react";
-import { Lightbulb, Send } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import { ImagePlus, Lightbulb, Send, X } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { sugestaoService } from "../../services/sugestoes";
 import { mensagemErro } from "../../services/api";
 import { formatarData } from "../../utils/formatters";
+import { redimensionar } from "../../utils/imagem";
 import type {
   CategoriaSugestao,
   StatusSugestao,
   Sugestao,
 } from "../../types/sugestoes";
+
+const LIMITE_IMAGENS = 3;
 
 const classeCampo =
   "w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
@@ -116,6 +119,22 @@ export function Sugestoes() {
   const [descricao, setDescricao] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [enviada, setEnviada] = useState(false);
+  const [imagens, setImagens] = useState<File[]>([]);
+  const entradaImagem = useRef<HTMLInputElement>(null);
+
+  // Prévias das imagens escolhidas (liberadas quando a lista muda).
+  const previas = useMemo(() => imagens.map((f) => URL.createObjectURL(f)), [imagens]);
+  useEffect(() => () => previas.forEach((url) => URL.revokeObjectURL(url)), [previas]);
+
+  function escolherImagens(evento: ChangeEvent<HTMLInputElement>) {
+    const novas = Array.from(evento.target.files ?? []).filter((f) => f.type.startsWith("image/"));
+    evento.target.value = "";
+
+    if (novas.length === 0) return;
+
+    setErro(null);
+    setImagens((atuais) => [...atuais, ...novas].slice(0, LIMITE_IMAGENS));
+  }
 
   useEffect(() => {
     let ativo = true;
@@ -152,13 +171,20 @@ export function Sugestoes() {
 
     try {
       setEnviando(true);
-      const nova = await sugestaoService.enviar({
-        categoria,
-        titulo: titulo.trim(),
-        descricao: descricao.trim(),
-      });
+      // Reduz cada imagem no navegador antes de subir (print de tela pesa muito).
+      const reduzidas = await Promise.all(imagens.map((f) => redimensionar(f, 1280, 0.8)));
+
+      const nova = await sugestaoService.enviar(
+        {
+          categoria,
+          titulo: titulo.trim(),
+          descricao: descricao.trim(),
+        },
+        reduzidas,
+      );
       setTitulo("");
       setDescricao("");
+      setImagens([]);
       setEnviada(true);
       if (visao === "minhas") setLista((atual) => [nova, ...(atual ?? [])]);
     } catch (error) {
@@ -231,6 +257,51 @@ export function Sugestoes() {
             className={`mt-1 py-2 ${classeCampo}`}
           />
         </label>
+
+        <div>
+          <input
+            ref={entradaImagem}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={escolherImagens}
+          />
+
+          <div className="flex flex-wrap items-center gap-3">
+            {previas.map((url, indice) => (
+              <div key={url} className="relative">
+                <img
+                  src={url}
+                  alt={`Imagem ${indice + 1} da sugestão`}
+                  className="h-16 w-16 rounded-lg border border-gray-200 object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => setImagens((atuais) => atuais.filter((_, i) => i !== indice))}
+                  title="Remover imagem"
+                  className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-gray-800 text-white hover:bg-red-600"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ))}
+
+            {imagens.length < LIMITE_IMAGENS && (
+              <button
+                type="button"
+                onClick={() => entradaImagem.current?.click()}
+                className="flex h-9 items-center gap-2 rounded-lg border border-gray-200 px-3 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50"
+              >
+                <ImagePlus size={15} />
+                Anexar imagem
+              </button>
+            )}
+          </div>
+          <p className="mt-1.5 text-[11px] text-gray-400">
+            Opcional: até {LIMITE_IMAGENS} imagens, como um print da tela. Só você e a equipe veem.
+          </p>
+        </div>
 
         {erro && (
           <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
@@ -327,6 +398,27 @@ export function Sugestoes() {
                 </div>
 
                 <p className="mt-2 whitespace-pre-line text-xs text-gray-600">{s.descricao}</p>
+
+                {s.anexos.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {s.anexos.map((anexo, indice) => (
+                      <a
+                        key={anexo.id}
+                        href={anexo.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Abrir imagem"
+                      >
+                        <img
+                          src={anexo.url}
+                          alt={`Imagem ${indice + 1} anexada`}
+                          loading="lazy"
+                          className="h-20 w-20 rounded-lg border border-gray-200 object-cover transition hover:opacity-80"
+                        />
+                      </a>
+                    ))}
+                  </div>
+                )}
 
                 {s.resposta && visao === "minhas" && (
                   <p className="mt-2 rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-800">

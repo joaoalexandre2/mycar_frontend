@@ -16,6 +16,8 @@ export interface Sugestao {
   /** Retorno da equipe para quem enviou. */
   resposta: string | null;
   criadaEm: string;
+  /** Imagens anexadas (links temporários: recarregue a lista para renovar). */
+  anexos: { id: number; url: string }[];
   /** Só na visão da equipe. */
   autor?: { nome: string | null; email: string | null; perfil: string | null };
 }

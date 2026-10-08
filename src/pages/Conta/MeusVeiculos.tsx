@@ -238,7 +238,7 @@ export function MeusVeiculos() {
           <table className="w-full tabela-cartoes">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
-                {["Veículo", "Placa", "Ano", "Valor FIPE", "IPVA / Licenciamento"].map(
+                {["Veículo", "Placa", "Ano modelo", "Valor FIPE", "IPVA / Licenciamento"].map(
                   (titulo) => (
                     <th
                       key={titulo}
@@ -281,7 +281,7 @@ export function MeusVeiculos() {
                     </span>
                   </td>
                   <td
-                    data-label="Ano"
+                    data-label="Ano modelo"
                     className="px-5 py-4 text-xs text-gray-500"
                   >
                     {veiculo.ano}
@@ -543,7 +543,7 @@ function VeiculoContaModal({
     event.preventDefault();
 
     const anoNumerico = Number(ano);
-    const anoAtual = new Date().getFullYear();
+    const anoMaximo = new Date().getFullYear() + 1; // ano modelo pode ser o do ano seguinte
 
     if (
       !placa.trim() ||
@@ -551,9 +551,9 @@ function VeiculoContaModal({
       !modelo.trim() ||
       Number.isNaN(anoNumerico) ||
       anoNumerico < 1900 ||
-      anoNumerico > anoAtual
+      anoNumerico > anoMaximo
     ) {
-      window.alert(`Informe os dados do veículo, com ano entre 1900 e ${anoAtual}.`);
+      window.alert(`Informe os dados do veículo, com ano modelo entre 1900 e ${anoMaximo}.`);
       return;
     }
 
@@ -662,17 +662,20 @@ function VeiculoContaModal({
               </div>
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                  Ano
+                  Ano modelo
                 </label>
                 <input
                   type="number"
                   min="1900"
-                  max={new Date().getFullYear()}
+                  max={new Date().getFullYear() + 1}
                   value={ano}
                   onChange={(event) => setAno(event.target.value)}
                   className={classeCampo}
                   required
                 />
+                <p className="mt-1 text-[11px] text-gray-400">
+                  Ano do modelo (o mesmo da tabela FIPE). Pode ser o ano seguinte ao de fabricação.
+                </p>
               </div>
             </div>
 
