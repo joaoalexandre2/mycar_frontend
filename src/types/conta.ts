@@ -165,6 +165,13 @@ export interface ResumoConta {
   valorTotalFipe: number;
   vencimentos: Vencimento[];
   diasAFrente: number;
+  /** Consumo da conta; kmPorLitro é nulo até haver um intervalo de tanque cheio. */
+  consumo: {
+    kmPorLitro: number | null;
+    precoMedioLitro: number | null;
+    veiculosComDados: number;
+  };
+  gastoMes: { total: number; combustivel: number; servicos: number };
 }
 
 export const COMBUSTIVEIS = [

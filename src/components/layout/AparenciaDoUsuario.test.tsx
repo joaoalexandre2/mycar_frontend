@@ -68,4 +68,51 @@ describe("AparenciaDoUsuario", () => {
     expect(document.documentElement.classList.contains("dark")).toBe(true);
     expect(document.documentElement.dataset.cor).toBe("green");
   });
+
+  describe("estilo Pista", () => {
+    const pessoaSemEscolha: Usuario = { ...escuroRoxo, perfil: "pessoa", tema: null, cor: null };
+
+    beforeEach(() => {
+      delete document.documentElement.dataset.estilo;
+    });
+
+    it("perfis pessoa e frota usam o estilo Pista, com laranja de padrão", () => {
+      montar("/", pessoaSemEscolha);
+
+      expect(document.documentElement.dataset.estilo).toBe("pista");
+      expect(document.documentElement.dataset.cor).toBe("orange");
+    });
+
+    it("quem já escolheu uma cor na conta mantém a cor, e o estilo continua", () => {
+      montar("/", { ...pessoaSemEscolha, perfil: "frota", tema: "claro", cor: "green" });
+
+      expect(document.documentElement.dataset.estilo).toBe("pista");
+      expect(document.documentElement.dataset.cor).toBe("green");
+    });
+
+    it("quem escolheu uma cor neste navegador mantém a escolha", () => {
+      localStorage.setItem("mycar_cor", "purple");
+
+      montar("/", pessoaSemEscolha);
+
+      expect(document.documentElement.dataset.estilo).toBe("pista");
+      expect(document.documentElement.dataset.cor).toBe("purple");
+    });
+
+    it("a oficina não recebe o estilo e continua azul", () => {
+      montar("/", { ...escuroRoxo, perfil: "oficina", tema: null, cor: null });
+
+      expect(document.documentElement.dataset.estilo).toBeUndefined();
+      expect(document.documentElement.dataset.cor).toBe("blue");
+    });
+
+    it("o login não recebe o estilo, mesmo com usuário de conta logado", () => {
+      document.documentElement.dataset.estilo = "pista";
+
+      montar("/login", pessoaSemEscolha);
+
+      expect(document.documentElement.dataset.estilo).toBeUndefined();
+      expect(document.documentElement.dataset.cor).toBe("blue");
+    });
+  });
 });

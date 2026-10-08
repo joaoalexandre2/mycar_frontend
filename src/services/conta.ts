@@ -58,6 +58,12 @@ interface ResumoContaApi {
   total_veiculos: number;
   valor_total_fipe: number;
   dias_a_frente: number;
+  consumo?: {
+    km_por_litro: number | null;
+    preco_medio_litro: number | null;
+    veiculos_com_dados: number;
+  };
+  gasto_mes?: { total: number; combustivel: number; servicos: number };
   vencimentos: {
     tipo: TipoVencimento;
     rotulo?: string;
@@ -139,6 +145,12 @@ export function mapearResumoConta(resumo: ResumoContaApi): ResumoConta {
     totalVeiculos: resumo.total_veiculos,
     valorTotalFipe: resumo.valor_total_fipe,
     diasAFrente: resumo.dias_a_frente,
+    consumo: {
+      kmPorLitro: resumo.consumo?.km_por_litro ?? null,
+      precoMedioLitro: resumo.consumo?.preco_medio_litro ?? null,
+      veiculosComDados: resumo.consumo?.veiculos_com_dados ?? 0,
+    },
+    gastoMes: resumo.gasto_mes ?? { total: 0, combustivel: 0, servicos: 0 },
     vencimentos: resumo.vencimentos.map((item) => ({
       tipo: item.tipo,
       rotulo: item.rotulo,

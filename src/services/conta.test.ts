@@ -127,6 +127,43 @@ describe("revisão e preferências da conta", () => {
 });
 
 describe("mapearResumoConta", () => {
+  const base = {
+    conta: { nome: "João", tipo: "pessoa" as const },
+    total_veiculos: 1,
+    valor_total_fipe: 50000,
+    dias_a_frente: 60,
+    vencimentos: [],
+  };
+
+  it("traz o consumo, o preço do litro e o gasto do mês", () => {
+    const resumo = mapearResumoConta({
+      ...base,
+      consumo: { km_por_litro: 11.8, preco_medio_litro: 6.19, veiculos_com_dados: 1 },
+      gasto_mes: { total: 842, combustivel: 520, servicos: 322 },
+    });
+
+    expect(resumo.consumo).toEqual({ kmPorLitro: 11.8, precoMedioLitro: 6.19, veiculosComDados: 1 });
+    expect(resumo.gastoMes).toEqual({ total: 842, combustivel: 520, servicos: 322 });
+  });
+
+  it("sem dados de consumo, o velocímetro fica sem valor (nulo, não zero)", () => {
+    const resumo = mapearResumoConta({
+      ...base,
+      consumo: { km_por_litro: null, preco_medio_litro: null, veiculos_com_dados: 0 },
+      gasto_mes: { total: 0, combustivel: 0, servicos: 0 },
+    });
+
+    expect(resumo.consumo.kmPorLitro).toBeNull();
+    expect(resumo.consumo.precoMedioLitro).toBeNull();
+  });
+
+  it("resposta de servidor antigo, sem consumo nem gasto, não quebra", () => {
+    const resumo = mapearResumoConta(base);
+
+    expect(resumo.consumo).toEqual({ kmPorLitro: null, precoMedioLitro: null, veiculosComDados: 0 });
+    expect(resumo.gastoMes.total).toBe(0);
+  });
+
   it("converte o resumo e os vencimentos", () => {
     const resumo = mapearResumoConta({
       conta: { nome: "Transportes Silva", tipo: "frota" },
