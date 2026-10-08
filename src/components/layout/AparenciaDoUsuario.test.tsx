@@ -99,11 +99,27 @@ describe("AparenciaDoUsuario", () => {
       expect(document.documentElement.dataset.cor).toBe("purple");
     });
 
-    it("a oficina não recebe o estilo e continua azul", () => {
+    it("a oficina recebe o estilo Oficina e continua azul", () => {
       montar("/", { ...escuroRoxo, perfil: "oficina", tema: null, cor: null });
 
-      expect(document.documentElement.dataset.estilo).toBeUndefined();
+      expect(document.documentElement.dataset.estilo).toBe("oficina");
       expect(document.documentElement.dataset.cor).toBe("blue");
+    });
+
+    it("sessão antiga, sem perfil, é de oficina", () => {
+      const { perfil, ...semPerfil } = { ...escuroRoxo, perfil: "oficina" as const, tema: null, cor: null };
+      void perfil;
+
+      montar("/", semPerfil);
+
+      expect(document.documentElement.dataset.estilo).toBe("oficina");
+    });
+
+    it("quem escolheu cor na conta mantém a cor e recebe o estilo do perfil", () => {
+      montar("/", { ...escuroRoxo, perfil: "oficina" });
+
+      expect(document.documentElement.dataset.estilo).toBe("oficina");
+      expect(document.documentElement.dataset.cor).toBe("purple");
     });
 
     it("o login não recebe o estilo, mesmo com usuário de conta logado", () => {

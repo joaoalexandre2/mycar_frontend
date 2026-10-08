@@ -1,3 +1,6 @@
+import type { Usuario } from "../types/auth";
+import { ehConta, perfilDe } from "./perfil";
+
 export type Tema = "claro" | "escuro";
 export type Cor = "blue" | "green" | "purple" | "orange";
 
@@ -60,8 +63,20 @@ export function salvarAparencia(tema: Tema, cor: Cor) {
   aplicarAparencia(tema, cor);
 }
 
-/** Estilo visual do app: "pista" nos perfis pessoa e frota; sem estilo na oficina. */
-export type Estilo = "pista";
+/**
+ * Estilo visual do app por perfil: "pista" em pessoa e frota (laranja, números
+ * condensados) e "oficina" na oficina (azul-marinho, pensado para tabelas).
+ */
+export type Estilo = "pista" | "oficina";
+
+/** Estilo do perfil do usuário; sem usuário, nenhum. */
+export function estiloDoPerfil(usuario: Usuario | null | undefined): Estilo | null {
+  if (!usuario) {
+    return null;
+  }
+
+  return ehConta(perfilDe(usuario)) ? "pista" : "oficina";
+}
 
 /** Cor que o usuário já escolheu neste navegador; null se nunca escolheu. */
 export function corSalva(): Cor | null {
@@ -83,10 +98,10 @@ export function aplicarEstilo(estilo: Estilo | null) {
 }
 
 /**
- * Aplica o que está salvo neste navegador. Nos perfis pessoa e frota (`conta`) vale o
- * estilo Pista, cujo laranja é a cor padrão de quem nunca escolheu uma.
+ * Aplica o que está salvo neste navegador, no estilo do perfil. No estilo Pista o
+ * laranja é a cor padrão de quem nunca escolheu uma; nos demais, o azul.
  */
-export function aplicarAparenciaSalva(conta = false) {
-  aplicarEstilo(conta ? "pista" : null);
-  aplicarAparencia(obterTema(), corSalva() ?? (conta ? "orange" : "blue"));
+export function aplicarAparenciaSalva(estilo: Estilo | null = null) {
+  aplicarEstilo(estilo);
+  aplicarAparencia(obterTema(), corSalva() ?? (estilo === "pista" ? "orange" : "blue"));
 }

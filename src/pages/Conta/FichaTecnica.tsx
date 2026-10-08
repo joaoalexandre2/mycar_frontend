@@ -57,10 +57,10 @@ function Cartao({
   children: ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+    <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
       <div className="flex items-start justify-between gap-3 border-b border-gray-100 px-5 py-4">
         <div>
-          <h3 className="text-sm font-semibold text-gray-900">{titulo}</h3>
+          <h3 className="font-display text-xl leading-none font-bold tracking-wide text-gray-900 uppercase">{titulo}</h3>
           {descricao && <p className="mt-1 text-[11px] text-gray-400">{descricao}</p>}
         </div>
         {acao}
@@ -200,7 +200,7 @@ export function FichaTecnica() {
     <div className="p-4 md:p-8">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-[21px] font-bold text-gray-900">Ficha técnica</h2>
+          <h2 className="font-display text-[28px] leading-none font-bold tracking-wide text-gray-900 uppercase">Ficha técnica</h2>
           <p className="mt-1 text-xs text-gray-500">
             O que buscamos sobre o seu carro e a ficha de manutenção dele.
           </p>
@@ -231,7 +231,7 @@ export function FichaTecnica() {
       )}
 
       {veiculos?.length === 0 && (
-        <div className="rounded-xl border border-gray-200 bg-white p-8 text-center">
+        <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center">
           <p className="text-xs text-gray-500">Cadastre um veículo para ver a ficha técnica.</p>
           <Link
             to="/veiculos"

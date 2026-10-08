@@ -472,7 +472,11 @@ function Status({
     },
   };
 
-  const item = config[status];
+  // Status desconhecido (dado antigo ou de uma versão futura) não pode derrubar a tela.
+  const item = config[status] ?? {
+    label: String(status).replace(/_/g, " "),
+    className: "bg-gray-100 text-gray-600",
+  };
 
   return (
     <span
