@@ -4,8 +4,10 @@ import { useAuth } from "../../hooks/useAuth";
 import {
   aplicarAparencia,
   aplicarAparenciaSalva,
+  aplicarEstilo,
   salvarAparencia,
 } from "../../utils/preferencias";
+import { ehConta, perfilDe } from "../../utils/perfil";
 
 /** Telas de fora do app: sempre no visual padrão, não importa o tema escolhido. */
 const ROTAS_PUBLICAS = [
@@ -27,18 +29,21 @@ export function AparenciaDoUsuario() {
   const publica = ROTAS_PUBLICAS.includes(pathname);
   const tema = usuario?.tema ?? null;
   const cor = usuario?.cor ?? null;
+  const conta = ehConta(perfilDe(usuario));
 
   useEffect(() => {
     if (publica || !usuario) {
+      aplicarEstilo(null);
       aplicarAparencia("claro", "blue");
     } else if (tema && cor) {
       // Mantém uma cópia local para abrir já no visual certo na próxima vez.
+      aplicarEstilo(conta ? "pista" : null);
       salvarAparencia(tema, cor);
     } else {
-      // Nunca escolheu na conta: vale o que estiver neste navegador.
-      aplicarAparenciaSalva();
+      // Nunca escolheu na conta: vale o que estiver neste navegador (ou o padrão do perfil).
+      aplicarAparenciaSalva(conta);
     }
-  }, [publica, usuario, tema, cor]);
+  }, [publica, usuario, tema, cor, conta]);
 
   return null;
 }

@@ -60,6 +60,33 @@ export function salvarAparencia(tema: Tema, cor: Cor) {
   aplicarAparencia(tema, cor);
 }
 
-export function aplicarAparenciaSalva() {
-  aplicarAparencia(obterTema(), obterCor());
+/** Estilo visual do app: "pista" nos perfis pessoa e frota; sem estilo na oficina. */
+export type Estilo = "pista";
+
+/** Cor que o usuário já escolheu neste navegador; null se nunca escolheu. */
+export function corSalva(): Cor | null {
+  const cor = ler(CHAVE_COR);
+
+  return cor === "blue" || cor === "green" || cor === "purple" || cor === "orange"
+    ? cor
+    : null;
+}
+
+export function aplicarEstilo(estilo: Estilo | null) {
+  const raiz = document.documentElement;
+
+  if (estilo) {
+    raiz.dataset.estilo = estilo;
+  } else {
+    delete raiz.dataset.estilo;
+  }
+}
+
+/**
+ * Aplica o que está salvo neste navegador. Nos perfis pessoa e frota (`conta`) vale o
+ * estilo Pista, cujo laranja é a cor padrão de quem nunca escolheu uma.
+ */
+export function aplicarAparenciaSalva(conta = false) {
+  aplicarEstilo(conta ? "pista" : null);
+  aplicarAparencia(obterTema(), corSalva() ?? (conta ? "orange" : "blue"));
 }
