@@ -253,7 +253,7 @@ export function FichaTecnica() {
                 { chave: "placa", rotulo: "Placa", valor: ficha.veiculo.placa },
                 { chave: "marca", rotulo: "Marca", valor: ficha.veiculo.marca },
                 { chave: "modelo", rotulo: "Modelo / versão", valor: ficha.veiculo.modelo },
-                { chave: "ano", rotulo: "Ano modelo", valor: String(ficha.veiculo.ano) },
+                { chave: "ano", rotulo: "Ano (fabricação/modelo)", valor: ficha.veiculo.ano_completo ?? String(ficha.veiculo.ano) },
               ]}
             />
           </Cartao>

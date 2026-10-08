@@ -5,7 +5,14 @@ export interface VeiculoConta {
   placa: string;
   marca: string;
   modelo: string;
+  /** Ano do MODELO (o da tabela FIPE). */
   ano: number;
+  /** Ano de fabricação, opcional (igual ao do modelo ou um antes). */
+  anoFabricacao: number | null;
+  /** Como no CRLV: "2018/2019", ou só "2018". */
+  anoCompleto: string;
+  /** Aviso: com 15+ anos de fabricação, alguns estados isentam o IPVA (confira na Sefaz). */
+  possivelIsencaoIpva: boolean;
   uf: string | null;
   ipvaEstimado: number | null;
   licenciamentoValor: number | null;
@@ -26,6 +33,7 @@ export interface VeiculoContaPayload {
   marca: string;
   modelo: string;
   ano: number;
+  ano_fabricacao?: number | null;
   uf?: string | null;
   revisao_prevista_em?: string | null;
   fipe_marca_id?: number | null;
@@ -390,6 +398,8 @@ export interface FichaTecnicaConta {
     marca: string;
     modelo: string;
     ano: number;
+    /** Como no CRLV: "2018/2019" (vem pronto do servidor). */
+    ano_completo?: string;
     uf: string | null;
   };
   fipe: DadosFipeFicha | null;

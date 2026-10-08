@@ -39,6 +39,32 @@ describe("mapearVeiculoConta", () => {
     expect(veiculo.ipvaEstimado).toBeNull();
   });
 
+  it("sem ano de fabricação, o ano completo é só o do modelo e não há aviso de isenção", () => {
+    const veiculo = mapearVeiculoConta({ id: 4, placa: "ABC1D23", marca: "Fiat", modelo: "Uno", ano: 2018 });
+
+    expect(veiculo.anoFabricacao).toBeNull();
+    expect(veiculo.anoCompleto).toBe("2018");
+    expect(veiculo.possivelIsencaoIpva).toBe(false);
+  });
+
+  it("traz o ano de fabricação, o ano completo (2018/2019) e o aviso de isenção do servidor", () => {
+    const veiculo = mapearVeiculoConta({
+      id: 4,
+      placa: "ABC1D23",
+      marca: "Fiat",
+      modelo: "Uno",
+      ano: 2019,
+      ano_fabricacao: 2018,
+      ano_completo: "2018/2019",
+      possivel_isencao_ipva: true,
+    });
+
+    expect(veiculo.anoFabricacao).toBe(2018);
+    expect(veiculo.ano).toBe(2019);
+    expect(veiculo.anoCompleto).toBe("2018/2019");
+    expect(veiculo.possivelIsencaoIpva).toBe(true);
+  });
+
   it("sem valor FIPE, o valor fica nulo (e não zero)", () => {
     const veiculo = mapearVeiculoConta({
       id: 1,

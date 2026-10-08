@@ -37,6 +37,9 @@ interface VeiculoContaApi {
   marca: string;
   modelo: string;
   ano: number;
+  ano_fabricacao?: number | null;
+  ano_completo?: string | null;
+  possivel_isencao_ipva?: boolean;
   uf?: string | null;
   revisao_prevista_em?: string | null;
   ipva_estimado?: number | null;
@@ -103,6 +106,9 @@ export function mapearVeiculoConta(item: VeiculoContaApi): VeiculoConta {
     marca: item.marca,
     modelo: item.modelo,
     ano: item.ano,
+    anoFabricacao: item.ano_fabricacao ?? null,
+    anoCompleto: item.ano_completo ?? String(item.ano),
+    possivelIsencaoIpva: Boolean(item.possivel_isencao_ipva),
     uf: item.uf ?? null,
     ipvaEstimado: item.ipva_estimado ?? null,
     licenciamentoValor: item.licenciamento_valor ?? null,

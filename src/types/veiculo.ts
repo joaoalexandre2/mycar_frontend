@@ -11,7 +11,14 @@ export interface Veiculo {
   placa: string;
   marca: string;
   modelo: string;
+  /** Ano do MODELO (o da tabela FIPE). */
   ano: number;
+  /** Ano de fabricação, opcional (igual ao do modelo ou um antes). */
+  anoFabricacao: number | null;
+  /** Como no CRLV: "2018/2019", ou só "2018". */
+  anoCompleto: string;
+  /** Aviso: com 15+ anos de fabricação, alguns estados isentam o IPVA (confira na Sefaz). */
+  possivelIsencaoIpva: boolean;
   uf: string | null;
   ipvaEstimado: number | null;
   licenciamentoValor: number | null;
@@ -30,6 +37,7 @@ export interface VeiculoPayload {
   marca: string;
   modelo: string;
   ano: number;
+  ano_fabricacao?: number | null;
   uf?: string | null;
   fipe_marca_id?: number | null;
   fipe_modelo_id?: number | null;

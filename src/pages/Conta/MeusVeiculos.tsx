@@ -39,6 +39,7 @@ interface DadosForm {
   marca: string;
   modelo: string;
   ano: number;
+  anoFabricacao: number | null;
   uf: string;
   revisao: string;
   fipe: FipeSelecao;
@@ -120,6 +121,7 @@ export function MeusVeiculos() {
       marca: dados.marca,
       modelo: dados.modelo,
       ano: dados.ano,
+      ano_fabricacao: dados.anoFabricacao,
       uf: dados.uf || null,
       revisao_prevista_em: dados.revisao || null,
       fipe_marca_id: dados.fipe.marcaId ? Number(dados.fipe.marcaId) : null,
@@ -284,7 +286,7 @@ export function MeusVeiculos() {
                     data-label="Ano modelo"
                     className="px-5 py-4 text-xs text-gray-500"
                   >
-                    {veiculo.ano}
+                    {veiculo.anoCompleto}
                   </td>
                   <td data-label="Valor FIPE" className="px-5 py-4">
                     {veiculo.fipeValor !== null ? (
@@ -318,6 +320,11 @@ export function MeusVeiculos() {
                             </span>
                           )}
                         </p>
+                        {veiculo.possivelIsencaoIpva && (
+                          <p className="text-[10px] text-amber-600">
+                            Carro com 15+ anos: alguns estados isentam o IPVA. Confira na Sefaz.
+                          </p>
+                        )}
                         <p>
                           Lic.{" "}
                           <span className="font-semibold text-gray-900">
@@ -531,6 +538,7 @@ function VeiculoContaModal({
   const [marca, setMarca] = useState(veiculo?.marca ?? "");
   const [modelo, setModelo] = useState(veiculo?.modelo ?? "");
   const [ano, setAno] = useState(veiculo?.ano?.toString() ?? "");
+  const [anoFab, setAnoFab] = useState(veiculo?.anoFabricacao?.toString() ?? "");
   const [uf, setUf] = useState(veiculo?.uf ?? "");
   const [revisao, setRevisao] = useState(veiculo?.revisaoPrevistaEm ?? "");
   const [fipe, setFipe] = useState<FipeSelecao>({
@@ -557,12 +565,26 @@ function VeiculoContaModal({
       return;
     }
 
+
+    const anoFabNumerico = anoFab.trim() === "" ? null : Number(anoFab);
+
+    if (
+      anoFabNumerico !== null &&
+      (!Number.isInteger(anoFabNumerico) ||
+        anoNumerico - anoFabNumerico < 0 ||
+        anoNumerico - anoFabNumerico > 1)
+    ) {
+      window.alert("O ano de fabricação deve ser igual ao ano modelo ou um ano antes dele (ex.: 2018/2019).");
+      return;
+    }
+
     onSave({
       apelido,
       placa: placa.trim().toUpperCase(),
       marca: marca.trim(),
       modelo: modelo.trim(),
       ano: anoNumerico,
+      anoFabricacao: anoFabNumerico,
       uf,
       revisao,
       fipe,
@@ -677,6 +699,24 @@ function VeiculoContaModal({
                   Ano do modelo (o mesmo da tabela FIPE). Pode ser o ano seguinte ao de fabricação.
                 </p>
               </div>
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+                Ano de fabricação (opcional)
+              </label>
+              <input
+                type="number"
+                min="1900"
+                max={new Date().getFullYear()}
+                value={anoFab}
+                placeholder="Ex.: 2018"
+                onChange={(event) => setAnoFab(event.target.value)}
+                className={classeCampo}
+              />
+              <p className="mt-1 text-[11px] text-gray-400">
+                Se for diferente do ano modelo, informe (como no documento: 2018/2019). Só pode ser igual ao ano modelo ou um ano antes.
+              </p>
             </div>
 
             <div>
