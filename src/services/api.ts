@@ -16,6 +16,13 @@ api.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
 
+  // Envio de arquivos (FormData): sem o Content-Type fixo em JSON, o axios manda o
+  // formulário de verdade e o navegador acrescenta o "boundary". Com ele, o FormData
+  // seria convertido em JSON e os arquivos se perderiam.
+  if (typeof FormData !== "undefined" && config.data instanceof FormData) {
+    config.headers.delete("Content-Type");
+  }
+
   return config;
 });
 
