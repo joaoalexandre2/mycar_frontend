@@ -56,7 +56,10 @@ import {
           {/* Logo */}
           <div className="flex items-center justify-between gap-3 px-2 pb-8">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 font-bold">
+              <div
+                data-logo
+                className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 font-bold"
+              >
                 M
               </div>
 

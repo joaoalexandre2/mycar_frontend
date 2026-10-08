@@ -201,7 +201,7 @@ export function Sugestoes() {
   return (
     <div className="p-4 md:p-8">
       <div className="mb-6">
-        <h2 className="text-[21px] font-bold text-gray-900">Sugestões</h2>
+        <h2 className="font-display text-[28px] leading-none font-bold tracking-wide text-gray-900 uppercase">Sugestões</h2>
         <p className="mt-1 text-xs text-gray-500">
           Conte o que o MyCar pode melhorar. A equipe lê cada sugestão e você
           acompanha o andamento aqui.
@@ -210,7 +210,7 @@ export function Sugestoes() {
 
       <form
         onSubmit={(e) => void enviar(e)}
-        className="mb-6 space-y-3 rounded-xl border border-gray-200 bg-white p-5"
+        className="mb-6 space-y-3 rounded-2xl border border-gray-200 bg-white p-5"
       >
         <p className="flex items-center gap-2 text-sm font-semibold text-gray-900">
           <Lightbulb size={16} className="text-blue-600" />
@@ -326,9 +326,9 @@ export function Sugestoes() {
         </div>
       </form>
 
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 p-5">
-          <h3 className="text-sm font-semibold text-gray-900">
+          <h3 className="font-display text-xl leading-none font-bold tracking-wide text-gray-900 uppercase">
             {visao === "todas" ? "Todas as sugestões (equipe)" : "Minhas sugestões"}
           </h3>
 

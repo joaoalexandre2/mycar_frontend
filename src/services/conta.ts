@@ -1,6 +1,7 @@
 import api from "./api";
 import { obterItensPorPagina } from "../utils/preferencias";
 import { dataISO } from "../utils/formatters";
+import { urlDaFoto } from "../utils/imagem";
 import type {
   CampoFicha,
   FichaTecnicaConta,
@@ -40,6 +41,7 @@ interface VeiculoContaApi {
   ano_fabricacao?: number | null;
   ano_completo?: string | null;
   possivel_isencao_ipva?: boolean;
+  foto_capa_url?: string | null;
   uf?: string | null;
   revisao_prevista_em?: string | null;
   ipva_estimado?: number | null;
@@ -115,6 +117,7 @@ export function mapearVeiculoConta(item: VeiculoContaApi): VeiculoConta {
     anoFabricacao: item.ano_fabricacao ?? null,
     anoCompleto: item.ano_completo ?? String(item.ano),
     possivelIsencaoIpva: Boolean(item.possivel_isencao_ipva),
+    fotoCapaUrl: item.foto_capa_url ? urlDaFoto(item.foto_capa_url) : null,
     uf: item.uf ?? null,
     ipvaEstimado: item.ipva_estimado ?? null,
     licenciamentoValor: item.licenciamento_valor ?? null,

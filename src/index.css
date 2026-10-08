@@ -259,3 +259,44 @@ body {
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
+
+/* ---------- Estilo Oficina (perfil oficina) ----------
+   Public Sans, menu lateral azul-marinho com o selo amarelo, e números tabulares
+   (alinham em colunas) nas tabelas e nos indicadores. A cor principal continua a
+   escolhida pelo usuário (azul de padrão). */
+:root[data-estilo="oficina"] {
+  font-family:
+    "Public Sans",
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+:root[data-estilo="oficina"] main {
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-estilo="oficina"] aside {
+  background-color: #14213d;
+}
+
+:root[data-estilo="oficina"] aside [data-logo] {
+  background-color: #fca311;
+  color: #14213d;
+}
+
+:root[data-estilo="oficina"] aside a[aria-current="page"] {
+  background-color: #22335c;
+  color: #ffffff;
+}
+
+:root[data-estilo="oficina"] aside a:not([aria-current="page"]):hover {
+  background-color: #1b2b50;
+}
+
+:root[data-estilo="oficina"] table thead th {
+  letter-spacing: 0.06em;
+}

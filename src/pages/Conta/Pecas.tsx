@@ -317,7 +317,7 @@ export function Pecas() {
   return (
     <div className="p-4 md:p-8">
       <div className="mb-6">
-        <h2 className="text-[21px] font-bold text-gray-900">Peças</h2>
+        <h2 className="font-display text-[28px] leading-none font-bold tracking-wide text-gray-900 uppercase">Peças</h2>
         <p className="mt-1 text-xs text-gray-500">
           Catálogo das peças do seu carro. Digite o que procura, como coifa ou
           amortecedor, ou navegue por sistema.
@@ -333,7 +333,7 @@ export function Pecas() {
         </p>
       )}
 
-      <div className="mb-5 rounded-xl border border-gray-200 bg-white p-5">
+      <div className="mb-5 rounded-2xl border border-gray-200 bg-white p-5">
         <div className="flex flex-col gap-3 sm:flex-row">
           <div className="relative flex-1">
             <Search
@@ -451,7 +451,7 @@ export function Pecas() {
       ) : null}
 
       {dados && dados.total === 0 && (
-        <div className="rounded-xl border border-gray-200 bg-white p-8 text-center">
+        <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center">
           <p className="text-xs text-gray-500">
             Nenhuma peça encontrada para “{buscaAplicada}”.
           </p>
@@ -466,10 +466,10 @@ export function Pecas() {
         {grupos.map(([chave, grupo]) => (
           <div
             key={chave}
-            className="overflow-hidden rounded-xl border border-gray-200 bg-white"
+            className="overflow-hidden rounded-2xl border border-gray-200 bg-white"
           >
             <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-5 py-3">
-              <h3 className="flex items-center gap-2 text-xs font-semibold text-gray-900">
+              <h3 className="font-display flex items-center gap-2 text-lg leading-none font-bold tracking-wide text-gray-900 uppercase">
                 <Package size={15} className="text-blue-600" />
                 {grupo.rotulo}
               </h3>

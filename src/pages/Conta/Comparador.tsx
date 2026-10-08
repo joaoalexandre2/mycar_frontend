@@ -120,7 +120,7 @@ export function Comparador() {
   return (
     <div className="p-4 md:p-8">
       <div className="mb-6">
-        <h2 className="text-[21px] font-bold text-gray-900">Comparador de preços</h2>
+        <h2 className="font-display text-[28px] leading-none font-bold tracking-wide text-gray-900 uppercase">Comparador de preços</h2>
         <p className="mt-1 text-xs text-gray-500">
           Buscamos o produto agora e mostramos as 3 ofertas mais baratas, com o
           lugar que está vendendo menos.
@@ -138,7 +138,7 @@ export function Comparador() {
 
       <form
         onSubmit={(e) => void comparar(e)}
-        className="mb-5 space-y-4 rounded-xl border border-gray-200 bg-white p-5"
+        className="mb-5 space-y-4 rounded-2xl border border-gray-200 bg-white p-5"
       >
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label className="block text-[11px] text-gray-500">
@@ -245,19 +245,19 @@ export function Comparador() {
       </form>
 
       {resultado?.status === "sem_configuracao" && (
-        <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-xs text-amber-800">
+        <div className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-xs text-amber-800">
           O comparador automático ainda não foi ativado pela equipe do MyCar.
           Enquanto isso, use os atalhos das lojas abaixo.
         </div>
       )}
       {resultado?.status === "indisponivel" && (
-        <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-xs text-amber-800">
+        <div className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-xs text-amber-800">
           A loja não respondeu agora. Tente de novo em instantes ou use os
           atalhos abaixo.
         </div>
       )}
       {resultado?.status === "sem_resultados" && (
-        <div className="mb-5 rounded-xl border border-gray-200 bg-white px-5 py-4 text-xs text-gray-600">
+        <div className="mb-5 rounded-2xl border border-gray-200 bg-white px-5 py-4 text-xs text-gray-600">
           Nenhuma oferta encontrada para “{resultado.consulta}”. Tente outra
           descrição ou use os atalhos das lojas.
         </div>
@@ -265,12 +265,12 @@ export function Comparador() {
 
       {resultado?.status === "ok" && maisBarato && (
         <div className="mb-5 space-y-4">
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5">
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
             <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-emerald-700">
               <Tag size={14} />
               Mais barato agora
             </p>
-            <p className="mt-2 text-2xl font-bold text-emerald-800">
+            <p className="font-display mt-2 text-[44px] leading-none font-bold text-emerald-800">
               {formatarMoeda(maisBarato.preco)}
             </p>
             <p className="mt-1 text-xs text-emerald-800">
@@ -288,7 +288,7 @@ export function Comparador() {
             </a>
           </div>
 
-          <ul className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+          <ul className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
             {resultado.itens.map((item, indice) => (
               <li
                 key={item.url}
@@ -322,7 +322,7 @@ export function Comparador() {
                 </div>
 
                 <div className="shrink-0 text-right">
-                  <p className="text-sm font-bold text-gray-900">
+                  <p className="font-display text-2xl leading-none font-semibold text-gray-900">
                     {formatarMoeda(item.preco)}
                   </p>
                   <a
@@ -351,7 +351,7 @@ export function Comparador() {
       )}
 
       {resultado && (
-        <div className="rounded-xl border border-gray-200 bg-white px-5 py-4">
+        <div className="rounded-2xl border border-gray-200 bg-white px-5 py-4">
           <p className="text-xs font-semibold text-gray-900">Comparar em outras lojas</p>
           <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2 text-xs">
             {linksOutrasLojas(resultado.consulta).map((l) => (

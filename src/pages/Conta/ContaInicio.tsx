@@ -1,6 +1,7 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FileText, Plus, ShieldCheck, Wrench } from "lucide-react";
+import { Quadro } from "../../components/dashboard/Quadro";
 import { Velocimetro } from "../../components/dashboard/Velocimetro";
 import { contaService } from "../../services/conta";
 import { mensagemErro } from "../../services/api";
@@ -52,16 +53,6 @@ const CLASSE_DO_TOM = {
   breve: "text-blue-600",
   normal: "text-gray-900",
 } as const;
-
-function Quadro({ titulo, valor, detalhe }: { titulo: string; valor: ReactNode; detalhe?: string }) {
-  return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-4">
-      <p className="text-[11px] font-medium tracking-wide text-gray-500 uppercase">{titulo}</p>
-      <p className="font-display mt-1 text-[30px] leading-none font-bold text-gray-900">{valor}</p>
-      {detalhe && <p className="mt-1.5 text-[11px] text-gray-400">{detalhe}</p>}
-    </div>
-  );
-}
 
 export function ContaInicio() {
   const { usuario } = useAuth();
