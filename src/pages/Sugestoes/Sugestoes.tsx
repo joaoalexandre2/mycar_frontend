@@ -217,34 +217,51 @@ export function Sugestoes() {
           Nova sugestão
         </p>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <label className="block text-[11px] text-gray-500 sm:col-span-1">
+        <div>
+          <p id="tipo-sugestao" className="text-[11px] text-gray-500">
             Tipo
-            <select
-              value={categoria}
-              onChange={(e) => setCategoria(e.target.value as CategoriaSugestao)}
-              className={`mt-1 h-10 ${classeCampo}`}
-            >
-              {CATEGORIAS.map((c) => (
-                <option key={c.chave} value={c.chave}>
-                  {c.rotulo}
-                </option>
-              ))}
-            </select>
-          </label>
+          </p>
+          {/* Botões em vez de <select>: o menu nativo do Chrome aparece fora do
+              lugar em alguns computadores. */}
+          <div
+            role="radiogroup"
+            aria-labelledby="tipo-sugestao"
+            className="mt-1 flex flex-wrap gap-2"
+          >
+            {CATEGORIAS.map((c) => {
+              const ativo = c.chave === categoria;
 
-          <label className="block text-[11px] text-gray-500 sm:col-span-2">
-            Título
-            <input
-              type="text"
-              value={titulo}
-              maxLength={120}
-              placeholder="Ex.: Aviso da troca de pneus"
-              onChange={(e) => setTitulo(e.target.value)}
-              className={`mt-1 h-10 ${classeCampo}`}
-            />
-          </label>
+              return (
+                <button
+                  key={c.chave}
+                  type="button"
+                  role="radio"
+                  aria-checked={ativo}
+                  onClick={() => setCategoria(c.chave)}
+                  className={`h-10 rounded-lg border px-4 text-xs font-semibold transition ${
+                    ativo
+                      ? "border-blue-600 bg-blue-600 text-white"
+                      : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  {c.rotulo}
+                </button>
+              );
+            })}
+          </div>
         </div>
+
+        <label className="block text-[11px] text-gray-500">
+          Título
+          <input
+            type="text"
+            value={titulo}
+            maxLength={120}
+            placeholder="Ex.: Aviso da troca de pneus"
+            onChange={(e) => setTitulo(e.target.value)}
+            className={`mt-1 h-10 ${classeCampo}`}
+          />
+        </label>
 
         <label className="block text-[11px] text-gray-500">
           Conte a ideia
