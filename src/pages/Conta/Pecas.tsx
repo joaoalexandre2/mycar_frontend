@@ -138,7 +138,7 @@ function PecaItem({
               key={item.id}
               className="flex items-center justify-between gap-2 rounded-lg bg-emerald-50 px-3 py-1.5 text-[11px] text-emerald-800"
             >
-              <span>
+              <span className="select-text">
                 <strong>Meu código:</strong> {item.codigo}
                 {item.marca && ` · ${item.marca}`}
               </span>
