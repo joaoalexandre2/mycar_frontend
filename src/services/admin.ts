@@ -169,3 +169,52 @@ export const adminService = {
     return data.message;
   },
 };
+
+export interface SecaoConteudo {
+  chave: string;
+  titulo: string;
+  total: number;
+  linhas: Record<string, unknown>[];
+}
+
+export interface ConteudoUsuario {
+  usuario: { id: number; nome: string; email: string; perfil: Perfil };
+  limitePorSecao: number;
+  secoes: SecaoConteudo[];
+}
+
+export interface AcessoAdmin {
+  id: number;
+  em: string;
+  ip: string | null;
+  perfil: Perfil;
+  admin: { nome: string; email: string };
+  usuario: { id: number; nome: string; email: string };
+}
+
+interface ConteudoApi {
+  usuario: ConteudoUsuario["usuario"];
+  limite_por_secao: number;
+  secoes: SecaoConteudo[];
+}
+
+/** Leitura do que um usuário cadastrou. Cada abertura fica registrada no servidor. */
+export const adminConteudoService = {
+  async conteudo(usuarioId: number): Promise<ConteudoUsuario> {
+    const { data } = await api.get<ConteudoApi>(`/admin/contas/${usuarioId}/conteudo`);
+
+    return {
+      usuario: data.usuario,
+      limitePorSecao: data.limite_por_secao,
+      secoes: data.secoes,
+    };
+  },
+
+  async acessos(): Promise<AcessoAdmin[]> {
+    const { data } = await api.get<{ data: AcessoAdmin[] }>("/admin/acessos", {
+      params: { per_page: 30 },
+    });
+
+    return data.data;
+  },
+};
