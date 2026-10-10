@@ -8,6 +8,8 @@ import { contaService } from "../../services/conta";
 import { perfilDe } from "../../utils/perfil";
 import {
   OPCOES_ITENS_POR_PAGINA,
+  corSalva,
+  estiloDoPerfil,
   obterCor,
   obterItensPorPagina,
   obterTema,
@@ -430,17 +432,26 @@ function Sistema() {
 
 /* ---------------------------- Aparência ---------------------------- */
 
+// Cores fixas (não "bg-blue-600"): a escala azul do app é trocada pela cor
+// escolhida, e a bolinha "Azul" ficaria da cor ativa, igual a outra bolinha.
 const CORES: { chave: Cor; classe: string; nome: string }[] = [
-  { chave: "blue", classe: "bg-blue-600", nome: "Azul" },
-  { chave: "green", classe: "bg-green-600", nome: "Verde" },
-  { chave: "purple", classe: "bg-purple-600", nome: "Roxo" },
-  { chave: "orange", classe: "bg-orange-500", nome: "Laranja" },
+  { chave: "blue", classe: "bg-[#2563eb]", nome: "Azul" },
+  { chave: "green", classe: "bg-[#16a34a]", nome: "Verde" },
+  { chave: "purple", classe: "bg-[#9333ea]", nome: "Roxo" },
+  { chave: "orange", classe: "bg-[#f97316]", nome: "Laranja" },
+  { chave: "red", classe: "bg-[#dc2626]", nome: "Vermelho" },
 ];
 
 function Aparencia() {
   const { usuario, atualizarUsuario } = useAuth();
   const [tema, setTema] = useState<Tema>(usuario?.tema ?? obterTema());
-  const [cor, setCor] = useState<Cor>(usuario?.cor ?? obterCor());
+  // Quem nunca escolheu vê a cor padrão do estilo (laranja em Cuidados e Frota),
+  // então é essa que deve aparecer marcada.
+  const [cor, setCor] = useState<Cor>(
+    usuario?.cor ??
+      corSalva() ??
+      (estiloDoPerfil(usuario) === "pista" ? "orange" : obterCor()),
+  );
   const [aviso, setAviso] = useState<string | null>(null);
 
   async function escolher(novoTema: Tema, novaCor: Cor) {

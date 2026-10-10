@@ -50,6 +50,7 @@ describe("estilo por perfil", () => {
     expect(document.documentElement.dataset.cor).toBe("green");
   });
 
+it("a cor vermelha é aceita e aplicada", () => {    localStorage.setItem("mycar_cor", "red");    aplicarAparenciaSalva("oficina");    expect(corSalva()).toBe("red");    expect(document.documentElement.dataset.cor).toBe("red");  });
   it("valor inválido guardado não vira cor", () => {
     localStorage.setItem("mycar_cor", "rosa");
 
