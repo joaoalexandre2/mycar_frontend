@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Trash2,
 } from "lucide-react";
+import { Placa } from "../../components/veiculos/Placa";
 import { formatarData, formatarMoeda } from "../../utils/formatters";
 import { diasAteData } from "../../utils/prazos";
 import type { VeiculoConta } from "../../types/conta";
@@ -138,9 +139,9 @@ export function CartaoVeiculo({
           />
         )}
 
-        <span className="absolute top-3 right-3 rounded-md bg-white/95 px-2 py-0.5 text-[11px] font-bold tracking-[0.18em] text-gray-900">
-          {veiculo.placa}
-        </span>
+        <div className="absolute top-3 right-3">
+          <Placa placa={veiculo.placa} uf={veiculo.uf} />
+        </div>
 
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent px-4 pt-8 pb-3">
           <h3 className="font-display truncate text-2xl leading-none font-bold tracking-wide text-white uppercase">
