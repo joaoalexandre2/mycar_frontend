@@ -22,6 +22,7 @@ import { mensagemErro } from "../../services/api";
 import { useAuth } from "../../hooks/useAuth";
 import { ESTADOS } from "../../utils/estados";
 import { formatarMoeda } from "../../utils/formatters";
+import { limparPlaca, padraoDaPlaca, placaValida, ROTULO_PADRAO } from "../../utils/placa";
 import type { VeiculoConta, VeiculoContaPayload } from "../../types/conta";
 
 interface DadosForm {
@@ -365,6 +366,11 @@ function VeiculoContaModal({
     const anoNumerico = Number(ano);
     const anoMaximo = new Date().getFullYear() + 1; // ano modelo pode ser o do ano seguinte
 
+    if (!placaValida(placa)) {
+      window.alert("Placa inválida. Use o padrão antigo (ABC1234) ou o Mercosul (ABC1D23).");
+      return;
+    }
+
     if (
       !placa.trim() ||
       !marca.trim() ||
@@ -488,11 +494,24 @@ function VeiculoContaModal({
                 <input
                   type="text"
                   value={placa}
-                  onChange={(event) => setPlaca(event.target.value.toUpperCase())}
-                  maxLength={10}
+                  onChange={(event) => setPlaca(limparPlaca(event.target.value))}
+                  maxLength={8}
+                  placeholder="ABC1D23 ou ABC1234"
+                  autoCapitalize="characters"
                   className={`${classeCampo} font-semibold uppercase tracking-wider`}
                   required
                 />
+                {placa && (
+                  <p
+                    className={`mt-1 text-[11px] ${
+                      placaValida(placa) ? "text-emerald-600" : "text-gray-400"
+                    }`}
+                  >
+                    {placaValida(placa)
+                      ? ROTULO_PADRAO[padraoDaPlaca(placa)!]
+                      : "Use 3 letras e 4 números (ABC1234) ou o padrão Mercosul (ABC1D23)."}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-gray-700">

@@ -25,8 +25,10 @@ import {
   FipeSeletor,
   type FipeSelecao,
 } from "../../components/veiculos/FipeSeletor";
+import { Placa } from "../../components/veiculos/Placa";
 import { formatarData, formatarMoeda } from "../../utils/formatters";
 import { ESTADOS } from "../../utils/estados";
+import { limparPlaca, padraoDaPlaca, placaValida, ROTULO_PADRAO } from "../../utils/placa";
 
 interface DadosVeiculoForm {
   clienteId: number;
@@ -296,9 +298,12 @@ export function Veiculos() {
                     </div>
                   </td>
                   <td data-label="Placa" className="px-5 py-4">
-                    <span className="rounded-md border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-[10px] font-bold tracking-wider text-gray-700">
-                      {veiculo.placa}
-                    </span>
+                    <Placa placa={veiculo.placa} uf={veiculo.uf} />
+                    {!placaValida(veiculo.placa) && (
+                      <p className="mt-1 text-[10px] font-semibold text-red-600">
+                        Placa fora do padrão: corrija em editar.
+                      </p>
+                    )}
                   </td>
                   <td data-label="Cliente" className="px-5 py-4 text-xs text-gray-500">
                     {nomeCliente(veiculo)}
@@ -537,6 +542,11 @@ function VeiculoModal({
     const anoNumerico = Number(ano);
     const anoMaximo = new Date().getFullYear() + 1; // ano modelo pode ser o do ano seguinte
 
+    if (!placaValida(placa)) {
+      window.alert("Placa inválida. Use o padrão antigo (ABC1234) ou o Mercosul (ABC1D23).");
+      return;
+    }
+
     if (
       !clienteId ||
       !placa.trim() ||
@@ -660,13 +670,24 @@ function VeiculoModal({
               <input
                 type="text"
                 value={placa}
-                onChange={(event) =>
-                  setPlaca(event.target.value.toUpperCase())
-                }
-                maxLength={10}
+                onChange={(event) => setPlaca(limparPlaca(event.target.value))}
+                maxLength={8}
+                placeholder="ABC1D23 ou ABC1234"
+                autoCapitalize="characters"
                 className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs font-semibold tracking-wider uppercase outline-none focus:border-blue-500"
                 required
               />
+              {placa && (
+                <p
+                  className={`mt-1 text-[11px] ${
+                    placaValida(placa) ? "text-emerald-600" : "text-gray-400"
+                  }`}
+                >
+                  {placaValida(placa)
+                    ? ROTULO_PADRAO[padraoDaPlaca(placa)!]
+                    : "Use 3 letras e 4 números (ABC1234) ou o padrão Mercosul (ABC1D23)."}
+                </p>
+              )}
             </div>
 
             <div>
