@@ -1,3 +1,14 @@
+/** Foto livre de um modelo: o autor e a licença precisam aparecer junto dela. */
+export interface FotoModelo {
+  modelo: string;
+  url: string;
+  autor: string | null;
+  licenca: string | null;
+  licencaUrl: string | null;
+  pagina: string | null;
+  fonte: string;
+}
+
 /** Veículo de uma conta (perfis pessoa e frota). */
 export interface VeiculoConta {
   id: number;
@@ -15,6 +26,8 @@ export interface VeiculoConta {
   possivelIsencaoIpva: boolean;
   /** Miniatura da foto mais recente do álbum (link temporário); nulo sem foto. */
   fotoCapaUrl: string | null;
+  /** Foto livre do modelo (Wikimedia), usada na capa quando não há foto do dono. */
+  fotoModelo?: FotoModelo | null;
   uf: string | null;
   ipvaEstimado: number | null;
   /** True quando o IPVA usou a alíquota média por falta da alíquota do estado. */

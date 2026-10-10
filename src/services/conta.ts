@@ -42,6 +42,15 @@ interface VeiculoContaApi {
   ano_completo?: string | null;
   possivel_isencao_ipva?: boolean;
   foto_capa_url?: string | null;
+  foto_modelo?: {
+    modelo: string;
+    url: string;
+    autor?: string | null;
+    licenca?: string | null;
+    licenca_url?: string | null;
+    pagina?: string | null;
+    fonte?: string | null;
+  } | null;
   uf?: string | null;
   revisao_prevista_em?: string | null;
   ipva_estimado?: number | null;
@@ -119,6 +128,17 @@ export function mapearVeiculoConta(item: VeiculoContaApi): VeiculoConta {
     anoCompleto: item.ano_completo ?? String(item.ano),
     possivelIsencaoIpva: Boolean(item.possivel_isencao_ipva),
     fotoCapaUrl: item.foto_capa_url ? urlDaFoto(item.foto_capa_url) : null,
+    fotoModelo: item.foto_modelo
+      ? {
+          modelo: item.foto_modelo.modelo,
+          url: urlDaFoto(item.foto_modelo.url),
+          autor: item.foto_modelo.autor ?? null,
+          licenca: item.foto_modelo.licenca ?? null,
+          licencaUrl: item.foto_modelo.licenca_url ?? null,
+          pagina: item.foto_modelo.pagina ?? null,
+          fonte: item.foto_modelo.fonte ?? "Wikimedia Commons",
+        }
+      : null,
     uf: item.uf ?? null,
     ipvaEstimado: item.ipva_estimado ?? null,
     ipvaAliquotaMedia: Boolean(item.ipva_aliquota_media),
