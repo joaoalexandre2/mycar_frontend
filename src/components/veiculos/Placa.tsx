@@ -19,7 +19,7 @@ export function Placa({ placa, uf, tamanho = "sm" }: PlacaProps) {
 
   if (padrao === null) {
     return (
-      <span className="inline-block rounded-md bg-white px-2 py-0.5 text-[11px] font-bold tracking-[0.18em] text-gray-900">
+      <span className="inline-block whitespace-nowrap rounded-md bg-white px-2 py-0.5 text-[11px] font-bold tracking-[0.18em] text-gray-900">
         {placa}
       </span>
     );
@@ -32,7 +32,7 @@ export function Placa({ placa, uf, tamanho = "sm" }: PlacaProps) {
       <span
         role="img"
         aria-label={`Placa Mercosul ${texto}`}
-        className="inline-flex flex-col overflow-hidden rounded-[5px] border border-gray-400 bg-white shadow-sm"
+        className="inline-flex shrink-0 flex-col overflow-hidden whitespace-nowrap rounded-[5px] border border-gray-400 bg-white shadow-sm"
       >
         <span
           className={`flex items-center justify-between bg-[#1d4fa3] px-1.5 font-bold tracking-widest text-white uppercase ${
@@ -58,7 +58,7 @@ export function Placa({ placa, uf, tamanho = "sm" }: PlacaProps) {
     <span
       role="img"
       aria-label={`Placa ${texto}`}
-      className="inline-flex flex-col overflow-hidden rounded-[5px] border-2 border-gray-700 bg-[#c4c7cc] shadow-sm"
+      className="inline-flex shrink-0 flex-col overflow-hidden whitespace-nowrap rounded-[5px] border-2 border-gray-700 bg-[#c4c7cc] shadow-sm"
     >
       <span
         className={`bg-[#a9adb3] px-1.5 text-center font-semibold tracking-wider text-gray-800 uppercase ${
