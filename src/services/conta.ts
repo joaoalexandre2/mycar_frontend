@@ -45,6 +45,7 @@ interface VeiculoContaApi {
   uf?: string | null;
   revisao_prevista_em?: string | null;
   ipva_estimado?: number | null;
+  ipva_aliquota_media?: boolean;
   licenciamento_valor?: number | null;
   proximo_vencimento_ipva?: string | null;
   proximo_vencimento_licenciamento?: string | null;
@@ -120,6 +121,7 @@ export function mapearVeiculoConta(item: VeiculoContaApi): VeiculoConta {
     fotoCapaUrl: item.foto_capa_url ? urlDaFoto(item.foto_capa_url) : null,
     uf: item.uf ?? null,
     ipvaEstimado: item.ipva_estimado ?? null,
+    ipvaAliquotaMedia: Boolean(item.ipva_aliquota_media),
     licenciamentoValor: item.licenciamento_valor ?? null,
     proximoVencimentoIpva: item.proximo_vencimento_ipva
       ? dataISO(item.proximo_vencimento_ipva)

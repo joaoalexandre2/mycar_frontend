@@ -21,6 +21,8 @@ export interface Veiculo {
   possivelIsencaoIpva: boolean;
   uf: string | null;
   ipvaEstimado: number | null;
+  /** True quando o IPVA usou a alíquota média por falta da alíquota do estado. */
+  ipvaAliquotaMedia?: boolean;
   licenciamentoValor: number | null;
   proximoVencimentoLicenciamento: string | null;
   fipeMarcaId: number | null;

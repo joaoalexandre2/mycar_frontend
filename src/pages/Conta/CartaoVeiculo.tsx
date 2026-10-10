@@ -61,10 +61,16 @@ function Imposto({
   rotulo,
   valor,
   vencimento,
+  aproximado = false,
+  aliquotaMedia = false,
 }: {
   rotulo: string;
   valor: number | null;
   vencimento: string | null;
+  /** O valor é uma aproximação (IPVA = FIPE × alíquota): mostra "≈". */
+  aproximado?: boolean;
+  /** Faltou a alíquota do estado e foi usada a média do país. */
+  aliquotaMedia?: boolean;
 }) {
   const dias = vencimento ? diasAteData(vencimento) : null;
   const perto = dias !== null && dias <= 30;
@@ -75,8 +81,11 @@ function Imposto({
         {rotulo}
       </p>
       <p className="font-display text-xl leading-tight font-semibold text-gray-900">
-        {valor !== null ? formatarMoeda(valor) : "—"}
+        {valor !== null ? `${aproximado ? "≈ " : ""}${formatarMoeda(valor)}` : "—"}
       </p>
+      {aliquotaMedia && valor !== null && (
+        <p className="text-[10px] text-amber-600">alíquota média do país</p>
+      )}
       {vencimento && (
         <p
           className={`mt-0.5 text-[10px] ${
@@ -166,6 +175,8 @@ export function CartaoVeiculo({
               rotulo="IPVA"
               valor={veiculo.ipvaEstimado}
               vencimento={veiculo.proximoVencimentoIpva}
+              aproximado
+              aliquotaMedia={veiculo.ipvaAliquotaMedia}
             />
             <Imposto
               rotulo="Licenciamento"

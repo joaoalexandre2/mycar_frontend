@@ -17,6 +17,8 @@ export interface VeiculoConta {
   fotoCapaUrl: string | null;
   uf: string | null;
   ipvaEstimado: number | null;
+  /** True quando o IPVA usou a alíquota média por falta da alíquota do estado. */
+  ipvaAliquotaMedia?: boolean;
   licenciamentoValor: number | null;
   proximoVencimentoIpva: string | null;
   proximoVencimentoLicenciamento: string | null;
