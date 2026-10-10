@@ -131,6 +131,13 @@ export function CartaoVeiculo({
             loading="lazy"
             className="h-full w-full object-cover"
           />
+        ) : veiculo.fotoModelo ? (
+          <img
+            src={veiculo.fotoModelo.url}
+            alt={`Foto ilustrativa do modelo ${veiculo.fotoModelo.modelo}`}
+            loading="lazy"
+            className="h-full w-full object-cover"
+          />
         ) : (
           <Car
             size={64}
@@ -153,6 +160,38 @@ export function CartaoVeiculo({
           </p>
         </div>
       </div>
+
+      {!veiculo.fotoCapaUrl && veiculo.fotoModelo && (
+        <p className="truncate border-b border-gray-100 px-4 py-1 text-[9px] text-gray-400">
+          Foto ilustrativa do modelo ·{" "}
+          {veiculo.fotoModelo.autor ? `${veiculo.fotoModelo.autor} · ` : ""}
+          {veiculo.fotoModelo.licencaUrl ? (
+            <a
+              href={veiculo.fotoModelo.licencaUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+            >
+              {veiculo.fotoModelo.licenca}
+            </a>
+          ) : (
+            veiculo.fotoModelo.licenca
+          )}
+          {" · "}
+          {veiculo.fotoModelo.pagina ? (
+            <a
+              href={veiculo.fotoModelo.pagina}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+            >
+              {veiculo.fotoModelo.fonte}
+            </a>
+          ) : (
+            veiculo.fotoModelo.fonte
+          )}
+        </p>
+      )}
 
       <div className="flex flex-1 flex-col gap-3 p-4">
         {!placaValida(veiculo.placa) && (
