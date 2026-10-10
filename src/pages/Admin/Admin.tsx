@@ -5,6 +5,8 @@ import {
   ChevronLeft,
   ChevronRight,
   ClipboardList,
+  Eye,
+  History,
   Search,
   Send,
   UserCheck,
@@ -14,10 +16,13 @@ import {
 } from "lucide-react";
 import { StatCard } from "../../components/dashboard/StatCard";
 import {
+  adminConteudoService,
   adminService,
+  type AcessoAdmin,
   type ContaAdmin,
   type ResumoPlataforma,
 } from "../../services/admin";
+import { ConteudoUsuario } from "./ConteudoUsuario";
 import { mensagemErro } from "../../services/api";
 import type { Perfil } from "../../types/auth";
 
@@ -60,6 +65,28 @@ export function Admin() {
   const [totalRegistros, setTotalRegistros] = useState(0);
   const [reenviandoId, setReenviandoId] = useState<number | null>(null);
   const [aviso, setAviso] = useState<Aviso | null>(null);
+  const [verConteudoDe, setVerConteudoDe] = useState<number | null>(null);
+  const [acessos, setAcessos] = useState<AcessoAdmin[] | null>(null);
+
+  function fecharConteudo() {
+    setVerConteudoDe(null);
+    // O registro de acessos inclui a consulta que acabou de ser feita.
+    if (acessos !== null) {
+      adminConteudoService.acessos().then(setAcessos).catch(() => undefined);
+    }
+  }
+
+  function alternarAcessos() {
+    if (acessos !== null) {
+      setAcessos(null);
+      return;
+    }
+
+    adminConteudoService
+      .acessos()
+      .then(setAcessos)
+      .catch((erro) => setAviso({ tipo: "erro", texto: mensagemErro(erro) }));
+  }
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -150,8 +177,9 @@ export function Admin() {
           Administração
         </h2>
         <p className="mt-1 text-xs text-gray-500">
-          Visão geral da plataforma. Mostra só números e dados de conta, nunca
-          o conteúdo que as oficinas cadastram.
+          Visão geral da plataforma. A lista mostra números e dados de conta;
+          em "Ver conteúdo" você lê, só para leitura, o que o usuário cadastrou.
+          Cada consulta fica registrada.
         </p>
       </div>
 
@@ -355,7 +383,16 @@ export function Admin() {
                     </p>
                   </td>
                   <td className="px-5 py-4">
-                    <div className="flex items-center justify-end">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setVerConteudoDe(conta.id)}
+                        title="Ver o que este usuário cadastrou (fica registrado)"
+                        className="flex h-8 items-center gap-1.5 rounded-lg border border-gray-200 px-3 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50"
+                      >
+                        <Eye size={13} />
+                        Ver conteúdo
+                      </button>
                       {!conta.emailConfirmado && (
                         <button
                           type="button"
@@ -417,6 +454,61 @@ export function Admin() {
           </div>
         </div>
       </div>
+
+      <div className="mt-5 overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <button
+          type="button"
+          onClick={alternarAcessos}
+          className="flex w-full items-center gap-2 p-5 text-left"
+        >
+          <History size={16} className="text-gray-500" />
+          <span className="text-sm font-semibold text-gray-900">
+            Registro de acessos ao conteúdo
+          </span>
+          <span className="ml-auto text-[11px] text-gray-400">
+            {acessos === null ? "Mostrar" : "Ocultar"}
+          </span>
+        </button>
+
+        {acessos !== null && (
+          <div className="overflow-x-auto border-t border-gray-100">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="px-5 py-2 text-[10px] font-semibold uppercase text-gray-500">Quando</th>
+                  <th className="px-5 py-2 text-[10px] font-semibold uppercase text-gray-500">Quem viu</th>
+                  <th className="px-5 py-2 text-[10px] font-semibold uppercase text-gray-500">De quem</th>
+                  <th className="px-5 py-2 text-[10px] font-semibold uppercase text-gray-500">IP</th>
+                </tr>
+              </thead>
+              <tbody>
+                {acessos.map((acesso) => (
+                  <tr key={acesso.id} className="border-t border-gray-100">
+                    <td className="px-5 py-2 text-[11px] text-gray-600">{formatarDataHora(acesso.em)}</td>
+                    <td className="px-5 py-2 text-[11px] text-gray-600">{acesso.admin.nome}</td>
+                    <td className="px-5 py-2 text-[11px] text-gray-600">
+                      {acesso.usuario.nome}{" "}
+                      <span className="text-gray-400">({acesso.usuario.email})</span>
+                    </td>
+                    <td className="px-5 py-2 text-[11px] text-gray-400">{acesso.ip ?? "—"}</td>
+                  </tr>
+                ))}
+                {acessos.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="px-5 py-8 text-center text-xs text-gray-400">
+                      Nenhum acesso registrado ainda.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {verConteudoDe !== null && (
+        <ConteudoUsuario usuarioId={verConteudoDe} aoFechar={fecharConteudo} />
+      )}
     </div>
   );
 }
