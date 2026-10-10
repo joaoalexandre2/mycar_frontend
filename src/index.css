@@ -203,6 +203,19 @@ select,
   --color-blue-900: var(--color-orange-900);
 }
 
+:root[data-cor="red"] {
+  --color-blue-50: var(--color-red-50);
+  --color-blue-100: var(--color-red-100);
+  --color-blue-200: var(--color-red-200);
+  --color-blue-300: var(--color-red-300);
+  --color-blue-400: var(--color-red-400);
+  --color-blue-500: var(--color-red-500);
+  --color-blue-600: var(--color-red-600);
+  --color-blue-700: var(--color-red-700);
+  --color-blue-800: var(--color-red-800);
+  --color-blue-900: var(--color-red-900);
+}
+
 /* ---------- Tema escuro: inverte a escala de cinzas e o branco ---------- */
 :root.dark {
   color-scheme: dark;

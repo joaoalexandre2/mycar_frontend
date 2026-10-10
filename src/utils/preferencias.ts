@@ -2,7 +2,7 @@ import type { Usuario } from "../types/auth";
 import { ehConta, perfilDe } from "./perfil";
 
 export type Tema = "claro" | "escuro";
-export type Cor = "blue" | "green" | "purple" | "orange";
+export type Cor = "blue" | "green" | "purple" | "orange" | "red";
 
 export const OPCOES_ITENS_POR_PAGINA = [10, 15, 20, 50, 100] as const;
 
@@ -33,7 +33,7 @@ export function obterTema(): Tema {
 export function obterCor(): Cor {
   const cor = ler(CHAVE_COR);
 
-  return cor === "green" || cor === "purple" || cor === "orange"
+  return cor === "green" || cor === "purple" || cor === "orange" || cor === "red"
     ? cor
     : "blue";
 }
@@ -82,7 +82,7 @@ export function estiloDoPerfil(usuario: Usuario | null | undefined): Estilo | nu
 export function corSalva(): Cor | null {
   const cor = ler(CHAVE_COR);
 
-  return cor === "blue" || cor === "green" || cor === "purple" || cor === "orange"
+  return cor === "blue" || cor === "green" || cor === "purple" || cor === "orange" || cor === "red"
     ? cor
     : null;
 }

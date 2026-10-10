@@ -13,7 +13,7 @@ export interface Usuario {
   admin?: boolean;
   /** Aparência gravada na conta; null/ausente = nunca escolheu. */
   tema?: "claro" | "escuro" | null;
-  cor?: "blue" | "green" | "purple" | "orange" | null;
+  cor?: "blue" | "green" | "purple" | "orange" | "red" | null;
   /** Foto de perfil (data URI); null/ausente = mostra as iniciais. */
   foto?: string | null;
 }
