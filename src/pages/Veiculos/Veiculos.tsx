@@ -299,6 +299,11 @@ export function Veiculos() {
                   </td>
                   <td data-label="Placa" className="px-5 py-4">
                     <Placa placa={veiculo.placa} uf={veiculo.uf} />
+                    {!placaValida(veiculo.placa) && (
+                      <p className="mt-1 text-[10px] font-semibold text-red-600">
+                        Placa fora do padrão: corrija em editar.
+                      </p>
+                    )}
                   </td>
                   <td data-label="Cliente" className="px-5 py-4 text-xs text-gray-500">
                     {nomeCliente(veiculo)}

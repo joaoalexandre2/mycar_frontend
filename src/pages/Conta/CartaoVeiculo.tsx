@@ -11,6 +11,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { Placa } from "../../components/veiculos/Placa";
+import { placaValida } from "../../utils/placa";
 import { formatarData, formatarMoeda } from "../../utils/formatters";
 import { diasAteData } from "../../utils/prazos";
 import type { VeiculoConta } from "../../types/conta";
@@ -154,6 +155,16 @@ export function CartaoVeiculo({
       </div>
 
       <div className="flex flex-1 flex-col gap-3 p-4">
+        {!placaValida(veiculo.placa) && (
+          <p
+            role="alert"
+            className="rounded-xl bg-red-50 px-3 py-2 text-[11px] font-semibold text-red-600"
+          >
+            A placa "{veiculo.placa}" está fora do padrão. Toque em editar e
+            corrija a placa (ABC1234 ou ABC1D23).
+          </p>
+        )}
+
         <div className="flex items-end justify-between gap-3">
           <div>
             <p className="text-[10px] font-medium tracking-wide text-gray-500 uppercase">
