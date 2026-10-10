@@ -327,9 +327,14 @@ export function Veiculos() {
                           IPVA{" "}
                           <span className="font-semibold text-gray-900">
                             {veiculo.ipvaEstimado !== null
-                              ? formatarMoeda(veiculo.ipvaEstimado)
+                              ? `≈ ${formatarMoeda(veiculo.ipvaEstimado)}`
                               : "—"}
                           </span>
+                          {veiculo.ipvaAliquotaMedia && veiculo.ipvaEstimado !== null && (
+                            <span className="ml-1 text-[10px] text-amber-600">
+                              (alíquota média)
+                            </span>
+                          )}
                         </p>
                         {veiculo.possivelIsencaoIpva && (
                           <p className="text-[10px] text-amber-600">

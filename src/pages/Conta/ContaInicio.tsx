@@ -180,9 +180,10 @@ export function ContaInicio() {
             {resumo && <span className="ml-2 text-base text-gray-400">{vencimentos.length}</span>}
           </h3>
           <p className="mt-2 text-[11px] text-gray-400">
-            As datas de IPVA e licenciamento são <strong>estimativas</strong>{" "}
-            pelo final da placa e variam por estado: confirme no site do
-            Detran/Sefaz. Cadastre o CRLV do veículo para usar a data real.
+            O IPVA vence em <strong>janeiro</strong> e o licenciamento segue o
+            final da placa. Datas e valores são <strong>estimativas</strong> e
+            variam por estado: confirme no site do Detran/Sefaz. Cadastre o CRLV
+            do veículo para usar a data real do licenciamento.
           </p>
         </div>
 
