@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useCarregarLista } from "../../hooks/useCarregarLista";
 import {
   Car,
   ChevronLeft,
@@ -51,7 +52,6 @@ const RESUMO_INICIAL: ResumoVeiculos = {
 export function Veiculos() {
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [carregando, setCarregando] = useState(true);
   const [busca, setBusca] = useState("");
   const [buscaDebounced, setBuscaDebounced] = useState("");
   const [pagina, setPagina] = useState(1);
@@ -74,42 +74,44 @@ export function Veiculos() {
     return () => clearTimeout(timer);
   }, [busca]);
 
-  async function carregar() {
-    try {
-      setCarregando(true);
-      const [resultado, listaClientes] = await Promise.all([
-        veiculosService.listarPaginado({
-          pagina,
-          busca: buscaDebounced,
-        }),
-        clientesService.listar(),
-      ]);
+  const { carregando, recarregar } = useCarregarLista(
+    `${pagina}|${buscaDebounced}`,
+    async (ativo) => {
+      try {
+        const [resultado, listaClientes] = await Promise.all([
+          veiculosService.listarPaginado({
+            pagina,
+            busca: buscaDebounced,
+          }),
+          clientesService.listar(),
+        ]);
 
-      if (
-        resultado.dados.length === 0 &&
-        pagina > 1 &&
-        resultado.totalRegistros > 0
-      ) {
-        setPagina((atual) => Math.max(1, atual - 1));
-        return;
+        // Busca antiga (a tela já mudou de página/filtro): descarta.
+        if (!ativo()) {
+          return;
+        }
+
+        if (
+          resultado.dados.length === 0 &&
+          pagina > 1 &&
+          resultado.totalRegistros > 0
+        ) {
+          setPagina((atual) => Math.max(1, atual - 1));
+          return;
+        }
+
+        setVeiculos(resultado.dados);
+        setTotalPaginas(resultado.totalPaginas);
+        setTotalRegistros(resultado.totalRegistros);
+        setResumo(resultado.resumo);
+        setClientes(listaClientes);
+      } catch (error) {
+        if (ativo()) {
+          window.alert(mensagemErro(error));
+        }
       }
-
-      setVeiculos(resultado.dados);
-      setTotalPaginas(resultado.totalPaginas);
-      setTotalRegistros(resultado.totalRegistros);
-      setResumo(resultado.resumo);
-      setClientes(listaClientes);
-    } catch (error) {
-      window.alert(mensagemErro(error));
-    } finally {
-      setCarregando(false);
-    }
-  }
-
-  useEffect(() => {
-    void carregar();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pagina, buscaDebounced]);
+    },
+  );
 
   const anoMedioArredondado = Math.round(resumo.anoMedio);
 
@@ -138,7 +140,7 @@ export function Veiculos() {
 
     try {
       await veiculosService.remover(id);
-      await carregar();
+      recarregar();
     } catch (error) {
       window.alert(mensagemErro(error));
     }
@@ -148,7 +150,7 @@ export function Veiculos() {
     try {
       setConsultandoId(id);
       await veiculosService.consultarFipe(id);
-      await carregar();
+      recarregar();
     } catch (error) {
       window.alert(mensagemErro(error));
     } finally {
@@ -181,7 +183,7 @@ export function Veiculos() {
 
       setModalAberto(false);
       setVeiculoEditando(null);
-      await carregar();
+      recarregar();
     } catch (error) {
       window.alert(mensagemErro(error));
     }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useCarregarLista } from "../../hooks/useCarregarLista";
 import {
   AlertTriangle,
   CalendarDays,
@@ -48,7 +49,6 @@ interface PecaEditavel {
 export function Manutencoes() {
   const [manutencoes, setManutencoes] = useState<Manutencao[]>([]);
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
-  const [carregando, setCarregando] = useState(true);
 
   const [busca, setBusca] = useState("");
   const [buscaDebounced, setBuscaDebounced] = useState("");
@@ -76,43 +76,45 @@ export function Manutencoes() {
     return () => clearTimeout(timer);
   }, [busca]);
 
-  async function carregar() {
-    try {
-      setCarregando(true);
-      const [resultado, listaVeiculos] = await Promise.all([
-        manutencoesService.listarPaginado({
-          pagina,
-          busca: buscaDebounced,
-          status: filtroStatus,
-        }),
-        veiculosService.listar(),
-      ]);
+  const { carregando, recarregar } = useCarregarLista(
+    `${pagina}|${buscaDebounced}|${filtroStatus}`,
+    async (ativo) => {
+      try {
+        const [resultado, listaVeiculos] = await Promise.all([
+          manutencoesService.listarPaginado({
+            pagina,
+            busca: buscaDebounced,
+            status: filtroStatus,
+          }),
+          veiculosService.listar(),
+        ]);
 
-      if (
-        resultado.dados.length === 0 &&
-        pagina > 1 &&
-        resultado.totalRegistros > 0
-      ) {
-        setPagina((atual) => Math.max(1, atual - 1));
-        return;
+        // Busca antiga (a tela já mudou de página/filtro): descarta.
+        if (!ativo()) {
+          return;
+        }
+
+        if (
+          resultado.dados.length === 0 &&
+          pagina > 1 &&
+          resultado.totalRegistros > 0
+        ) {
+          setPagina((atual) => Math.max(1, atual - 1));
+          return;
+        }
+
+        setManutencoes(resultado.dados);
+        setTotalPaginas(resultado.totalPaginas);
+        setTotalRegistros(resultado.totalRegistros);
+        setResumo(resultado.resumo);
+        setVeiculos(listaVeiculos);
+      } catch (error) {
+        if (ativo()) {
+          window.alert(mensagemErro(error));
+        }
       }
-
-      setManutencoes(resultado.dados);
-      setTotalPaginas(resultado.totalPaginas);
-      setTotalRegistros(resultado.totalRegistros);
-      setResumo(resultado.resumo);
-      setVeiculos(listaVeiculos);
-    } catch (error) {
-      window.alert(mensagemErro(error));
-    } finally {
-      setCarregando(false);
-    }
-  }
-
-  useEffect(() => {
-    void carregar();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pagina, buscaDebounced, filtroStatus]);
+    },
+  );
 
   function getVeiculo(manutencao: Manutencao) {
     return (
@@ -142,7 +144,7 @@ export function Manutencoes() {
 
     try {
       await manutencoesService.remover(id);
-      await carregar();
+      recarregar();
     } catch (error) {
       window.alert(mensagemErro(error));
     }
@@ -180,7 +182,7 @@ export function Manutencoes() {
 
       setModalAberto(false);
       setManutencaoEditando(null);
-      await carregar();
+      recarregar();
     } catch (error) {
       window.alert(mensagemErro(error));
     }
