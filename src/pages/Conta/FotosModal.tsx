@@ -4,7 +4,7 @@ import { Camera, ImagePlus, Trash2, X } from "lucide-react";
 import { fotosVeiculoService, type AlbumDoVeiculo, type FotoVeiculo } from "../../services/fotos";
 import { mensagemErro } from "../../services/api";
 import { Modal, ModalTelaCheia } from "../../components/ui/Modal";
-import { redimensionar } from "../../utils/imagem";
+import { redimensionarVarios } from "../../utils/imagem";
 import { formatarData } from "../../utils/formatters";
 import type { VeiculoConta } from "../../types/conta";
 
@@ -61,9 +61,10 @@ export function FotosModal({
       setProgresso({ atual: indice + 1, total: imagens.length });
 
       try {
-        const [foto, miniatura] = await Promise.all([
-          redimensionar(arquivo, 1600, 0.82),
-          redimensionar(arquivo, 400, 0.75),
+        // Decodifica a foto uma vez só e tira as duas versões dela.
+        const [foto, miniatura] = await redimensionarVarios(arquivo, [
+          { max: 1600, qualidade: 0.82 },
+          { max: 400, qualidade: 0.75 },
         ]);
         setAlbum(await fotosVeiculoService.enviar(veiculo.id, foto, miniatura));
         enviadas++;
