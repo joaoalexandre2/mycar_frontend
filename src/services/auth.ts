@@ -21,9 +21,16 @@ export const authService = {
     return data.user;
   },
 
+  /**
+   * Sair nunca falha: se o servidor estiver fora do ar (ou o token já tiver
+   * expirado), o aparelho encerra a sessão do mesmo jeito. Quem chama só
+   * precisa limpar o estado da tela e navegar para o login.
+   */
   async logout(): Promise<void> {
     try {
       await api.post("/logout");
+    } catch {
+      // A sessão local é limpa abaixo; a do servidor expira sozinha.
     } finally {
       limparSessao();
     }
