@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useComportamentoDeModal } from "../../hooks/useComportamentoDeModal";
 import type { OpcoesConfirmacao } from "../../contexts/notificacoesDefinition";
 
 /** Caixa de confirmação (substitui window.confirm). Esc ou clicar fora cancela. */
@@ -11,20 +12,14 @@ export function DialogoConfirmacao({
 }) {
   const cancelar = useRef<HTMLButtonElement>(null);
 
-  // Começa no "Cancelar": Enter sem querer não apaga nada.
+  // Esc cancela, o foco fica preso no diálogo e volta para quem o abriu.
+  const conteiner = useComportamentoDeModal(() => aoResponder(false));
+
+  // Começa no "Cancelar": Enter sem querer não apaga nada. Roda depois do
+  // efeito do hook, que põe o foco no contêiner.
   useEffect(() => {
     cancelar.current?.focus();
-
-    function aoTeclar(evento: KeyboardEvent) {
-      if (evento.key === "Escape") {
-        aoResponder(false);
-      }
-    }
-
-    document.addEventListener("keydown", aoTeclar);
-
-    return () => document.removeEventListener("keydown", aoTeclar);
-  }, [aoResponder]);
+  }, []);
 
   const perigo = opcoes.perigo ?? false;
 
@@ -38,11 +33,13 @@ export function DialogoConfirmacao({
       }}
     >
       <div
+        ref={conteiner}
+        tabIndex={-1}
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="confirmacao-titulo"
         aria-describedby="confirmacao-mensagem"
-        className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl"
+        className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl outline-none"
       >
         <h2
           id="confirmacao-titulo"
