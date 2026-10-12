@@ -1,9 +1,11 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useConfirmar } from "../../hooks/useNotificacoes";
 import { Link } from "react-router-dom";
-import { Plus, Trash2, Wrench, X } from "lucide-react";
+import { Plus, Trash2, Wrench } from "lucide-react";
 import { contaService, servicoService } from "../../services/conta";
 import { mensagemErro } from "../../services/api";
+import { Modal } from "../../components/ui/Modal";
+import { lerInteiroBR, lerNumeroBR } from "../../utils/numero";
 import { Quadro } from "../../components/dashboard/Quadro";
 import { CartaoServico } from "./CartaoServico";
 import {
@@ -396,10 +398,29 @@ function NovoServicoModal({
     event.preventDefault();
     setErro(null);
 
-    const kmNumero = km ? Number(km.replace(/\D/g, "")) : null;
-    const intervaloNumero = intervaloKm
-      ? Number(intervaloKm.replace(/\D/g, ""))
-      : null;
+    const kmLido = lerInteiroBR(km);
+    const intervaloLido = lerInteiroBR(intervaloKm);
+    const valorLido = lerNumeroBR(valor);
+
+    if (kmLido.estado === "invalido") {
+      setErro("Km do veículo inválido: use só números, como 52300 ou 52.300.");
+      return;
+    }
+
+    if (intervaloLido.estado === "invalido") {
+      setErro("Intervalo em km inválido: use só números, como 10000 ou 10.000.");
+      return;
+    }
+
+    if (valorLido.estado === "invalido") {
+      setErro("Valor pago inválido: use o formato 1.234,56.");
+      return;
+    }
+
+    const kmNumero = kmLido.estado === "ok" ? kmLido.valor : null;
+    const intervaloNumero =
+      intervaloLido.estado === "ok" ? intervaloLido.valor : null;
+    const valorNumero = valorLido.estado === "ok" ? valorLido.valor : null;
 
     if (tipo === "outro" && !titulo.trim()) {
       setErro("Informe o nome do serviço.");
@@ -420,7 +441,7 @@ function NovoServicoModal({
           titulo: tipo === "outro" ? titulo.trim() : null,
           realizado_em: realizadoEm,
           km: kmNumero,
-          valor: valor ? Number(valor.replace(",", ".")) : null,
+          valor: valorNumero,
           observacoes: observacoes.trim() || null,
           intervalo_meses: meses ? Number(meses) : null,
           intervalo_km: intervaloNumero,
@@ -434,25 +455,13 @@ function NovoServicoModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <form
-        onSubmit={(e) => void salvar(e)}
-        className="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-xl bg-white shadow-xl"
-      >
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-          <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-            <Wrench size={16} className="text-blue-600" />
-            Novo serviço
-          </h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
-          >
-            <X size={17} />
-          </button>
-        </div>
-
+    <Modal
+      titulo="Novo serviço"
+      icone={<Wrench size={16} className="text-blue-600" />}
+      larguraMax="max-w-xl"
+      onClose={onClose}
+    >
+      <form onSubmit={(e) => void salvar(e)}>
         <div className="space-y-4 px-6 py-5">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label className="block text-[11px] text-gray-500">
@@ -611,6 +620,6 @@ function NovoServicoModal({
           </div>
         </div>
       </form>
-    </div>
+    </Modal>
   );
 }

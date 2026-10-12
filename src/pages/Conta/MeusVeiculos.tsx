@@ -1,12 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useToast, useConfirmar } from "../../hooks/useNotificacoes";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  Search,
-  X,
-} from "lucide-react";
+import { useCarregarLista } from "../../hooks/useCarregarLista";
+import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 import {
   FipeSeletor,
   type FipeSelecao,
@@ -20,6 +15,7 @@ import { DespesasModal } from "../../components/layout/DespesasModal";
 import { FotosModal } from "./FotosModal";
 import { contaService } from "../../services/conta";
 import { mensagemErro } from "../../services/api";
+import { Modal } from "../../components/ui/Modal";
 import { useAuth } from "../../hooks/useAuth";
 import { ESTADOS } from "../../utils/estados";
 import { formatarMoeda } from "../../utils/formatters";
@@ -49,14 +45,12 @@ export function MeusVeiculos() {
   const ehFrota = usuario?.perfil === "frota";
 
   const [veiculos, setVeiculos] = useState<VeiculoConta[]>([]);
-  const [carregando, setCarregando] = useState(true);
   const [busca, setBusca] = useState("");
   const [buscaDebounced, setBuscaDebounced] = useState("");
   const [pagina, setPagina] = useState(1);
   const [totalPaginas, setTotalPaginas] = useState(1);
   const [totalRegistros, setTotalRegistros] = useState(0);
   const [valorTotalFipe, setValorTotalFipe] = useState(0);
-  const [recarga, setRecarga] = useState(0);
   const [modalAberto, setModalAberto] = useState(false);
   const [editando, setEditando] = useState<VeiculoConta | null>(null);
   const [consultandoId, setConsultandoId] = useState<number | null>(null);
@@ -66,8 +60,16 @@ export function MeusVeiculos() {
   const [gastando, setGastando] = useState<VeiculoConta | null>(null);
   const [fotografando, setFotografando] = useState<VeiculoConta | null>(null);
 
+  // Só volta para a página 1 quando o texto buscado de fato mudou: sem isto, o
+  // timer disparado logo depois de abrir a tela jogava a pessoa de volta para
+  // a página 1 se ela tivesse acabado de ir para a 2.
+  const buscaAplicada = useRef("");
+
   useEffect(() => {
     const timer = setTimeout(() => {
+      if (buscaAplicada.current === busca) return;
+
+      buscaAplicada.current = busca;
       setBuscaDebounced(busca);
       setPagina(1);
     }, 400);
@@ -75,39 +77,37 @@ export function MeusVeiculos() {
     return () => clearTimeout(timer);
   }, [busca]);
 
-  useEffect(() => {
-    let cancelado = false;
+  const { carregando, recarregar } = useCarregarLista(
+    `${pagina}|${buscaDebounced}`,
+    async (ativo) => {
+      try {
+        const resultado = await contaService.listarVeiculos({
+          pagina,
+          busca: buscaDebounced,
+        });
 
-    contaService
-      .listarVeiculos({ pagina, busca: buscaDebounced })
-      .then((resultado) => {
-        if (cancelado) return;
+        if (!ativo()) return;
+
+        // Removeu o último veículo da página: volta para a anterior em vez de
+        // mostrar uma página vazia (e a mensagem de "nenhum veículo").
+        if (
+          resultado.dados.length === 0 &&
+          pagina > 1 &&
+          resultado.totalRegistros > 0
+        ) {
+          setPagina((atual) => Math.max(1, atual - 1));
+          return;
+        }
+
         setVeiculos(resultado.dados);
         setTotalPaginas(resultado.totalPaginas);
         setTotalRegistros(resultado.totalRegistros);
         setValorTotalFipe(resultado.valorTotalFipe);
-      })
-      .catch((erro) => {
-        if (!cancelado) toast.erro(mensagemErro(erro));
-      })
-      .finally(() => {
-        if (!cancelado) setCarregando(false);
-      });
-
-    return () => {
-      cancelado = true;
-    };
-  }, [pagina, buscaDebounced, recarga, toast]);
-
-  function recarregar() {
-    setCarregando(true);
-    setRecarga((atual) => atual + 1);
-  }
-
-  function irParaPagina(proxima: number) {
-    setCarregando(true);
-    setPagina(proxima);
-  }
+      } catch (erro) {
+        if (ativo()) toast.erro(mensagemErro(erro));
+      }
+    },
+  );
 
   async function salvar(dados: DadosForm) {
     const payload: VeiculoContaPayload = {
@@ -272,7 +272,7 @@ export function MeusVeiculos() {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => irParaPagina(Math.max(1, pagina - 1))}
+              onClick={() => setPagina(Math.max(1, pagina - 1))}
               disabled={pagina <= 1 || carregando}
               className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
             >
@@ -281,7 +281,7 @@ export function MeusVeiculos() {
             </button>
             <button
               type="button"
-              onClick={() => irParaPagina(Math.min(totalPaginas, pagina + 1))}
+              onClick={() => setPagina(Math.min(totalPaginas, pagina + 1))}
               disabled={pagina >= totalPaginas || carregando}
               className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
             >
@@ -421,194 +421,179 @@ function VeiculoContaModal({
     "h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+    <Modal
+      titulo={veiculo ? "Editar veículo" : "Novo veículo"}
+      subtitulo="Escolha na tabela FIPE para já trazer o valor do carro."
+      larguraMax="max-w-lg"
+      onClose={onClose}
+    >
+      <form onSubmit={handleSubmit}>
+        <div className="space-y-4 px-6 py-5">
           <div>
-            <h3 className="text-sm font-semibold text-gray-900">
-              {veiculo ? "Editar veículo" : "Novo veículo"}
-            </h3>
-            <p className="mt-1 text-[11px] text-gray-400">
-              Escolha na tabela FIPE para já trazer o valor do carro.
-            </p>
+            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              Apelido (opcional)
+            </label>
+            <input
+              type="text"
+              value={apelido}
+              onChange={(event) => setApelido(event.target.value)}
+              maxLength={60}
+              placeholder="Ex.: Carro da família, Van da entrega"
+              className={classeCampo}
+            />
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
-          >
-            <X size={17} />
-          </button>
-        </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-4 px-6 py-5">
+          <FipeSeletor
+            valor={fipe}
+            onChange={(selecao, nomes) => {
+              setFipe(selecao);
+              if (nomes.marca !== undefined) setMarca(nomes.marca);
+              if (nomes.modelo !== undefined) setModelo(nomes.modelo);
+              if (nomes.ano !== undefined) setAno(String(nomes.ano));
+            }}
+          />
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                Apelido (opcional)
+                Marca
               </label>
               <input
                 type="text"
-                value={apelido}
-                onChange={(event) => setApelido(event.target.value)}
-                maxLength={60}
-                placeholder="Ex.: Carro da família, Van da entrega"
+                value={marca}
+                onChange={(event) => setMarca(event.target.value)}
                 className={classeCampo}
+                required
               />
             </div>
-
-            <FipeSeletor
-              valor={fipe}
-              onChange={(selecao, nomes) => {
-                setFipe(selecao);
-                if (nomes.marca !== undefined) setMarca(nomes.marca);
-                if (nomes.modelo !== undefined) setModelo(nomes.modelo);
-                if (nomes.ano !== undefined) setAno(String(nomes.ano));
-              }}
-            />
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                  Marca
-                </label>
-                <input
-                  type="text"
-                  value={marca}
-                  onChange={(event) => setMarca(event.target.value)}
-                  className={classeCampo}
-                  required
-                />
-              </div>
-              <div>
-                <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                  Modelo
-                </label>
-                <input
-                  type="text"
-                  value={modelo}
-                  onChange={(event) => setModelo(event.target.value)}
-                  className={classeCampo}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                  Placa
-                </label>
-                <input
-                  type="text"
-                  value={placa}
-                  onChange={(event) => setPlaca(limparPlaca(event.target.value))}
-                  maxLength={8}
-                  placeholder="ABC1D23 ou ABC1234"
-                  autoCapitalize="characters"
-                  className={`${classeCampo} font-semibold uppercase tracking-wider`}
-                  required
-                />
-                {placa && (
-                  <p
-                    className={`mt-1 text-[11px] ${
-                      placaValida(placa) ? "text-emerald-600" : "text-gray-400"
-                    }`}
-                  >
-                    {placaValida(placa)
-                      ? ROTULO_PADRAO[padraoDaPlaca(placa)!]
-                      : "Use 3 letras e 4 números (ABC1234) ou o padrão Mercosul (ABC1D23)."}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                  Ano modelo
-                </label>
-                <input
-                  type="number"
-                  min="1900"
-                  max={new Date().getFullYear() + 1}
-                  value={ano}
-                  onChange={(event) => setAno(event.target.value)}
-                  className={classeCampo}
-                  required
-                />
-                <p className="mt-1 text-[11px] text-gray-400">
-                  Ano do modelo (o mesmo da tabela FIPE). Pode ser o ano seguinte ao de fabricação.
-                </p>
-              </div>
-            </div>
-
             <div>
               <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                Ano de fabricação (opcional)
+                Modelo
+              </label>
+              <input
+                type="text"
+                value={modelo}
+                onChange={(event) => setModelo(event.target.value)}
+                className={classeCampo}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+                Placa
+              </label>
+              <input
+                type="text"
+                value={placa}
+                onChange={(event) => setPlaca(limparPlaca(event.target.value))}
+                maxLength={8}
+                placeholder="ABC1D23 ou ABC1234"
+                autoCapitalize="characters"
+                className={`${classeCampo} font-semibold uppercase tracking-wider`}
+                required
+              />
+              {placa && (
+                <p
+                  className={`mt-1 text-[11px] ${
+                    placaValida(placa) ? "text-emerald-600" : "text-gray-400"
+                  }`}
+                >
+                  {placaValida(placa)
+                    ? ROTULO_PADRAO[padraoDaPlaca(placa)!]
+                    : "Use 3 letras e 4 números (ABC1234) ou o padrão Mercosul (ABC1D23)."}
+                </p>
+              )}
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+                Ano modelo
               </label>
               <input
                 type="number"
                 min="1900"
-                max={new Date().getFullYear()}
-                value={anoFab}
-                placeholder="Ex.: 2018"
-                onChange={(event) => setAnoFab(event.target.value)}
+                max={new Date().getFullYear() + 1}
+                value={ano}
+                onChange={(event) => setAno(event.target.value)}
                 className={classeCampo}
+                required
               />
               <p className="mt-1 text-[11px] text-gray-400">
-                Se for diferente do ano modelo, informe (como no documento: 2018/2019). Só pode ser igual ao ano modelo ou um ano antes.
-              </p>
-            </div>
-
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                Estado de emplacamento
-              </label>
-              <select
-                value={uf}
-                onChange={(event) => setUf(event.target.value)}
-                className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none transition focus:border-blue-500"
-              >
-                <option value="">Selecione (para calcular IPVA e licenciamento)</option>
-                {ESTADOS.map((sigla) => (
-                  <option key={sigla} value={sigla}>
-                    {sigla}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                Próxima revisão (opcional)
-              </label>
-              <input
-                type="date"
-                value={revisao}
-                onChange={(event) => setRevisao(event.target.value)}
-                className={classeCampo}
-              />
-              <p className="mt-1 text-[11px] text-gray-400">
-                Avisamos por e-mail quando faltar até 30 dias.
+                Ano do modelo (o mesmo da tabela FIPE). Pode ser o ano seguinte ao de fabricação.
               </p>
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 border-t border-gray-200 bg-gray-50 px-6 py-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-xs font-medium text-gray-600 hover:bg-gray-50"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700"
-            >
-              {veiculo ? "Salvar alterações" : "Cadastrar veículo"}
-            </button>
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              Ano de fabricação (opcional)
+            </label>
+            <input
+              type="number"
+              min="1900"
+              max={new Date().getFullYear()}
+              value={anoFab}
+              placeholder="Ex.: 2018"
+              onChange={(event) => setAnoFab(event.target.value)}
+              className={classeCampo}
+            />
+            <p className="mt-1 text-[11px] text-gray-400">
+              Se for diferente do ano modelo, informe (como no documento: 2018/2019). Só pode ser igual ao ano modelo ou um ano antes.
+            </p>
           </div>
-        </form>
-      </div>
-    </div>
+
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              Estado de emplacamento
+            </label>
+            <select
+              value={uf}
+              onChange={(event) => setUf(event.target.value)}
+              className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none transition focus:border-blue-500"
+            >
+              <option value="">Selecione (para calcular IPVA e licenciamento)</option>
+              {ESTADOS.map((sigla) => (
+                <option key={sigla} value={sigla}>
+                  {sigla}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              Próxima revisão (opcional)
+            </label>
+            <input
+              type="date"
+              value={revisao}
+              onChange={(event) => setRevisao(event.target.value)}
+              className={classeCampo}
+            />
+            <p className="mt-1 text-[11px] text-gray-400">
+              Avisamos por e-mail quando faltar até 30 dias.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2 border-t border-gray-200 bg-gray-50 px-6 py-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-xs font-medium text-gray-600 hover:bg-gray-50"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700"
+          >
+            {veiculo ? "Salvar alterações" : "Cadastrar veículo"}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }
