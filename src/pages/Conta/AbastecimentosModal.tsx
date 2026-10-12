@@ -3,6 +3,7 @@ import { useConfirmar } from "../../hooks/useNotificacoes";
 import { Fuel, Trash2, X } from "lucide-react";
 import { abastecimentoService } from "../../services/conta";
 import { mensagemErro } from "../../services/api";
+import { lerInteiroBR, lerNumeroBR } from "../../utils/numero";
 import { formatarData, formatarKm, formatarMoeda, hojeISO } from "../../utils/formatters";
 import {
   COMBUSTIVEIS,
@@ -59,20 +60,26 @@ export function AbastecimentosModal({
     event.preventDefault();
     setErro(null);
 
-    const kmNumerico = Number(km);
-    const litrosNumerico = Number(litros.replace(",", "."));
-    const valorNumerico = Number(valor.replace(",", "."));
+    const kmLido = lerInteiroBR(km);
+    // Litros costumam vir com casas decimais ("38.5"): ponto não é milhar aqui.
+    const litrosLidos = lerNumeroBR(litros, { pontoComoMilhar: false });
+    const valorLido = lerNumeroBR(valor);
 
     if (
-      !km ||
-      Number.isNaN(kmNumerico) ||
-      !(litrosNumerico > 0) ||
-      Number.isNaN(valorNumerico) ||
-      valorNumerico < 0
+      kmLido.estado !== "ok" ||
+      litrosLidos.estado !== "ok" ||
+      litrosLidos.valor <= 0 ||
+      valorLido.estado !== "ok"
     ) {
-      setErro("Informe o km, os litros e o valor pago.");
+      setErro(
+        "Informe o km (só números), os litros (ex.: 38,5) e o valor pago (ex.: 230,00).",
+      );
       return;
     }
+
+    const kmNumerico = kmLido.valor;
+    const litrosNumerico = litrosLidos.valor;
+    const valorNumerico = valorLido.valor;
 
     try {
       setSalvando(true);
