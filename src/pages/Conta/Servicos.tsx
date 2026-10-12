@@ -2,7 +2,9 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useConfirmar } from "../../hooks/useNotificacoes";
 import { Link } from "react-router-dom";
 import { Plus, Trash2, Wrench } from "lucide-react";
-import { contaService, servicoService } from "../../services/conta";
+import { servicoService } from "../../services/conta";
+import { SeletorDeVeiculo } from "../../components/conta/SeletorDeVeiculo";
+import { useVeiculosDaConta } from "../../hooks/useVeiculosDaConta";
 import { mensagemErro } from "../../services/api";
 import { Modal } from "../../components/ui/Modal";
 import { lerInteiroBR, lerNumeroBR } from "../../utils/numero";
@@ -88,7 +90,7 @@ function textoRestante(item: Servico) {
 export function Servicos() {
   const pedirConfirmacao = useConfirmar();
   const [dados, setDados] = useState<ServicosDaConta | null>(null);
-  const [veiculos, setVeiculos] = useState<VeiculoConta[]>([]);
+  const veiculosDaConta = useVeiculosDaConta();
   const [filtroVeiculo, setFiltroVeiculo] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [modalAberto, setModalAberto] = useState(false);
@@ -96,14 +98,10 @@ export function Servicos() {
   useEffect(() => {
     let ativo = true;
 
-    Promise.all([
-      servicoService.listar(),
-      contaService.listarVeiculos({ porPagina: 100 }),
-    ])
-      .then(([servicos, pagina]) => {
-        if (!ativo) return;
-        setDados(servicos);
-        setVeiculos(pagina.dados);
+    servicoService
+      .listar()
+      .then((servicos) => {
+        if (ativo) setDados(servicos);
       })
       .catch((error) => {
         if (ativo) setErro(mensagemErro(error));
@@ -162,7 +160,7 @@ export function Servicos() {
 
         <button
           onClick={() => setModalAberto(true)}
-          disabled={veiculos.length === 0}
+          disabled={veiculosDaConta.total === 0}
           className="flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
         >
           <Plus size={18} />
@@ -215,25 +213,21 @@ export function Servicos() {
             </p>
           </div>
 
-          {veiculos.length > 1 && (
-            <select
-              value={filtroVeiculo}
-              onChange={(e) => setFiltroVeiculo(e.target.value)}
-              className="h-9 rounded-lg border border-gray-200 bg-gray-50 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
-            >
-              <option value="">Todos os veículos</option>
-              {veiculos.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.apelido?.trim() || `${v.marca} ${v.modelo}`} · {v.placa}
-                </option>
-              ))}
-            </select>
+          {veiculosDaConta.total > 1 && (
+            <div className="w-full sm:w-72">
+              <SeletorDeVeiculo
+                valor={filtroVeiculo}
+                rotulo="Filtrar por veículo"
+                opcaoVazia="Todos os veículos"
+                aoMudar={(id) => setFiltroVeiculo(id)}
+              />
+            </div>
           )}
         </div>
 
-        {!dados ? (
+        {!dados || !veiculosDaConta.carregado ? (
           <p className="p-5 text-xs text-gray-400">Carregando...</p>
-        ) : veiculos.length === 0 ? (
+        ) : veiculosDaConta.total === 0 ? (
           <div className="p-8 text-center">
             <p className="text-xs text-gray-500">
               Cadastre um veículo para registrar serviços.
@@ -351,7 +345,7 @@ export function Servicos() {
 
       {modalAberto && dados && (
         <NovoServicoModal
-          veiculos={veiculos}
+          veiculoInicial={veiculosDaConta.primeiro}
           tipos={dados.tipos}
           onClose={() => setModalAberto(false)}
           onSalvo={(novo) => {
@@ -365,17 +359,17 @@ export function Servicos() {
 }
 
 function NovoServicoModal({
-  veiculos,
+  veiculoInicial,
   tipos,
   onClose,
   onSalvo,
 }: {
-  veiculos: VeiculoConta[];
+  veiculoInicial: VeiculoConta | null;
   tipos: ServicosDaConta["tipos"];
   onClose: () => void;
   onSalvo: (dados: ServicosDaConta) => void;
 }) {
-  const [veiculoId, setVeiculoId] = useState(String(veiculos[0]?.id ?? ""));
+  const [veiculoId, setVeiculoId] = useState(String(veiculoInicial?.id ?? ""));
   const [tipo, setTipo] = useState("oleo");
   const [titulo, setTitulo] = useState("");
   const [realizadoEm, setRealizadoEm] = useState(hojeISO());
@@ -422,6 +416,11 @@ function NovoServicoModal({
       intervaloLido.estado === "ok" ? intervaloLido.valor : null;
     const valorNumero = valorLido.estado === "ok" ? valorLido.valor : null;
 
+    if (!veiculoId) {
+      setErro("Escolha o veículo.");
+      return;
+    }
+
     if (tipo === "outro" && !titulo.trim()) {
       setErro("Informe o nome do serviço.");
       return;
@@ -464,20 +463,16 @@ function NovoServicoModal({
       <form onSubmit={(e) => void salvar(e)}>
         <div className="space-y-4 px-6 py-5">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <label className="block text-[11px] text-gray-500">
+            <div className="block text-[11px] text-gray-500">
               Veículo
-              <select
-                value={veiculoId}
-                onChange={(e) => setVeiculoId(e.target.value)}
-                className={`mt-1 ${classeCampo}`}
-              >
-                {veiculos.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {v.apelido?.trim() || `${v.marca} ${v.modelo}`} · {v.placa}
-                  </option>
-                ))}
-              </select>
-            </label>
+              <div className="mt-1">
+                <SeletorDeVeiculo
+                  valor={veiculoId}
+                  veiculoEscolhido={veiculoInicial}
+                  aoMudar={(id) => setVeiculoId(id)}
+                />
+              </div>
+            </div>
 
             <label className="block text-[11px] text-gray-500">
               Serviço

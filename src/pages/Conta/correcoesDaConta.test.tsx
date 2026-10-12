@@ -185,7 +185,8 @@ describe("Comparador: medida do pneu", () => {
     await waitFor(() => expect(campo).toHaveValue("185/65 R15"));
     expect(screen.getByText(/tirada da ficha técnica/i)).toBeInTheDocument();
 
-    await userEvent.selectOptions(screen.getByLabelText(/^veículo/i), "");
+    await userEvent.click(screen.getByRole("combobox", { name: "Veículo" }));
+    await userEvent.click(await screen.findByRole("option", { name: "Sem veículo" }));
 
     expect(campo).toHaveValue("");
     expect(screen.queryByText(/tirada da ficha técnica/i)).not.toBeInTheDocument();
@@ -211,7 +212,8 @@ describe("Comparador: medida do pneu", () => {
     const campo = await screen.findByLabelText(/medida do pneu/i);
     await waitFor(() => expect(campo).toHaveValue("185/65 R15"));
 
-    await userEvent.selectOptions(screen.getByLabelText(/^veículo/i), "2");
+    await userEvent.click(screen.getByRole("combobox", { name: "Veículo" }));
+    await userEvent.click(await screen.findByRole("option", { name: "Fiat Gol · XYZ9K88" }));
 
     await waitFor(() => expect(campo).toHaveValue(""));
     expect(screen.queryByText(/tirada da ficha técnica/i)).not.toBeInTheDocument();
