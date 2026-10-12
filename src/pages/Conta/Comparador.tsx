@@ -148,6 +148,10 @@ export function Comparador() {
               onChange={(e) => {
                 setVeiculoId(e.target.value);
                 setResultado(null);
+                // A medida e a origem "da ficha" eram do veículo anterior: sai
+                // junto. Ao escolher outro, a ficha dele preenche de novo.
+                setMedida("");
+                setMedidaDaFicha(false);
               }}
               className={`mt-1 ${classeCampo}`}
             >

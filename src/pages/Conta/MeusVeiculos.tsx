@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useToast, useConfirmar } from "../../hooks/useNotificacoes";
+import { useCarregarLista } from "../../hooks/useCarregarLista";
 import {
   ChevronLeft,
   ChevronRight,
@@ -49,14 +50,12 @@ export function MeusVeiculos() {
   const ehFrota = usuario?.perfil === "frota";
 
   const [veiculos, setVeiculos] = useState<VeiculoConta[]>([]);
-  const [carregando, setCarregando] = useState(true);
   const [busca, setBusca] = useState("");
   const [buscaDebounced, setBuscaDebounced] = useState("");
   const [pagina, setPagina] = useState(1);
   const [totalPaginas, setTotalPaginas] = useState(1);
   const [totalRegistros, setTotalRegistros] = useState(0);
   const [valorTotalFipe, setValorTotalFipe] = useState(0);
-  const [recarga, setRecarga] = useState(0);
   const [modalAberto, setModalAberto] = useState(false);
   const [editando, setEditando] = useState<VeiculoConta | null>(null);
   const [consultandoId, setConsultandoId] = useState<number | null>(null);
@@ -66,8 +65,16 @@ export function MeusVeiculos() {
   const [gastando, setGastando] = useState<VeiculoConta | null>(null);
   const [fotografando, setFotografando] = useState<VeiculoConta | null>(null);
 
+  // Só volta para a página 1 quando o texto buscado de fato mudou: sem isto, o
+  // timer disparado logo depois de abrir a tela jogava a pessoa de volta para
+  // a página 1 se ela tivesse acabado de ir para a 2.
+  const buscaAplicada = useRef("");
+
   useEffect(() => {
     const timer = setTimeout(() => {
+      if (buscaAplicada.current === busca) return;
+
+      buscaAplicada.current = busca;
       setBuscaDebounced(busca);
       setPagina(1);
     }, 400);
@@ -75,39 +82,37 @@ export function MeusVeiculos() {
     return () => clearTimeout(timer);
   }, [busca]);
 
-  useEffect(() => {
-    let cancelado = false;
+  const { carregando, recarregar } = useCarregarLista(
+    `${pagina}|${buscaDebounced}`,
+    async (ativo) => {
+      try {
+        const resultado = await contaService.listarVeiculos({
+          pagina,
+          busca: buscaDebounced,
+        });
 
-    contaService
-      .listarVeiculos({ pagina, busca: buscaDebounced })
-      .then((resultado) => {
-        if (cancelado) return;
+        if (!ativo()) return;
+
+        // Removeu o último veículo da página: volta para a anterior em vez de
+        // mostrar uma página vazia (e a mensagem de "nenhum veículo").
+        if (
+          resultado.dados.length === 0 &&
+          pagina > 1 &&
+          resultado.totalRegistros > 0
+        ) {
+          setPagina((atual) => Math.max(1, atual - 1));
+          return;
+        }
+
         setVeiculos(resultado.dados);
         setTotalPaginas(resultado.totalPaginas);
         setTotalRegistros(resultado.totalRegistros);
         setValorTotalFipe(resultado.valorTotalFipe);
-      })
-      .catch((erro) => {
-        if (!cancelado) toast.erro(mensagemErro(erro));
-      })
-      .finally(() => {
-        if (!cancelado) setCarregando(false);
-      });
-
-    return () => {
-      cancelado = true;
-    };
-  }, [pagina, buscaDebounced, recarga, toast]);
-
-  function recarregar() {
-    setCarregando(true);
-    setRecarga((atual) => atual + 1);
-  }
-
-  function irParaPagina(proxima: number) {
-    setCarregando(true);
-    setPagina(proxima);
-  }
+      } catch (erro) {
+        if (ativo()) toast.erro(mensagemErro(erro));
+      }
+    },
+  );
 
   async function salvar(dados: DadosForm) {
     const payload: VeiculoContaPayload = {
@@ -272,7 +277,7 @@ export function MeusVeiculos() {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => irParaPagina(Math.max(1, pagina - 1))}
+              onClick={() => setPagina(Math.max(1, pagina - 1))}
               disabled={pagina <= 1 || carregando}
               className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
             >
@@ -281,7 +286,7 @@ export function MeusVeiculos() {
             </button>
             <button
               type="button"
-              onClick={() => irParaPagina(Math.min(totalPaginas, pagina + 1))}
+              onClick={() => setPagina(Math.min(totalPaginas, pagina + 1))}
               disabled={pagina >= totalPaginas || carregando}
               className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
             >
