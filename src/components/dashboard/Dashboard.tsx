@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
+import { useCarregarLista } from "../../hooks/useCarregarLista";
 import { useToast } from "../../hooks/useNotificacoes";
 import {
   ArrowUpRight,
@@ -10,104 +11,94 @@ import {
   Users,
   Wrench,
 } from "lucide-react";
-import type { Cliente } from "../../types/cliente";
-import type { Veiculo } from "../../types/veiculo";
 import type { OrdemServico, StatusOrdemServico } from "../../types/ordemServico";
 import type { Manutencao } from "../../types/manutencao";
 import { clientesService } from "../../services/clientes";
 import { veiculosService } from "../../services/veiculos";
-import { ordensServicoService } from "../../services/ordensServico";
+import {
+  ordensServicoService,
+  type ResumoOrdensServico,
+} from "../../services/ordensServico";
 import { manutencoesService } from "../../services/manutencoes";
 import { mensagemErro } from "../../services/api";
 import { formatarData, formatarMoeda } from "../../utils/formatters";
 
+/** Quantas ordens aparecem em "Ordens de serviço" e quantas manutenções em destaque. */
+const ORDENS_RECENTES = 5;
+const MANUTENCOES_EM_DESTAQUE = 3;
+
 export function Dashboard() {
   const toast = useToast();
-  const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
-  const [ordens, setOrdens] = useState<OrdemServico[]>([]);
-  const [manutencoes, setManutencoes] = useState<Manutencao[]>([]);
-  const [carregando, setCarregando] = useState(true);
+  const [totalClientes, setTotalClientes] = useState(0);
+  const [totalVeiculos, setTotalVeiculos] = useState(0);
+  const [resumoOrdens, setResumoOrdens] = useState<ResumoOrdensServico | null>(
+    null,
+  );
+  const [ordensRecentes, setOrdensRecentes] = useState<OrdemServico[]>([]);
+  const [proximasManutencoes, setProximasManutencoes] = useState<Manutencao[]>(
+    [],
+  );
 
-  useEffect(() => {
-    async function carregar() {
-      try {
-        setCarregando(true);
-        const [
-          listaClientes,
-          listaVeiculos,
-          listaOrdens,
-          listaManutencoes,
-        ] = await Promise.all([
-          clientesService.listar(),
-          veiculosService.listar(),
-          ordensServicoService.listar(),
-          manutencoesService.listar(),
+  // Só os totais e as poucas linhas que a tela mostra: nada de baixar a base
+  // inteira (o servidor já devolve os totais em "resumo").
+  const { carregando } = useCarregarLista("dashboard", async (ativo) => {
+    try {
+      const [clientes, veiculos, ordens, atrasadas, proximas] =
+        await Promise.all([
+          clientesService.listarPaginado({ porPagina: 1 }),
+          veiculosService.listarPaginado({ porPagina: 1 }),
+          ordensServicoService.listarPaginado({ porPagina: ORDENS_RECENTES }),
+          manutencoesService.listarPaginado({
+            status: "atrasada",
+            porPagina: MANUTENCOES_EM_DESTAQUE,
+          }),
+          manutencoesService.listarPaginado({
+            status: "proxima",
+            porPagina: MANUTENCOES_EM_DESTAQUE,
+          }),
         ]);
-        setClientes(listaClientes);
-        setVeiculos(listaVeiculos);
-        setOrdens(listaOrdens);
-        setManutencoes(listaManutencoes);
-      } catch (error) {
+
+      if (!ativo()) {
+        return;
+      }
+
+      setTotalClientes(clientes.totalRegistros);
+      setTotalVeiculos(veiculos.totalRegistros);
+      setResumoOrdens(ordens.resumo);
+      setOrdensRecentes(ordens.dados);
+
+      // As mais recentes entre as atrasadas e as próximas (cada lista já vem
+      // da mais nova para a mais antiga).
+      setProximasManutencoes(
+        [...atrasadas.dados, ...proximas.dados]
+          .sort((a, b) => (a.dataManutencao < b.dataManutencao ? 1 : -1))
+          .slice(0, MANUTENCOES_EM_DESTAQUE),
+      );
+    } catch (error) {
+      if (ativo()) {
         toast.erro(mensagemErro(error));
-      } finally {
-        setCarregando(false);
       }
     }
+  });
 
-    void carregar();
-  }, [toast]);
-
-  const ordensAbertas = ordens.filter(
-    (ordem) => ordem.status === "aberta",
-  ).length;
-
-  const ordensEmAndamento = ordens.filter(
-    (ordem) =>
-      ordem.status === "em_andamento" || ordem.status === "aguardando_peca",
-  ).length;
-
-  const ordensConcluidas = ordens.filter(
-    (ordem) => ordem.status === "finalizada",
-  ).length;
-
-  const totalOrdens = ordens.length;
-
-  const faturamento = ordens
-    .filter((ordem) => ordem.status === "finalizada")
-    .reduce((total, ordem) => total + ordem.valor, 0);
-
-  const ordensRecentes = useMemo(() => {
-    return [...ordens]
-      .sort((a, b) => (a.dataAbertura < b.dataAbertura ? 1 : -1))
-      .slice(0, 5);
-  }, [ordens]);
-
-  const proximasManutencoes = useMemo(() => {
-    return manutencoes
-      .filter((item) => item.status !== "em_dia")
-      .slice(0, 3);
-  }, [manutencoes]);
+  const ordensAbertas = resumoOrdens?.abertas ?? 0;
+  const ordensEmAndamento = resumoOrdens?.emAndamento ?? 0;
+  const ordensConcluidas = resumoOrdens?.finalizadas ?? 0;
+  const totalOrdens = resumoOrdens?.total ?? 0;
+  const faturamento = resumoOrdens?.valorFinalizadas;
 
   function nomeVeiculo(ordem: OrdemServico) {
-    const veiculo =
-      ordem.veiculo ?? veiculos.find((item) => item.id === ordem.veiculoId);
+    const veiculo = ordem.veiculo;
 
     return veiculo ? `${veiculo.marca} ${veiculo.modelo}` : "—";
   }
 
   function placaVeiculo(ordem: OrdemServico) {
-    const veiculo =
-      ordem.veiculo ?? veiculos.find((item) => item.id === ordem.veiculoId);
-
-    return veiculo?.placa ?? "—";
+    return ordem.veiculo?.placa ?? "—";
   }
 
   function nomeCliente(ordem: OrdemServico) {
-    const veiculo =
-      ordem.veiculo ?? veiculos.find((item) => item.id === ordem.veiculoId);
-
-    return veiculo?.cliente?.nome ?? "—";
+    return ordem.veiculo?.cliente?.nome ?? "—";
   }
 
   return (
@@ -129,15 +120,15 @@ export function Dashboard() {
       <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <DashboardCard
           title="Clientes"
-          value={carregando ? "—" : clientes.length.toString()}
-          description={`${veiculos.length} veículo(s) cadastrado(s)`}
+          value={carregando ? "—" : totalClientes.toString()}
+          description={`${totalVeiculos} veículo(s) cadastrado(s)`}
           icon={<Users size={20} />}
         />
 
         <DashboardCard
           title="Veículos"
-          value={carregando ? "—" : veiculos.length.toString()}
-          description={`${clientes.length} cliente(s) cadastrado(s)`}
+          value={carregando ? "—" : totalVeiculos.toString()}
+          description={`${totalClientes} cliente(s) cadastrado(s)`}
           icon={<Car size={20} />}
         />
 
@@ -150,7 +141,11 @@ export function Dashboard() {
 
         <DashboardCard
           title="Faturamento"
-          value={carregando ? "—" : formatarMoeda(faturamento)}
+          value={
+            carregando || faturamento === undefined
+              ? "—"
+              : formatarMoeda(faturamento)
+          }
           description="Ordens finalizadas"
           icon={<DollarSign size={20} />}
         />
@@ -339,9 +334,7 @@ export function Dashboard() {
 
         <div className="grid grid-cols-1 divide-y divide-gray-100 md:grid-cols-3 md:divide-x md:divide-y-0">
           {proximasManutencoes.map((item) => {
-            const veiculo =
-              item.veiculo ??
-              veiculos.find((v) => v.id === item.veiculoId);
+            const veiculo = item.veiculo;
 
             return (
               <div
