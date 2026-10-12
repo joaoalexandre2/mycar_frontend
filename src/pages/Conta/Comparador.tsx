@@ -1,7 +1,9 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { ExternalLink, Info, Search, Tag, Truck } from "lucide-react";
-import { contaService, fichaTecnicaContaService } from "../../services/conta";
+import { fichaTecnicaContaService } from "../../services/conta";
+import { SeletorDeVeiculo } from "../../components/conta/SeletorDeVeiculo";
+import { useVeiculosDaConta } from "../../hooks/useVeiculosDaConta";
 import { comparadorService } from "../../services/comparador";
 import { mensagemErro } from "../../services/api";
 import { formatarMoeda } from "../../utils/formatters";
@@ -19,8 +21,12 @@ const classeCampo =
   "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
 
 export function Comparador() {
-  const [veiculos, setVeiculos] = useState<VeiculoConta[] | null>(null);
-  const [veiculoId, setVeiculoId] = useState("");
+  const veiculosDaConta = useVeiculosDaConta();
+  // null = ainda não escolheu: vale o primeiro veículo da conta (ou nenhum).
+  const [escolha, setEscolha] = useState<{
+    id: string;
+    veiculo: VeiculoConta | null;
+  } | null>(null);
   const [peca, setPeca] = useState<ChavePeca | "livre">("pneu");
   const [textoLivre, setTextoLivre] = useState("");
   const [medida, setMedida] = useState("");
@@ -29,26 +35,8 @@ export function Comparador() {
   const [buscando, setBuscando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
-  useEffect(() => {
-    let ativo = true;
-
-    contaService
-      .listarVeiculos({ porPagina: 100 })
-      .then((pagina) => {
-        if (!ativo) return;
-        setVeiculos(pagina.dados);
-        setVeiculoId(pagina.dados[0] ? String(pagina.dados[0].id) : "");
-      })
-      .catch((error) => {
-        if (!ativo) return;
-        setErro(mensagemErro(error));
-        setVeiculos([]);
-      });
-
-    return () => {
-      ativo = false;
-    };
-  }, []);
+  const veiculo = escolha ? escolha.veiculo : veiculosDaConta.primeiro;
+  const veiculoId = escolha ? escolha.id : String(veiculosDaConta.primeiro?.id ?? "");
 
   // A medida do pneu vem da ficha técnica do veículo, se já foi preenchida.
   useEffect(() => {
@@ -77,7 +65,6 @@ export function Comparador() {
     };
   }, [veiculoId]);
 
-  const veiculo = (veiculos ?? []).find((v) => String(v.id) === veiculoId) ?? null;
   const textoDaPeca =
     peca === "livre"
       ? textoLivre
@@ -127,7 +114,7 @@ export function Comparador() {
         </p>
       </div>
 
-      {erro && (
+      {(erro ?? veiculosDaConta.erro) && (
         <p
           role="alert"
           className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700"
@@ -141,24 +128,26 @@ export function Comparador() {
         className="mb-5 space-y-4 rounded-2xl border border-gray-200 bg-white p-5"
       >
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <label className="block text-[11px] text-gray-500">
+          <div className="block text-[11px] text-gray-500">
             Veículo
-            <select
-              value={veiculoId}
-              onChange={(e) => {
-                setVeiculoId(e.target.value);
-                setResultado(null);
-              }}
-              className={`mt-1 ${classeCampo}`}
-            >
-              {(veiculos ?? []).map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.apelido?.trim() || `${v.marca} ${v.modelo}`} · {v.placa}
-                </option>
-              ))}
-              <option value="">Sem veículo</option>
-            </select>
-          </label>
+            <div className="mt-1">
+              {veiculosDaConta.carregado && (
+                <SeletorDeVeiculo
+                  valor={veiculoId}
+                  veiculoEscolhido={veiculo}
+                  opcaoVazia="Sem veículo"
+                  aoMudar={(id, escolhido) => {
+                    setEscolha({ id, veiculo: escolhido });
+                    setResultado(null);
+                    // A medida e a origem "da ficha" eram do veículo anterior:
+                    // saem junto. Ao escolher outro, a ficha dele preenche de novo.
+                    setMedida("");
+                    setMedidaDaFicha(false);
+                  }}
+                />
+              )}
+            </div>
+          </div>
 
           <label className="block text-[11px] text-gray-500">
             O que comparar
