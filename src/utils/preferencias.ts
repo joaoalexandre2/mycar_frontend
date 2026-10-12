@@ -1,5 +1,4 @@
 import type { Usuario } from "../types/auth";
-import { ehConta, perfilDe } from "./perfil";
 
 export type Tema = "claro" | "escuro";
 export type Cor = "blue" | "green" | "purple" | "orange" | "red";
@@ -64,18 +63,15 @@ export function salvarAparencia(tema: Tema, cor: Cor) {
 }
 
 /**
- * Estilo visual do app por perfil: "pista" em pessoa e frota (laranja, números
- * condensados) e "oficina" na oficina (azul-marinho, pensado para tabelas).
+ * O app tem um visual só, inspirado na Webmotors (Figtree, vermelho da marca,
+ * cantos arredondados). O atributo data-estilo continua sendo posto na raiz
+ * para o CSS poder se apoiar nele, mas não varia mais por perfil.
  */
-export type Estilo = "pista" | "oficina";
+export type Estilo = "webmotors";
 
-/** Estilo do perfil do usuário; sem usuário, nenhum. */
+/** Estilo do usuário logado; sem usuário (telas públicas), nenhum atributo. */
 export function estiloDoPerfil(usuario: Usuario | null | undefined): Estilo | null {
-  if (!usuario) {
-    return null;
-  }
-
-  return ehConta(perfilDe(usuario)) ? "pista" : "oficina";
+  return usuario ? "webmotors" : null;
 }
 
 /** Cor que o usuário já escolheu neste navegador; null se nunca escolheu. */
@@ -98,10 +94,10 @@ export function aplicarEstilo(estilo: Estilo | null) {
 }
 
 /**
- * Aplica o que está salvo neste navegador, no estilo do perfil. No estilo Pista o
- * laranja é a cor padrão de quem nunca escolheu uma; nos demais, o azul.
+ * Aplica o que está salvo neste navegador. Quem nunca escolheu cor fica na
+ * padrão ("blue"), que no visual Webmotors é o vermelho da marca.
  */
 export function aplicarAparenciaSalva(estilo: Estilo | null = null) {
   aplicarEstilo(estilo);
-  aplicarAparencia(obterTema(), corSalva() ?? (estilo === "pista" ? "orange" : "blue"));
+  aplicarAparencia(obterTema(), corSalva() ?? "blue");
 }
