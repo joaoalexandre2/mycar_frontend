@@ -16,12 +16,10 @@ import type {
   OrdemServico,
   StatusOrdemServico,
 } from "../../types/ordemServico";
-import type { Veiculo } from "../../types/veiculo";
 import {
   ordensServicoService,
   type ResumoOrdensServico,
 } from "../../services/ordensServico";
-import { veiculosService } from "../../services/veiculos";
 import { mensagemErro } from "../../services/api";
 import { formatarData, formatarMoeda } from "../../utils/formatters";
 import { OrdemServicoModal } from "./OrdemServicoModal";
@@ -47,7 +45,6 @@ export function OrdensServico() {
   const toast = useToast();
   const pedirConfirmacao = useConfirmar();
   const [ordens, setOrdens] = useState<OrdemServico[]>([]);
-  const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
   const [ordemSelecionada, setOrdemSelecionada] =
     useState<OrdemServico | null>(null);
   const [busca, setBusca] = useState("");
@@ -73,14 +70,11 @@ export function OrdensServico() {
     `${pagina}|${buscaDebounced}|${filtroStatus}`,
     async (ativo) => {
       try {
-        const [resultado, listaVeiculos] = await Promise.all([
-          ordensServicoService.listarPaginado({
-            pagina,
-            busca: buscaDebounced,
-            status: filtroStatus as "todos" | StatusOrdemServico,
-          }),
-          veiculosService.listar(),
-        ]);
+        const resultado = await ordensServicoService.listarPaginado({
+          pagina,
+          busca: buscaDebounced,
+          status: filtroStatus as "todos" | StatusOrdemServico,
+        });
 
         // Busca antiga (a tela já mudou de página/filtro): descarta.
         if (!ativo()) {
@@ -100,7 +94,6 @@ export function OrdensServico() {
         setTotalPaginas(resultado.totalPaginas);
         setTotalRegistros(resultado.totalRegistros);
         setResumo(resultado.resumo);
-        setVeiculos(listaVeiculos);
       } catch (error) {
         if (ativo()) {
           toast.erro(mensagemErro(error));
@@ -276,9 +269,7 @@ export function OrdensServico() {
             </thead>
             <tbody>
               {ordens.map((ordem) => {
-                const veiculo =
-                  ordem.veiculo ??
-                  veiculos.find((item) => item.id === ordem.veiculoId);
+                const veiculo = ordem.veiculo;
 
                 return (
                   <tr
@@ -396,7 +387,6 @@ export function OrdensServico() {
       {modalAberto && (
         <OrdemServicoModal
           ordem={ordemEditando}
-          veiculos={veiculos}
           onClose={() => {
             setModalAberto(false);
             setOrdemEditando(null);

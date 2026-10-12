@@ -14,9 +14,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { VeiculoHistorico } from "./VeiculoHistorico";
-import type { Cliente } from "../../types/cliente";
 import type { Veiculo } from "../../types/veiculo";
-import { clientesService } from "../../services/clientes";
 import { veiculosService, type ResumoVeiculos } from "../../services/veiculos";
 import { mensagemErro } from "../../services/api";
 import { Placa } from "../../components/veiculos/Placa";
@@ -36,7 +34,6 @@ export function Veiculos() {
   const toast = useToast();
   const pedirConfirmacao = useConfirmar();
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
-  const [clientes, setClientes] = useState<Cliente[]>([]);
   const [busca, setBusca] = useState("");
   const [buscaDebounced, setBuscaDebounced] = useState("");
   const [pagina, setPagina] = useState(1);
@@ -63,13 +60,10 @@ export function Veiculos() {
     `${pagina}|${buscaDebounced}`,
     async (ativo) => {
       try {
-        const [resultado, listaClientes] = await Promise.all([
-          veiculosService.listarPaginado({
-            pagina,
-            busca: buscaDebounced,
-          }),
-          clientesService.listar(),
-        ]);
+        const resultado = await veiculosService.listarPaginado({
+          pagina,
+          busca: buscaDebounced,
+        });
 
         // Busca antiga (a tela já mudou de página/filtro): descarta.
         if (!ativo()) {
@@ -89,7 +83,6 @@ export function Veiculos() {
         setTotalPaginas(resultado.totalPaginas);
         setTotalRegistros(resultado.totalRegistros);
         setResumo(resultado.resumo);
-        setClientes(listaClientes);
       } catch (error) {
         if (ativo()) {
           toast.erro(mensagemErro(error));
@@ -101,11 +94,7 @@ export function Veiculos() {
   const anoMedioArredondado = Math.round(resumo.anoMedio);
 
   function nomeCliente(veiculo: Veiculo) {
-    return (
-      veiculo.cliente?.nome ??
-      clientes.find((item) => item.id === veiculo.clienteId)?.nome ??
-      "Cliente não encontrado"
-    );
+    return veiculo.cliente?.nome ?? "Cliente não encontrado";
   }
 
   async function excluirVeiculo(id: number) {
@@ -471,7 +460,6 @@ export function Veiculos() {
       {modalAberto && (
         <VeiculoModal
           veiculo={veiculoEditando}
-          clientes={clientes}
           onClose={() => {
             setModalAberto(false);
             setVeiculoEditando(null);

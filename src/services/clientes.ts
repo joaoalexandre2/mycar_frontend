@@ -79,6 +79,19 @@ export const clientesService = {
   },
 
   /**
+   * Busca no servidor para selects com pesquisa: só os primeiros resultados
+   * (nome, CPF ou telefone), em vez de baixar a base inteira.
+   */
+  async buscar(termo: string, limite = 20): Promise<Cliente[]> {
+    const { data } = await api.get<RespostaPaginadaApi<ClienteApi>>(
+      "/clientes",
+      { params: { page: 1, busca: termo || undefined, per_page: limite } },
+    );
+
+    return data.data.map(mapearCliente);
+  },
+
+  /**
    * Listagem paginada de verdade, usada pela tela de Clientes.
    */
   async listarPaginado(

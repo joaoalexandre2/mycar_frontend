@@ -5,17 +5,17 @@ import type {
   OrdemServico,
   StatusOrdemServico,
 } from "../../types/ordemServico";
-import type { Veiculo } from "../../types/veiculo";
+import { veiculosService } from "../../services/veiculos";
+import { SelectComBusca } from "../../components/ui/SelectComBusca";
+import { rotuloVeiculo } from "../../utils/rotulos";
 import { hojeISO } from "../../utils/formatters";
 
 export function OrdemServicoModal({
   ordem,
-  veiculos,
   onClose,
   onSave,
 }: {
   ordem: OrdemServico | null;
-  veiculos: Veiculo[];
   onClose: () => void;
   onSave: (dados: {
     veiculoId: number;
@@ -82,20 +82,18 @@ export function OrdemServicoModal({
               <label className="mb-1.5 block text-xs font-medium text-gray-700">
                 Veículo
               </label>
-              <select
-                value={veiculoId}
-                onChange={(event) => setVeiculoId(event.target.value)}
-                className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs outline-none focus:border-blue-500"
-                required
-              >
-                <option value="">Selecione o veículo</option>
-                {veiculos.map((veiculo) => (
-                  <option key={veiculo.id} value={veiculo.id}>
-                    {veiculo.marca} {veiculo.modelo} - {veiculo.placa}
-                    {veiculo.cliente ? ` - ${veiculo.cliente.nome}` : ""}
-                  </option>
-                ))}
-              </select>
+              <SelectComBusca
+                valor={veiculoId}
+                rotuloInicial={ordem?.veiculo ? rotuloVeiculo(ordem.veiculo) : ""}
+                placeholder="Busque por placa, modelo ou cliente"
+                buscar={async (termo) =>
+                  (await veiculosService.buscar(termo)).map((veiculo) => ({
+                    id: veiculo.id,
+                    rotulo: rotuloVeiculo(veiculo),
+                  }))
+                }
+                onChange={setVeiculoId}
+              />
             </div>
 
             <div>

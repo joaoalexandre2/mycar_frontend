@@ -110,6 +110,19 @@ export const veiculosService = {
   },
 
   /**
+   * Busca no servidor para selects com pesquisa: só os primeiros resultados
+   * (placa, marca, modelo ou cliente), em vez de baixar a base inteira.
+   */
+  async buscar(termo: string, limite = 20): Promise<Veiculo[]> {
+    const { data } = await api.get<RespostaPaginadaApi<VeiculoApi>>(
+      "/veiculos",
+      { params: { page: 1, busca: termo || undefined, per_page: limite } },
+    );
+
+    return data.data.map(mapearVeiculo);
+  },
+
+  /**
    * Listagem paginada de verdade, usada pela tela de Veículos.
    */
   async listarPaginado(
