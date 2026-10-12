@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { Modal } from "../../components/ui/Modal";
 import { useToast } from "../../hooks/useNotificacoes";
-import { X } from "lucide-react";
+
 import { clientesService } from "../../services/clientes";
 import { SelectComBusca } from "../../components/ui/SelectComBusca";
 import type { Veiculo } from "../../types/veiculo";
@@ -101,179 +102,164 @@ export function VeiculoModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+    <Modal
+      titulo={veiculo ? "Editar veículo" : "Novo veículo"}
+      subtitulo="Informe os dados do veículo."
+      larguraMax="max-w-lg"
+      onClose={onClose}
+    >
+      <form onSubmit={handleSubmit}>
+        <div className="space-y-4 px-6 py-5">
           <div>
-            <h3 className="text-sm font-semibold text-gray-900">
-              {veiculo ? "Editar veículo" : "Novo veículo"}
-            </h3>
-            <p className="mt-1 text-[11px] text-gray-400">
-              Informe os dados do veículo.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
-          >
-            <X size={17} />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-4 px-6 py-5">
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                Cliente
-              </label>
-              <SelectComBusca
-                valor={clienteId}
-                rotuloInicial={veiculo?.cliente?.nome ?? ""}
-                placeholder="Busque o cliente por nome, CPF ou telefone"
-                buscar={async (termo) =>
-                  (await clientesService.buscar(termo)).map((cliente) => ({
-                    id: cliente.id,
-                    rotulo: cliente.nome,
-                  }))
-                }
-                onChange={setClienteId}
-              />
-            </div>
-
-            <FipeSeletor
-              valor={fipe}
-              onChange={(selecao, nomes) => {
-                setFipe(selecao);
-                if (nomes.marca !== undefined) setMarca(nomes.marca);
-                if (nomes.modelo !== undefined) setModelo(nomes.modelo);
-                if (nomes.ano !== undefined) setAno(String(nomes.ano));
-              }}
+            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              Cliente
+            </label>
+            <SelectComBusca
+              valor={clienteId}
+              rotuloInicial={veiculo?.cliente?.nome ?? ""}
+              placeholder="Busque o cliente por nome, CPF ou telefone"
+              buscar={async (termo) =>
+                (await clientesService.buscar(termo)).map((cliente) => ({
+                  id: cliente.id,
+                  rotulo: cliente.nome,
+                }))
+              }
+              onChange={setClienteId}
             />
+          </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                  Marca
-                </label>
-                <input
-                  type="text"
-                  value={marca}
-                  onChange={(event) => setMarca(event.target.value)}
-                  className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                  Modelo
-                </label>
-                <input
-                  type="text"
-                  value={modelo}
-                  onChange={(event) => setModelo(event.target.value)}
-                  className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
-                  required
-                />
-              </div>
-            </div>
+          <FipeSeletor
+            valor={fipe}
+            onChange={(selecao, nomes) => {
+              setFipe(selecao);
+              if (nomes.marca !== undefined) setMarca(nomes.marca);
+              if (nomes.modelo !== undefined) setModelo(nomes.modelo);
+              if (nomes.ano !== undefined) setAno(String(nomes.ano));
+            }}
+          />
 
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                Placa
+                Marca
               </label>
               <input
                 type="text"
-                value={placa}
-                onChange={(event) => setPlaca(limparPlaca(event.target.value))}
-                maxLength={8}
-                placeholder="ABC1D23 ou ABC1234"
-                autoCapitalize="characters"
-                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs font-semibold tracking-wider uppercase outline-none focus:border-blue-500"
+                value={marca}
+                onChange={(event) => setMarca(event.target.value)}
+                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
                 required
               />
-              {placa && (
-                <p
-                  className={`mt-1 text-[11px] ${
-                    placaValida(placa) ? "text-emerald-600" : "text-gray-400"
-                  }`}
-                >
-                  {placaValida(placa)
-                    ? ROTULO_PADRAO[padraoDaPlaca(placa)!]
-                    : "Use 3 letras e 4 números (ABC1234) ou o padrão Mercosul (ABC1D23)."}
-                </p>
-              )}
             </div>
-
             <div>
               <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                Estado de emplacamento
+                Modelo
               </label>
-              <select
-                value={uf}
-                onChange={(event) => setUf(event.target.value)}
-                className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none transition focus:border-blue-500"
+              <input
+                type="text"
+                value={modelo}
+                onChange={(event) => setModelo(event.target.value)}
+                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              Placa
+            </label>
+            <input
+              type="text"
+              value={placa}
+              onChange={(event) => setPlaca(limparPlaca(event.target.value))}
+              maxLength={8}
+              placeholder="ABC1D23 ou ABC1234"
+              autoCapitalize="characters"
+              className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs font-semibold tracking-wider uppercase outline-none focus:border-blue-500"
+              required
+            />
+            {placa && (
+              <p
+                className={`mt-1 text-[11px] ${
+                  placaValida(placa) ? "text-emerald-600" : "text-gray-400"
+                }`}
               >
-                <option value="">Selecione (para calcular IPVA e licenciamento)</option>
-                {ESTADOS.map((sigla) => (
-                  <option key={sigla} value={sigla}>
-                    {sigla}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                Ano modelo
-              </label>
-              <input
-                type="number"
-                min="1900"
-                max={new Date().getFullYear() + 1}
-                value={ano}
-                onChange={(event) => setAno(event.target.value)}
-                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                Ano de fabricação (opcional)
-              </label>
-              <input
-                type="number"
-                min="1900"
-                max={new Date().getFullYear()}
-                value={anoFab}
-                placeholder="Ex.: 2018"
-                onChange={(event) => setAnoFab(event.target.value)}
-                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
-              />
-              <p className="mt-1 text-[11px] text-gray-400">
-                Se for diferente do ano modelo, informe (como no documento: 2018/2019).
+                {placaValida(placa)
+                  ? ROTULO_PADRAO[padraoDaPlaca(placa)!]
+                  : "Use 3 letras e 4 números (ABC1234) ou o padrão Mercosul (ABC1D23)."}
               </p>
-            </div>
+            )}
           </div>
 
-          <div className="flex justify-end gap-2 border-t border-gray-200 bg-gray-50 px-6 py-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-xs font-medium text-gray-600 hover:bg-gray-50"
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              Estado de emplacamento
+            </label>
+            <select
+              value={uf}
+              onChange={(event) => setUf(event.target.value)}
+              className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none transition focus:border-blue-500"
             >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700"
-            >
-              {veiculo ? "Salvar alterações" : "Criar veículo"}
-            </button>
+              <option value="">Selecione (para calcular IPVA e licenciamento)</option>
+              {ESTADOS.map((sigla) => (
+                <option key={sigla} value={sigla}>
+                  {sigla}
+                </option>
+              ))}
+            </select>
           </div>
-        </form>
-      </div>
-    </div>
+
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              Ano modelo
+            </label>
+            <input
+              type="number"
+              min="1900"
+              max={new Date().getFullYear() + 1}
+              value={ano}
+              onChange={(event) => setAno(event.target.value)}
+              className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              Ano de fabricação (opcional)
+            </label>
+            <input
+              type="number"
+              min="1900"
+              max={new Date().getFullYear()}
+              value={anoFab}
+              placeholder="Ex.: 2018"
+              onChange={(event) => setAnoFab(event.target.value)}
+              className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+            />
+            <p className="mt-1 text-[11px] text-gray-400">
+              Se for diferente do ano modelo, informe (como no documento: 2018/2019).
+            </p>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2 border-t border-gray-200 bg-gray-50 px-6 py-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-xs font-medium text-gray-600 hover:bg-gray-50"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700"
+          >
+            {veiculo ? "Salvar alterações" : "Criar veículo"}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }

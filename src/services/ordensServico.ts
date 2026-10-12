@@ -71,15 +71,6 @@ export function mapearOrdem(ordem: OrdemApi): OrdemServico {
 }
 
 export const ordensServicoService = {
-  /**
-   * Retorna todas as ordens de uma vez (sem paginação).
-   */
-  async listar() {
-    const { data } = await api.get<OrdemApi[]>("/ordens-servico", {
-      params: { all: 1 },
-    });
-    return data.map(mapearOrdem);
-  },
 
   /**
    * Listagem paginada de verdade, usada pela tela de Ordens de Serviço.

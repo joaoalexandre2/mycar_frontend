@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useToast, useConfirmar } from "../../hooks/useNotificacoes";
 import { useCarregarLista } from "../../hooks/useCarregarLista";
 import {
@@ -42,8 +42,16 @@ export function Clientes() {
   const [clienteEditando, setClienteEditando] =
     useState<Cliente | null>(null);
 
+  // Só volta para a página 1 quando o texto buscado de fato mudou: sem isto, o
+  // timer disparado logo depois de abrir a tela jogava a pessoa de volta para
+  // a página 1 se ela tivesse acabado de ir para a 2.
+  const buscaAplicada = useRef("");
+
   useEffect(() => {
     const timer = setTimeout(() => {
+      if (buscaAplicada.current === busca) return;
+
+      buscaAplicada.current = busca;
       setBuscaDebounced(busca);
       setPagina(1);
     }, 400);
