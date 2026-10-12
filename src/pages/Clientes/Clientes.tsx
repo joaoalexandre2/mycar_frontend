@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useCarregarLista } from "../../hooks/useCarregarLista";
 import {
   ChevronLeft,
   ChevronRight,
@@ -32,7 +33,6 @@ const RESUMO_INICIAL: ResumoClientes = {
 
 export function Clientes() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [carregando, setCarregando] = useState(true);
   const [busca, setBusca] = useState("");
   const [buscaDebounced, setBuscaDebounced] = useState("");
   const [filtroStatus, setFiltroStatus] =
@@ -55,39 +55,41 @@ export function Clientes() {
   }, [busca]);
 
 
-  async function carregarClientes() {
-    try {
-      setCarregando(true);
-      const resultado = await clientesService.listarPaginado({
-        pagina,
-        busca: buscaDebounced,
-        status: filtroStatus,
-      });
+  const { carregando, recarregar } = useCarregarLista(
+    `${pagina}|${buscaDebounced}|${filtroStatus}`,
+    async (ativo) => {
+      try {
+        const resultado = await clientesService.listarPaginado({
+          pagina,
+          busca: buscaDebounced,
+          status: filtroStatus,
+        });
 
-      if (
-        resultado.dados.length === 0 &&
-        pagina > 1 &&
-        resultado.totalRegistros > 0
-      ) {
-        setPagina((atual) => Math.max(1, atual - 1));
-        return;
+        // Busca antiga (a tela já mudou de página/filtro): descarta.
+        if (!ativo()) {
+          return;
+        }
+
+        if (
+          resultado.dados.length === 0 &&
+          pagina > 1 &&
+          resultado.totalRegistros > 0
+        ) {
+          setPagina((atual) => Math.max(1, atual - 1));
+          return;
+        }
+
+        setClientes(resultado.dados);
+        setTotalPaginas(resultado.totalPaginas);
+        setTotalRegistros(resultado.totalRegistros);
+        setResumo(resultado.resumo);
+      } catch (error) {
+        if (ativo()) {
+          window.alert(mensagemErro(error));
+        }
       }
-
-      setClientes(resultado.dados);
-      setTotalPaginas(resultado.totalPaginas);
-      setTotalRegistros(resultado.totalRegistros);
-      setResumo(resultado.resumo);
-    } catch (error) {
-      window.alert(mensagemErro(error));
-    } finally {
-      setCarregando(false);
-    }
-  }
-
-  useEffect(() => {
-    void carregarClientes();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pagina, buscaDebounced, filtroStatus]);
+    },
+  );
 
   function abrirNovoCliente() {
     setClienteEditando(null);
@@ -116,7 +118,7 @@ export function Clientes() {
 
     try {
       await clientesService.remover(id);
-      await carregarClientes();
+      recarregar();
     } catch (error) {
       window.alert(mensagemErro(error));
     }
@@ -146,7 +148,7 @@ export function Clientes() {
 
       setModalAberto(false);
       setClienteEditando(null);
-      await carregarClientes();
+      recarregar();
     } catch (error) {
       window.alert(mensagemErro(error));
     }
