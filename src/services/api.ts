@@ -1,5 +1,6 @@
 import axios, { isAxiosError } from "axios";
 import { limparSessao, obterToken } from "../utils/authStorage";
+import { ErroDeUsuario } from "../utils/erros";
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:8000/api",
@@ -42,6 +43,11 @@ api.interceptors.response.use(
 );
 
 export function mensagemErro(error: unknown) {
+  // Erros do próprio app que já trazem a mensagem pronta (ex.: imagem ilegível).
+  if (error instanceof ErroDeUsuario) {
+    return error.message;
+  }
+
   if (isAxiosError(error)) {
     const data = error.response?.data as
       | {

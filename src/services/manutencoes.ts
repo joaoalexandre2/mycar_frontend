@@ -108,15 +108,6 @@ export function mapearManutencao(item: ManutencaoApi): Manutencao {
 }
 
 export const manutencoesService = {
-  /**
-   * Retorna todas as manutenções de uma vez (sem paginação).
-   */
-  async listar() {
-    const { data } = await api.get<ManutencaoApi[]>("/manutencoes", {
-      params: { all: 1 },
-    });
-    return data.map(mapearManutencao);
-  },
 
   /**
    * Listagem paginada de verdade, usada pela tela de Manutenções.
