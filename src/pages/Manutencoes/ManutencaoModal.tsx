@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { useToast } from "../../hooks/useNotificacoes";
 import { Plus, Trash2, X } from "lucide-react";
 import type { Manutencao, PecaManutencao } from "../../types/manutencao";
-import type { Veiculo } from "../../types/veiculo";
+import { veiculosService } from "../../services/veiculos";
+import { SelectComBusca } from "../../components/ui/SelectComBusca";
+import { rotuloVeiculo } from "../../utils/rotulos";
 import { pecasService, type Peca } from "../../services/pecas";
 import { hojeISO } from "../../utils/formatters";
 
@@ -15,12 +17,10 @@ interface PecaEditavel {
 
 export function ManutencaoModal({
   manutencao,
-  veiculos,
   onClose,
   onSave,
 }: {
   manutencao: Manutencao | null;
-  veiculos: Veiculo[];
   onClose: () => void;
   onSave: (dados: {
     veiculoId: number;
@@ -226,29 +226,20 @@ export function ManutencaoModal({
                 Veículo
               </label>
 
-              <select
-                value={veiculoId}
-                onChange={(event) =>
-                  setVeiculoId(event.target.value)
+              <SelectComBusca
+                valor={veiculoId}
+                rotuloInicial={
+                  manutencao?.veiculo ? rotuloVeiculo(manutencao.veiculo) : ""
                 }
-                className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
-                required
-              >
-                <option value="">
-                  Selecione o veículo
-                </option>
-
-                {veiculos.map((veiculo) => (
-                  <option
-                    key={veiculo.id}
-                    value={veiculo.id}
-                  >
-                    {veiculo.marca} {veiculo.modelo} -{" "}
-                    {veiculo.placa}
-                    {veiculo.cliente ? ` - ${veiculo.cliente.nome}` : ""}
-                  </option>
-                ))}
-              </select>
+                placeholder="Busque por placa, modelo ou cliente"
+                buscar={async (termo) =>
+                  (await veiculosService.buscar(termo)).map((veiculo) => ({
+                    id: veiculo.id,
+                    rotulo: rotuloVeiculo(veiculo),
+                  }))
+                }
+                onChange={setVeiculoId}
+              />
             </div>
 
             {/* Tipo */}

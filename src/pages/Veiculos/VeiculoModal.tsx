@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useToast } from "../../hooks/useNotificacoes";
 import { X } from "lucide-react";
-import type { Cliente } from "../../types/cliente";
+import { clientesService } from "../../services/clientes";
+import { SelectComBusca } from "../../components/ui/SelectComBusca";
 import type { Veiculo } from "../../types/veiculo";
 import {
   FipeSeletor,
@@ -28,12 +29,10 @@ export interface DadosVeiculoForm {
 
 export function VeiculoModal({
   veiculo,
-  clientes,
   onClose,
   onSave,
 }: {
   veiculo: Veiculo | null;
-  clientes: Cliente[];
   onClose: () => void;
   onSave: (veiculo: DadosVeiculoForm) => void;
 }) {
@@ -128,19 +127,18 @@ export function VeiculoModal({
               <label className="mb-1.5 block text-xs font-medium text-gray-700">
                 Cliente
               </label>
-              <select
-                value={clienteId}
-                onChange={(event) => setClienteId(event.target.value)}
-                className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none transition focus:border-blue-500"
-                required
-              >
-                <option value="">Selecione o cliente</option>
-                {clientes.map((cliente) => (
-                  <option key={cliente.id} value={cliente.id}>
-                    {cliente.nome}
-                  </option>
-                ))}
-              </select>
+              <SelectComBusca
+                valor={clienteId}
+                rotuloInicial={veiculo?.cliente?.nome ?? ""}
+                placeholder="Busque o cliente por nome, CPF ou telefone"
+                buscar={async (termo) =>
+                  (await clientesService.buscar(termo)).map((cliente) => ({
+                    id: cliente.id,
+                    rotulo: cliente.nome,
+                  }))
+                }
+                onChange={setClienteId}
+              />
             </div>
 
             <FipeSeletor

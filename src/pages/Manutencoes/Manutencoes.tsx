@@ -21,12 +21,10 @@ import type {
   PecaManutencao,
   StatusManutencao,
 } from "../../types/manutencao";
-import type { Veiculo } from "../../types/veiculo";
 import {
   manutencoesService,
   type ResumoManutencoes,
 } from "../../services/manutencoes";
-import { veiculosService } from "../../services/veiculos";
 import { mensagemErro } from "../../services/api";
 import { formatarData, formatarKm } from "../../utils/formatters";
 import { ManutencaoModal } from "./ManutencaoModal";
@@ -45,7 +43,6 @@ export function Manutencoes() {
   const toast = useToast();
   const pedirConfirmacao = useConfirmar();
   const [manutencoes, setManutencoes] = useState<Manutencao[]>([]);
-  const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
 
   const [busca, setBusca] = useState("");
   const [buscaDebounced, setBuscaDebounced] = useState("");
@@ -77,14 +74,11 @@ export function Manutencoes() {
     `${pagina}|${buscaDebounced}|${filtroStatus}`,
     async (ativo) => {
       try {
-        const [resultado, listaVeiculos] = await Promise.all([
-          manutencoesService.listarPaginado({
-            pagina,
-            busca: buscaDebounced,
-            status: filtroStatus,
-          }),
-          veiculosService.listar(),
-        ]);
+        const resultado = await manutencoesService.listarPaginado({
+          pagina,
+          busca: buscaDebounced,
+          status: filtroStatus,
+        });
 
         // Busca antiga (a tela já mudou de página/filtro): descarta.
         if (!ativo()) {
@@ -104,7 +98,6 @@ export function Manutencoes() {
         setTotalPaginas(resultado.totalPaginas);
         setTotalRegistros(resultado.totalRegistros);
         setResumo(resultado.resumo);
-        setVeiculos(listaVeiculos);
       } catch (error) {
         if (ativo()) {
           toast.erro(mensagemErro(error));
@@ -114,10 +107,7 @@ export function Manutencoes() {
   );
 
   function getVeiculo(manutencao: Manutencao) {
-    return (
-      manutencao.veiculo ??
-      veiculos.find((veiculo) => veiculo.id === manutencao.veiculoId)
-    );
+    return manutencao.veiculo;
   }
 
   function abrirNovaManutencao() {
@@ -525,7 +515,6 @@ export function Manutencoes() {
       {modalAberto && (
         <ManutencaoModal
           manutencao={manutencaoEditando}
-          veiculos={veiculos}
           onClose={() => {
             setModalAberto(false);
             setManutencaoEditando(null);
