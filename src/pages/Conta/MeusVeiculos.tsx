@@ -304,7 +304,7 @@ export function MeusVeiculos() {
 
       {gastando && (
         <DespesasModal
-          veiculoInicialId={gastando.id}
+          veiculoInicial={gastando}
           onClose={() => setGastando(null)}
         />
       )}

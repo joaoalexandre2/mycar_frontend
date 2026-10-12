@@ -1,7 +1,9 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { ExternalLink, Info, Pencil } from "lucide-react";
-import { contaService, fichaTecnicaContaService } from "../../services/conta";
+import { fichaTecnicaContaService } from "../../services/conta";
+import { SeletorDeVeiculo } from "../../components/conta/SeletorDeVeiculo";
+import { useVeiculosDaConta } from "../../hooks/useVeiculosDaConta";
 import { mensagemErro } from "../../services/api";
 import { lerNumeroBR } from "../../utils/numero";
 import { formatarData, formatarMoeda } from "../../utils/formatters";
@@ -87,35 +89,20 @@ function Lista({ campos }: { campos: CampoFicha[] }) {
 }
 
 export function FichaTecnica() {
-  const [veiculos, setVeiculos] = useState<VeiculoConta[] | null>(null);
-  const [veiculoId, setVeiculoId] = useState<string | null>(null);
+  const veiculosDaConta = useVeiculosDaConta();
+  // null = ainda não escolheu: vale o primeiro veículo da conta (ou nenhum).
+  const [escolha, setEscolha] = useState<{
+    id: string;
+    veiculo: VeiculoConta | null;
+  } | null>(null);
   const [ficha, setFicha] = useState<FichaTecnicaConta | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [editando, setEditando] = useState(false);
   const [form, setForm] = useState<Record<string, string>>({});
   const [salvando, setSalvando] = useState(false);
 
-  useEffect(() => {
-    let ativo = true;
-
-    contaService
-      .listarVeiculos({ porPagina: 100 })
-      .then((pagina) => {
-        if (!ativo) return;
-        setVeiculos(pagina.dados);
-        setVeiculoId(pagina.dados[0] ? String(pagina.dados[0].id) : "");
-      })
-      .catch((error) => {
-        if (!ativo) return;
-        setErro(mensagemErro(error));
-        setVeiculos([]);
-        setVeiculoId("");
-      });
-
-    return () => {
-      ativo = false;
-    };
-  }, []);
+  const veiculoEscolhido = escolha ? escolha.veiculo : veiculosDaConta.primeiro;
+  const veiculoId = escolha ? escolha.id : String(veiculosDaConta.primeiro?.id ?? "");
 
   useEffect(() => {
     if (!veiculoId) return;
@@ -138,8 +125,8 @@ export function FichaTecnica() {
     };
   }, [veiculoId]);
 
-  function trocarVeiculo(valor: string) {
-    setVeiculoId(valor);
+  function trocarVeiculo(valor: string, veiculo: VeiculoConta | null) {
+    setEscolha({ id: valor, veiculo });
     setFicha(null);
     setEditando(false);
   }
@@ -202,7 +189,6 @@ export function FichaTecnica() {
     }
   }
 
-  const veiculo = (veiculos ?? []).find((v) => String(v.id) === veiculoId) ?? null;
   const links = ficha ? linksDaFicha(ficha.veiculo) : null;
   const manutencao = ficha?.manutencao ?? null;
 
@@ -223,22 +209,18 @@ export function FichaTecnica() {
           </p>
         </div>
 
-        {veiculos && veiculos.length > 0 && (
-          <select
-            value={veiculoId ?? ""}
-            onChange={(e) => trocarVeiculo(e.target.value)}
-            className="h-10 rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500 sm:w-72"
-          >
-            {veiculos.map((v) => (
-              <option key={v.id} value={v.id}>
-                {v.apelido?.trim() || `${v.marca} ${v.modelo}`} · {v.placa}
-              </option>
-            ))}
-          </select>
+        {veiculosDaConta.carregado && veiculosDaConta.total > 0 && (
+          <div className="sm:w-72">
+            <SeletorDeVeiculo
+              valor={veiculoId}
+              veiculoEscolhido={veiculoEscolhido}
+              aoMudar={trocarVeiculo}
+            />
+          </div>
         )}
       </div>
 
-      {erro && (
+      {(erro ?? veiculosDaConta.erro) && (
         <p
           role="alert"
           className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700"
@@ -247,7 +229,7 @@ export function FichaTecnica() {
         </p>
       )}
 
-      {veiculos?.length === 0 && (
+      {veiculosDaConta.carregado && veiculosDaConta.total === 0 && (
         <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center">
           <p className="text-xs text-gray-500">Cadastre um veículo para ver a ficha técnica.</p>
           <Link
@@ -259,7 +241,7 @@ export function FichaTecnica() {
         </div>
       )}
 
-      {veiculo && !ficha && !erro && <p className="text-xs text-gray-400">Carregando...</p>}
+      {veiculoId && !ficha && !erro && <p className="text-xs text-gray-400">Carregando...</p>}
 
       {ficha && (
         <div className="space-y-4">

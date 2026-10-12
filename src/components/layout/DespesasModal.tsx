@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { CircleDollarSign, Fuel, ShieldCheck, Wrench } from "lucide-react";
-import { contaService, despesaService } from "../../services/conta";
+import { despesaService } from "../../services/conta";
+import { SeletorDeVeiculo } from "../conta/SeletorDeVeiculo";
+import { useVeiculosDaConta } from "../../hooks/useVeiculosDaConta";
 import { mensagemErro } from "../../services/api";
 import { Modal } from "../../components/ui/Modal";
 import { formatarData, formatarMoeda } from "../../utils/formatters";
@@ -86,26 +88,19 @@ function Linha({
 
 export function DespesasModal({
   onClose,
-  veiculoInicialId,
+  veiculoInicial,
 }: {
   onClose: () => void;
   /** Abre já filtrado para este veículo (botão na linha do veículo). */
-  veiculoInicialId?: number;
+  veiculoInicial?: VeiculoConta;
 }) {
   const [periodo, setPeriodo] = useState<Periodo>("12m");
   const [veiculoId, setVeiculoId] = useState(
-    veiculoInicialId ? String(veiculoInicialId) : "",
+    veiculoInicial ? String(veiculoInicial.id) : "",
   );
-  const [veiculos, setVeiculos] = useState<VeiculoConta[]>([]);
+  const veiculosDaConta = useVeiculosDaConta();
   const [dados, setDados] = useState<Despesas | null>(null);
   const [erro, setErro] = useState<string | null>(null);
-
-  useEffect(() => {
-    contaService
-      .listarVeiculos({ porPagina: 100 })
-      .then((pagina) => setVeiculos(pagina.dados))
-      .catch(() => {});
-  }, []);
 
   useEffect(() => {
     let ativo = true;
@@ -160,19 +155,16 @@ export function DespesasModal({
             </button>
           ))}
 
-          {(veiculos.length > 1 || veiculoInicialId !== undefined) && (
-            <select
-              value={veiculoId}
-              onChange={(e) => setVeiculoId(e.target.value)}
-              className="ml-auto h-8 rounded-lg border border-gray-200 bg-white px-2 text-[11px] text-gray-700 outline-none focus:border-blue-500"
-            >
-              <option value="">Todos os veículos</option>
-              {veiculos.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.apelido?.trim() || `${v.marca} ${v.modelo}`} · {v.placa}
-                </option>
-              ))}
-            </select>
+          {(veiculosDaConta.total > 1 || veiculoInicial !== undefined) && (
+            <div className="ml-auto w-full sm:w-64">
+              <SeletorDeVeiculo
+                valor={veiculoId}
+                veiculoEscolhido={veiculoInicial}
+                rotulo="Filtrar despesas por veículo"
+                opcaoVazia="Todos os veículos"
+                aoMudar={(id) => setVeiculoId(id)}
+              />
+            </div>
           )}
         </div>
 

@@ -5,8 +5,9 @@ import { ExternalLink, Info, Package, Search, Trash2 } from "lucide-react";
 import {
   catalogoPecasService,
   codigoPecaService,
-  contaService,
 } from "../../services/conta";
+import { SeletorDeVeiculo } from "../../components/conta/SeletorDeVeiculo";
+import { useVeiculosDaConta } from "../../hooks/useVeiculosDaConta";
 import { mensagemErro } from "../../services/api";
 import { formatarKm } from "../../utils/formatters";
 import { linksDeBusca } from "../../utils/pecas";
@@ -234,36 +235,25 @@ function PecaItem({
 }
 
 export function Pecas() {
-  const [veiculos, setVeiculos] = useState<VeiculoConta[] | null>(null);
-  const [veiculoId, setVeiculoId] = useState<string | null>(null);
+  const veiculosDaConta = useVeiculosDaConta();
+  // null = ainda não escolheu: vale o primeiro veículo da conta (ou nenhum).
+  const [escolha, setEscolha] = useState<{
+    id: string;
+    veiculo: VeiculoConta | null;
+  } | null>(null);
   const [busca, setBusca] = useState("");
   const [buscaAplicada, setBuscaAplicada] = useState("");
   const [sistema, setSistema] = useState("");
   const [dados, setDados] = useState<CatalogoDePecas | null>(null);
   const [erro, setErro] = useState<string | null>(null);
 
-  // Os veículos da conta: o primeiro vira o padrão, para já abrir com as peças dele.
-  useEffect(() => {
-    let ativo = true;
-
-    contaService
-      .listarVeiculos({ porPagina: 100 })
-      .then((pagina) => {
-        if (!ativo) return;
-        setVeiculos(pagina.dados);
-        setVeiculoId(pagina.dados[0] ? String(pagina.dados[0].id) : "");
-      })
-      .catch((error) => {
-        if (!ativo) return;
-        setErro(mensagemErro(error));
-        setVeiculos([]);
-        setVeiculoId("");
-      });
-
-    return () => {
-      ativo = false;
-    };
-  }, []);
+  // O primeiro veículo da conta é o padrão, para já abrir com as peças dele.
+  const veiculoAtual = escolha ? escolha.veiculo : veiculosDaConta.primeiro;
+  const veiculoId: string | null = escolha
+    ? escolha.id
+    : veiculosDaConta.carregado
+      ? String(veiculosDaConta.primeiro?.id ?? "")
+      : null;
 
   // Espera a pessoa parar de digitar antes de buscar.
   useEffect(() => {
@@ -299,9 +289,6 @@ export function Pecas() {
 
   const grupos = useMemo(() => agruparPorSistema(dados?.pecas ?? []), [dados]);
 
-  const veiculoAtual =
-    (veiculos ?? []).find((v) => String(v.id) === veiculoId) ?? null;
-
   function atualizarCodigos(pecaId: string, codigos: CodigoPeca[]) {
     setDados((atual) =>
       atual
@@ -315,8 +302,8 @@ export function Pecas() {
     );
   }
 
-  function trocarVeiculo(valor: string) {
-    setVeiculoId(valor);
+  function trocarVeiculo(valor: string, veiculo: VeiculoConta | null) {
+    setEscolha({ id: valor, veiculo });
     setSistema("");
   }
 
@@ -330,7 +317,7 @@ export function Pecas() {
         </p>
       </div>
 
-      {erro && (
+      {(erro ?? veiculosDaConta.erro) && (
         <p
           role="alert"
           className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700"
@@ -356,18 +343,16 @@ export function Pecas() {
             />
           </div>
 
-          <select
-            value={veiculoId ?? ""}
-            onChange={(e) => trocarVeiculo(e.target.value)}
-            className="h-10 rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500 sm:w-72"
-          >
-            {(veiculos ?? []).map((v) => (
-              <option key={v.id} value={v.id}>
-                {v.apelido?.trim() || `${v.marca} ${v.modelo}`} · {v.placa}
-              </option>
-            ))}
-            <option value="">Catálogo geral (sem veículo)</option>
-          </select>
+          <div className="sm:w-72">
+            {veiculoId !== null && (
+              <SeletorDeVeiculo
+                valor={veiculoId}
+                veiculoEscolhido={veiculoAtual}
+                opcaoVazia="Catálogo geral (sem veículo)"
+                aoMudar={trocarVeiculo}
+              />
+            )}
+          </div>
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -446,7 +431,7 @@ export function Pecas() {
 
       {!dados ? (
         !erro && <p className="text-xs text-gray-400">Carregando...</p>
-      ) : veiculos?.length === 0 && dados.escopo === "catalogo" && !buscaAplicada ? (
+      ) : veiculosDaConta.total === 0 && dados.escopo === "catalogo" && !buscaAplicada ? (
         <p className="mb-4 text-[11px] text-gray-500">
           Você ainda não cadastrou veículo.{" "}
           <Link to="/veiculos" className="font-semibold text-blue-600 hover:text-blue-700">
