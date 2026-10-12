@@ -1,12 +1,8 @@
 import { useState } from "react";
-  import {
-    Bell,
-    CircleDollarSign,
-    Menu,
-    Search,
-    CircleUserRound,
-  } from "lucide-react";
+  import { CircleDollarSign, Menu, CircleUserRound } from "lucide-react";
   import { DespesasModal } from "./DespesasModal";
+  import { BuscaGlobal } from "./BuscaGlobal";
+  import { Atualizacoes } from "./Atualizacoes";
   import { useLocation } from "react-router-dom";
   import { useAuth } from "../../hooks/useAuth";
   import { AvatarMenu } from "./AvatarMenu";
@@ -83,15 +79,9 @@ import { useState } from "react";
             </button>
           )}
 
-          <button className="hidden h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:bg-gray-50 sm:flex">
-            <Search size={19} />
-          </button>
-  
-          <button className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:bg-gray-50">
-            <Bell size={19} />
-  
-            <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-red-500" />
-          </button>
+          <BuscaGlobal />
+
+          <Atualizacoes />
   
           <div className="ml-1 flex items-center gap-2 text-gray-500">
             <AvatarMenu />
