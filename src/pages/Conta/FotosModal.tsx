@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { useConfirmar } from "../../hooks/useNotificacoes";
 import { Camera, ImagePlus, Trash2, X } from "lucide-react";
 import { fotosVeiculoService, type AlbumDoVeiculo, type FotoVeiculo } from "../../services/fotos";
 import { mensagemErro } from "../../services/api";
@@ -14,6 +15,7 @@ export function FotosModal({
   veiculo: VeiculoConta;
   onClose: () => void;
 }) {
+  const pedirConfirmacao = useConfirmar();
   const [album, setAlbum] = useState<AlbumDoVeiculo | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [progresso, setProgresso] = useState<{ atual: number; total: number } | null>(null);
@@ -83,7 +85,11 @@ export function FotosModal({
   }
 
   async function remover(foto: FotoVeiculo) {
-    if (!window.confirm("Remover esta foto do álbum?")) return;
+    if (!(await pedirConfirmacao({
+      mensagem: "Remover esta foto do álbum?",
+      confirmarTexto: "Remover",
+      perigo: true,
+    }))) return;
 
     try {
       setAlbum(await fotosVeiculoService.remover(veiculo.id, foto.id));

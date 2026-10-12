@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useToast } from "../../hooks/useNotificacoes";
 import {
   ArrowLeft,
   Printer,
@@ -105,6 +106,7 @@ export function VeiculoHistorico({
   veiculoId: number;
   onVoltar: () => void;
 }) {
+  const toast = useToast();
   const [historico, setHistorico] = useState<HistoricoVeiculo | null>(null);
   const [carregando, setCarregando] = useState(true);
 
@@ -117,7 +119,7 @@ export function VeiculoHistorico({
         const dados = await veiculoHistoricoService.buscar(veiculoId);
         if (ativo) setHistorico(dados);
       } catch (error) {
-        if (ativo) window.alert(mensagemErro(error));
+        if (ativo) toast.erro(mensagemErro(error));
       } finally {
         if (ativo) setCarregando(false);
       }
@@ -128,7 +130,7 @@ export function VeiculoHistorico({
     return () => {
       ativo = false;
     };
-  }, [veiculoId]);
+  }, [veiculoId, toast]);
 
   if (carregando) {
     return (

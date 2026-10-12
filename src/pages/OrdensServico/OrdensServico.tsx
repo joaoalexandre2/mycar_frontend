@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useToast, useConfirmar } from "../../hooks/useNotificacoes";
 import { useCarregarLista } from "../../hooks/useCarregarLista";
 import {
   ChevronLeft,
@@ -42,6 +43,8 @@ const RESUMO_INICIAL: ResumoOrdensServico = {
 };
 
 export function OrdensServico() {
+  const toast = useToast();
+  const pedirConfirmacao = useConfirmar();
   const [ordens, setOrdens] = useState<OrdemServico[]>([]);
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
   const [ordemSelecionada, setOrdemSelecionada] =
@@ -99,7 +102,7 @@ export function OrdensServico() {
         setVeiculos(listaVeiculos);
       } catch (error) {
         if (ativo()) {
-          window.alert(mensagemErro(error));
+          toast.erro(mensagemErro(error));
         }
       }
     },
@@ -110,14 +113,16 @@ export function OrdensServico() {
       const detalhe = await ordensServicoService.buscar(ordem.id);
       setOrdemSelecionada(detalhe);
     } catch (error) {
-      window.alert(mensagemErro(error));
+      toast.erro(mensagemErro(error));
     }
   }
 
   async function excluirOrdem(id: number) {
-    const confirmar = window.confirm(
-      "Deseja realmente excluir esta ordem de serviço?",
-    );
+    const confirmar = await pedirConfirmacao({
+      mensagem: "Deseja realmente excluir esta ordem de serviço?",
+      confirmarTexto: "Excluir",
+      perigo: true,
+    });
 
     if (!confirmar) {
       return;
@@ -130,7 +135,7 @@ export function OrdensServico() {
       }
       recarregar();
     } catch (error) {
-      window.alert(mensagemErro(error));
+      toast.erro(mensagemErro(error));
     }
   }
 
@@ -163,7 +168,7 @@ export function OrdensServico() {
       setOrdemEditando(null);
       recarregar();
     } catch (error) {
-      window.alert(mensagemErro(error));
+      toast.erro(mensagemErro(error));
     }
   }
 
@@ -457,6 +462,7 @@ function OrdemServicoModal({
     dataAbertura: string;
   }) => void;
 }) {
+  const toast = useToast();
   const [veiculoId, setVeiculoId] = useState(
     ordem?.veiculoId?.toString() ?? "",
   );
@@ -474,7 +480,7 @@ function OrdemServicoModal({
     const valorNumerico = Number(valor);
 
     if (!veiculoId || !descricao.trim() || Number.isNaN(valorNumerico)) {
-      window.alert("Preencha veículo, descrição e valor.");
+      toast.aviso("Preencha veículo, descrição e valor.");
       return;
     }
 

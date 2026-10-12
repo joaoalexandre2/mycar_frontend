@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { useConfirmar } from "../../hooks/useNotificacoes";
 import { Fuel, Trash2, X } from "lucide-react";
 import { abastecimentoService } from "../../services/conta";
 import { mensagemErro } from "../../services/api";
@@ -24,6 +25,7 @@ export function AbastecimentosModal({
   veiculo: VeiculoConta;
   onClose: () => void;
 }) {
+  const pedirConfirmacao = useConfirmar();
   const [dados, setDados] = useState<AbastecimentosDoVeiculo | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
@@ -96,7 +98,11 @@ export function AbastecimentosModal({
   }
 
   async function remover(id: number) {
-    if (!window.confirm("Remover este abastecimento?")) return;
+    if (!(await pedirConfirmacao({
+      mensagem: "Remover este abastecimento?",
+      confirmarTexto: "Remover",
+      perigo: true,
+    }))) return;
 
     try {
       setDados(await abastecimentoService.remover(veiculo.id, id));

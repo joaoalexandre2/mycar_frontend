@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useToast, useConfirmar } from "../../hooks/useNotificacoes";
 import { Plus, Trash2 } from "lucide-react";
 import {
   pecasService,
@@ -18,6 +19,8 @@ const FORM_VAZIO = {
 };
 
 export function PecasCard({ veiculoId }: { veiculoId: number }) {
+  const toast = useToast();
+  const pedirConfirmacao = useConfirmar();
   const [tipos, setTipos] = useState<Record<string, string>>({});
   const [pecas, setPecas] = useState<Peca[]>([]);
   const [aberto, setAberto] = useState(false);
@@ -35,17 +38,17 @@ export function PecasCard({ veiculoId }: { veiculoId: number }) {
         setPecas(resposta.pecas);
       })
       .catch((error) => {
-        if (ativo) window.alert(mensagemErro(error));
+        if (ativo) toast.erro(mensagemErro(error));
       });
 
     return () => {
       ativo = false;
     };
-  }, [veiculoId]);
+  }, [veiculoId, toast]);
 
   async function registrar() {
     if (!form.tipo || !form.especificacao.trim()) {
-      window.alert("Escolha o tipo e informe o código ou a especificação.");
+      toast.aviso("Escolha o tipo e informe o código ou a especificação.");
       return;
     }
 
@@ -63,20 +66,24 @@ export function PecasCard({ veiculoId }: { veiculoId: number }) {
       setForm(FORM_VAZIO);
       setAberto(false);
     } catch (error) {
-      window.alert(mensagemErro(error));
+      toast.erro(mensagemErro(error));
     } finally {
       setSalvando(false);
     }
   }
 
   async function remover(peca: Peca) {
-    if (!window.confirm(`Remover "${peca.especificacao}"?`)) return;
+    if (!(await pedirConfirmacao({
+      mensagem: `Remover "${peca.especificacao}"?`,
+      confirmarTexto: "Remover",
+      perigo: true,
+    }))) return;
 
     try {
       await pecasService.remover(veiculoId, peca.id);
       setPecas((atuais) => atuais.filter((item) => item.id !== peca.id));
     } catch (error) {
-      window.alert(mensagemErro(error));
+      toast.erro(mensagemErro(error));
     }
   }
 

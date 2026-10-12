@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { useConfirmar } from "../../hooks/useNotificacoes";
 import { Link } from "react-router-dom";
 import { Plus, Trash2, Wrench, X } from "lucide-react";
 import { contaService, servicoService } from "../../services/conta";
@@ -83,6 +84,7 @@ function textoRestante(item: Servico) {
 }
 
 export function Servicos() {
+  const pedirConfirmacao = useConfirmar();
   const [dados, setDados] = useState<ServicosDaConta | null>(null);
   const [veiculos, setVeiculos] = useState<VeiculoConta[]>([]);
   const [filtroVeiculo, setFiltroVeiculo] = useState("");
@@ -111,7 +113,11 @@ export function Servicos() {
   }, []);
 
   async function remover(item: Servico) {
-    if (!window.confirm(`Remover "${item.rotulo}" do histórico?`)) return;
+    if (!(await pedirConfirmacao({
+      mensagem: `Remover "${item.rotulo}" do histórico?`,
+      confirmarTexto: "Remover",
+      perigo: true,
+    }))) return;
 
     try {
       setDados(await servicoService.remover(item.id));
