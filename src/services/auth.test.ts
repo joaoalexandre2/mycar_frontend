@@ -56,7 +56,7 @@ describe("authService.logout", () => {
     // se o servidor estiver fora do ar, senão o usuário fica preso.
     vi.spyOn(api, "post").mockRejectedValueOnce(new Error("rede fora do ar"));
 
-    await expect(authService.logout()).rejects.toThrow("rede fora do ar");
+    await expect(authService.logout()).resolves.toBeUndefined();
 
     expect(limparSessao).toHaveBeenCalledTimes(1);
   });
