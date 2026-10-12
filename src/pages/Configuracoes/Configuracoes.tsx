@@ -9,7 +9,6 @@ import { perfilDe } from "../../utils/perfil";
 import {
   OPCOES_ITENS_POR_PAGINA,
   corSalva,
-  estiloDoPerfil,
   obterCor,
   obterItensPorPagina,
   obterTema,
@@ -432,10 +431,11 @@ function Sistema() {
 
 /* ---------------------------- Aparência ---------------------------- */
 
-// Cores fixas (não "bg-blue-600"): a escala azul do app é trocada pela cor
-// escolhida, e a bolinha "Azul" ficaria da cor ativa, igual a outra bolinha.
+// Cores fixas (não "bg-blue-600"): a escala "blue" do app é trocada pela cor
+// escolhida, e a bolinha da cor padrão ficaria da cor ativa, igual a outra bolinha.
+// A chave "blue" é a cor padrão do app: o vermelho da marca Webmotors.
 const CORES: { chave: Cor; classe: string; nome: string }[] = [
-  { chave: "blue", classe: "bg-[#2563eb]", nome: "Azul" },
+  { chave: "blue", classe: "bg-[#e22446]", nome: "Webmotors" },
   { chave: "green", classe: "bg-[#16a34a]", nome: "Verde" },
   { chave: "purple", classe: "bg-[#9333ea]", nome: "Roxo" },
   { chave: "orange", classe: "bg-[#f97316]", nome: "Laranja" },
@@ -445,13 +445,8 @@ const CORES: { chave: Cor; classe: string; nome: string }[] = [
 function Aparencia() {
   const { usuario, atualizarUsuario } = useAuth();
   const [tema, setTema] = useState<Tema>(usuario?.tema ?? obterTema());
-  // Quem nunca escolheu vê a cor padrão do estilo (laranja em Cuidados e Frota),
-  // então é essa que deve aparecer marcada.
-  const [cor, setCor] = useState<Cor>(
-    usuario?.cor ??
-      corSalva() ??
-      (estiloDoPerfil(usuario) === "pista" ? "orange" : obterCor()),
-  );
+  // Quem nunca escolheu vê a cor padrão, então é essa que deve aparecer marcada.
+  const [cor, setCor] = useState<Cor>(usuario?.cor ?? corSalva() ?? obterCor());
   const [aviso, setAviso] = useState<string | null>(null);
 
   async function escolher(novoTema: Tema, novaCor: Cor) {

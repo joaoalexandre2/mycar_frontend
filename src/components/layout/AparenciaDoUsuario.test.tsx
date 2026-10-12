@@ -69,63 +69,56 @@ describe("AparenciaDoUsuario", () => {
     expect(document.documentElement.dataset.cor).toBe("green");
   });
 
-  describe("estilo Pista", () => {
-    const pessoaSemEscolha: Usuario = { ...escuroRoxo, perfil: "pessoa", tema: null, cor: null };
+  describe("estilo do app", () => {
+    const semEscolha: Usuario = { ...escuroRoxo, perfil: "pessoa", tema: null, cor: null };
 
     beforeEach(() => {
       delete document.documentElement.dataset.estilo;
     });
 
-    it("perfis pessoa e frota usam o estilo Pista, com laranja de padrão", () => {
-      montar("/", pessoaSemEscolha);
+    it("todos os perfis recebem o mesmo estilo e a cor padrão da marca", () => {
+      for (const perfil of ["pessoa", "frota", "oficina"] as const) {
+        delete document.documentElement.dataset.estilo;
+        delete document.documentElement.dataset.cor;
 
-      expect(document.documentElement.dataset.estilo).toBe("pista");
-      expect(document.documentElement.dataset.cor).toBe("orange");
+        const { unmount } = montar("/", { ...semEscolha, perfil });
+
+        expect(document.documentElement.dataset.estilo).toBe("webmotors");
+        expect(document.documentElement.dataset.cor).toBe("blue");
+
+        unmount();
+      }
     });
 
     it("quem já escolheu uma cor na conta mantém a cor, e o estilo continua", () => {
-      montar("/", { ...pessoaSemEscolha, perfil: "frota", tema: "claro", cor: "green" });
+      montar("/", { ...semEscolha, perfil: "frota", tema: "claro", cor: "green" });
 
-      expect(document.documentElement.dataset.estilo).toBe("pista");
+      expect(document.documentElement.dataset.estilo).toBe("webmotors");
       expect(document.documentElement.dataset.cor).toBe("green");
     });
 
     it("quem escolheu uma cor neste navegador mantém a escolha", () => {
       localStorage.setItem("mycar_cor", "purple");
 
-      montar("/", pessoaSemEscolha);
+      montar("/", semEscolha);
 
-      expect(document.documentElement.dataset.estilo).toBe("pista");
+      expect(document.documentElement.dataset.estilo).toBe("webmotors");
       expect(document.documentElement.dataset.cor).toBe("purple");
     });
 
-    it("a oficina recebe o estilo Oficina e continua azul", () => {
-      montar("/", { ...escuroRoxo, perfil: "oficina", tema: null, cor: null });
-
-      expect(document.documentElement.dataset.estilo).toBe("oficina");
-      expect(document.documentElement.dataset.cor).toBe("blue");
-    });
-
-    it("sessão antiga, sem perfil, é de oficina", () => {
-      const { perfil, ...semPerfil } = { ...escuroRoxo, perfil: "oficina" as const, tema: null, cor: null };
+    it("sessão antiga, sem perfil, recebe o mesmo estilo", () => {
+      const { perfil, ...semPerfil } = { ...semEscolha };
       void perfil;
 
       montar("/", semPerfil);
 
-      expect(document.documentElement.dataset.estilo).toBe("oficina");
+      expect(document.documentElement.dataset.estilo).toBe("webmotors");
     });
 
-    it("quem escolheu cor na conta mantém a cor e recebe o estilo do perfil", () => {
-      montar("/", { ...escuroRoxo, perfil: "oficina" });
+    it("o login não recebe o atributo de estilo, mesmo com usuário logado", () => {
+      document.documentElement.dataset.estilo = "webmotors";
 
-      expect(document.documentElement.dataset.estilo).toBe("oficina");
-      expect(document.documentElement.dataset.cor).toBe("purple");
-    });
-
-    it("o login não recebe o estilo, mesmo com usuário de conta logado", () => {
-      document.documentElement.dataset.estilo = "pista";
-
-      montar("/login", pessoaSemEscolha);
+      montar("/login", semEscolha);
 
       expect(document.documentElement.dataset.estilo).toBeUndefined();
       expect(document.documentElement.dataset.cor).toBe("blue");
