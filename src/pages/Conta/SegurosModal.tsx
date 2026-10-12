@@ -3,6 +3,7 @@ import { useConfirmar } from "../../hooks/useNotificacoes";
 import { ShieldCheck, Trash2, X } from "lucide-react";
 import { seguroService } from "../../services/conta";
 import { mensagemErro } from "../../services/api";
+import { lerNumeroBR } from "../../utils/numero";
 import { formatarData, formatarMoeda } from "../../utils/formatters";
 import type {
   Seguro,
@@ -65,13 +66,27 @@ export function SegurosModal({
     event.preventDefault();
     setErro(null);
 
-    const valor = Number(valorAnual.replace(",", "."));
-    const franquiaNumerica = franquia ? Number(franquia.replace(",", ".")) : null;
+    const valorLido = lerNumeroBR(valorAnual);
+    const franquiaLida = lerNumeroBR(franquia);
 
-    if (!seguradora.trim() || !(valor > 0)) {
+    if (!seguradora.trim() || valorLido.estado === "vazio") {
       setErro("Informe a seguradora e o valor anual.");
       return;
     }
+
+    if (valorLido.estado === "invalido" || valorLido.valor <= 0) {
+      setErro("Valor anual inválido: use o formato 2.500,00.");
+      return;
+    }
+
+    if (franquiaLida.estado === "invalido") {
+      setErro("Franquia inválida: use o formato 1.500,00 ou deixe em branco.");
+      return;
+    }
+
+    const valor = valorLido.valor;
+    const franquiaNumerica =
+      franquiaLida.estado === "ok" ? franquiaLida.valor : null;
 
     if (tipo === "apolice" && !vigenciaFim) {
       setErro("Informe até quando vai o seguro atual: é com essa data que avisamos a renovação.");

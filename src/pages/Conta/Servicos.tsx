@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Plus, Trash2, Wrench, X } from "lucide-react";
 import { contaService, servicoService } from "../../services/conta";
 import { mensagemErro } from "../../services/api";
+import { lerInteiroBR, lerNumeroBR } from "../../utils/numero";
 import { Quadro } from "../../components/dashboard/Quadro";
 import { CartaoServico } from "./CartaoServico";
 import {
@@ -396,10 +397,29 @@ function NovoServicoModal({
     event.preventDefault();
     setErro(null);
 
-    const kmNumero = km ? Number(km.replace(/\D/g, "")) : null;
-    const intervaloNumero = intervaloKm
-      ? Number(intervaloKm.replace(/\D/g, ""))
-      : null;
+    const kmLido = lerInteiroBR(km);
+    const intervaloLido = lerInteiroBR(intervaloKm);
+    const valorLido = lerNumeroBR(valor);
+
+    if (kmLido.estado === "invalido") {
+      setErro("Km do veículo inválido: use só números, como 52300 ou 52.300.");
+      return;
+    }
+
+    if (intervaloLido.estado === "invalido") {
+      setErro("Intervalo em km inválido: use só números, como 10000 ou 10.000.");
+      return;
+    }
+
+    if (valorLido.estado === "invalido") {
+      setErro("Valor pago inválido: use o formato 1.234,56.");
+      return;
+    }
+
+    const kmNumero = kmLido.estado === "ok" ? kmLido.valor : null;
+    const intervaloNumero =
+      intervaloLido.estado === "ok" ? intervaloLido.valor : null;
+    const valorNumero = valorLido.estado === "ok" ? valorLido.valor : null;
 
     if (tipo === "outro" && !titulo.trim()) {
       setErro("Informe o nome do serviço.");
@@ -420,7 +440,7 @@ function NovoServicoModal({
           titulo: tipo === "outro" ? titulo.trim() : null,
           realizado_em: realizadoEm,
           km: kmNumero,
-          valor: valor ? Number(valor.replace(",", ".")) : null,
+          valor: valorNumero,
           observacoes: observacoes.trim() || null,
           intervalo_meses: meses ? Number(meses) : null,
           intervalo_km: intervaloNumero,

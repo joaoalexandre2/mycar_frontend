@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ExternalLink, Info, Pencil } from "lucide-react";
 import { contaService, fichaTecnicaContaService } from "../../services/conta";
 import { mensagemErro } from "../../services/api";
+import { lerNumeroBR } from "../../utils/numero";
 import { formatarData, formatarMoeda } from "../../utils/formatters";
 import { linksDaFicha } from "../../utils/fichaTecnica";
 import type {
@@ -167,12 +168,28 @@ export function FichaTecnica() {
 
     for (const [chave, valor] of Object.entries(form)) {
       const texto = valor.trim();
-      const numerico = GRUPOS.some((g) =>
-        g.campos.some((c) => c.chave === chave && c.numerico),
-      );
+      const campo = GRUPOS.flatMap((g) => g.campos).find((c) => c.chave === chave);
 
-      dados[chave] = texto === "" ? null : numerico ? Number(texto.replace(",", ".")) : texto;
+      if (texto === "") {
+        dados[chave] = null;
+      } else if (campo?.numerico) {
+        // Litros e psi têm casas decimais ("4.5", "32.5"): ponto não é milhar.
+        const lido = lerNumeroBR(texto, { pontoComoMilhar: false });
+
+        if (lido.estado !== "ok") {
+          setErro(
+            `Valor inválido em “${campo.rotulo.replace(/ \(.*\)$/, "")}”: use só números, como 4,5.`,
+          );
+          return;
+        }
+
+        dados[chave] = lido.valor;
+      } else {
+        dados[chave] = texto;
+      }
     }
+
+    setErro(null);
 
     try {
       setSalvando(true);
