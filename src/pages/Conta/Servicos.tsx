@@ -1,9 +1,10 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useConfirmar } from "../../hooks/useNotificacoes";
 import { Link } from "react-router-dom";
-import { Plus, Trash2, Wrench, X } from "lucide-react";
+import { Plus, Trash2, Wrench } from "lucide-react";
 import { contaService, servicoService } from "../../services/conta";
 import { mensagemErro } from "../../services/api";
+import { Modal } from "../../components/ui/Modal";
 import { lerInteiroBR, lerNumeroBR } from "../../utils/numero";
 import { Quadro } from "../../components/dashboard/Quadro";
 import { CartaoServico } from "./CartaoServico";
@@ -454,25 +455,13 @@ function NovoServicoModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <form
-        onSubmit={(e) => void salvar(e)}
-        className="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-xl bg-white shadow-xl"
-      >
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-          <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-            <Wrench size={16} className="text-blue-600" />
-            Novo serviço
-          </h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
-          >
-            <X size={17} />
-          </button>
-        </div>
-
+    <Modal
+      titulo="Novo serviço"
+      icone={<Wrench size={16} className="text-blue-600" />}
+      larguraMax="max-w-xl"
+      onClose={onClose}
+    >
+      <form onSubmit={(e) => void salvar(e)}>
         <div className="space-y-4 px-6 py-5">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label className="block text-[11px] text-gray-500">
@@ -631,6 +620,6 @@ function NovoServicoModal({
           </div>
         </div>
       </form>
-    </div>
+    </Modal>
   );
 }
