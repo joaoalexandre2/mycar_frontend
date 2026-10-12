@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
+import { Modal } from "../../components/ui/Modal";
 import { useToast } from "../../hooks/useNotificacoes";
-import { Plus, Trash2, X } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import type { Manutencao, PecaManutencao } from "../../types/manutencao";
 import { veiculosService } from "../../services/veiculos";
 import { SelectComBusca } from "../../components/ui/SelectComBusca";
@@ -193,351 +194,332 @@ export function ManutencaoModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-xl">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+    <Modal
+      titulo={manutencao ? "Editar manutenção" : "Nova manutenção"}
+      subtitulo="Cadastre os dados do acompanhamento."
+      larguraMax="max-w-lg"
+      onClose={onClose}
+    >
+      {/* Form */}
+      <form onSubmit={handleSubmit}>
+        <div className="max-h-[70vh] space-y-4 overflow-y-auto px-6 py-5">
+          {/* Veículo */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900">
-              {manutencao
-                ? "Editar manutenção"
-                : "Nova manutenção"}
-            </h3>
+            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              Veículo
+            </label>
 
-            <p className="mt-1 text-[11px] text-gray-400">
-              Cadastre os dados do acompanhamento.
-            </p>
+            <SelectComBusca
+              valor={veiculoId}
+              rotuloInicial={
+                manutencao?.veiculo ? rotuloVeiculo(manutencao.veiculo) : ""
+              }
+              placeholder="Busque por placa, modelo ou cliente"
+              buscar={async (termo) =>
+                (await veiculosService.buscar(termo)).map((veiculo) => ({
+                  id: veiculo.id,
+                  rotulo: rotuloVeiculo(veiculo),
+                }))
+              }
+              onChange={setVeiculoId}
+            />
           </div>
 
-          <button
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
-          >
-            <X size={17} />
-          </button>
-        </div>
+          {/* Tipo */}
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              Tipo de manutenção
+            </label>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit}>
-          <div className="max-h-[70vh] space-y-4 overflow-y-auto px-6 py-5">
-            {/* Veículo */}
+            <input
+              type="text"
+              value={tipo}
+              onChange={(event) =>
+                setTipo(event.target.value)
+              }
+              placeholder="Ex.: Troca de óleo"
+              className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+              required
+            />
+          </div>
+
+          {/* Descrição */}
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              Descrição
+            </label>
+
+            <textarea
+              value={descricao}
+              onChange={(event) =>
+                setDescricao(event.target.value)
+              }
+              placeholder="Descreva a manutenção..."
+              rows={3}
+              className="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-700 outline-none focus:border-blue-500"
+              required
+            />
+          </div>
+
+          {/* Valor */}
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              Valor (opcional)
+            </label>
+
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={valor}
+              onChange={(event) => setValor(event.target.value)}
+              placeholder="Ex.: 250.00"
+              className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+            />
+          </div>
+
+          {/* Datas */}
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                Veículo
-              </label>
-
-              <SelectComBusca
-                valor={veiculoId}
-                rotuloInicial={
-                  manutencao?.veiculo ? rotuloVeiculo(manutencao.veiculo) : ""
-                }
-                placeholder="Busque por placa, modelo ou cliente"
-                buscar={async (termo) =>
-                  (await veiculosService.buscar(termo)).map((veiculo) => ({
-                    id: veiculo.id,
-                    rotulo: rotuloVeiculo(veiculo),
-                  }))
-                }
-                onChange={setVeiculoId}
-              />
-            </div>
-
-            {/* Tipo */}
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                Tipo de manutenção
+                Data da manutenção
               </label>
 
               <input
-                type="text"
-                value={tipo}
+                type="date"
+                value={dataManutencao}
                 onChange={(event) =>
-                  setTipo(event.target.value)
+                  setDataManutencao(event.target.value)
                 }
-                placeholder="Ex.: Troca de óleo"
                 className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
                 required
               />
             </div>
 
-            {/* Descrição */}
             <div>
               <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                Descrição
+                Próxima manutenção (opcional)
               </label>
 
-              <textarea
-                value={descricao}
+              <input
+                type="date"
+                value={proximaData}
                 onChange={(event) =>
-                  setDescricao(event.target.value)
+                  setProximaData(event.target.value)
                 }
-                placeholder="Descreva a manutenção..."
-                rows={3}
-                className="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-700 outline-none focus:border-blue-500"
-                required
+                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
               />
             </div>
+          </div>
 
-            {/* Valor */}
+          {/* KM */}
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                Valor (opcional)
+                KM atual (opcional)
               </label>
 
               <input
                 type="number"
                 min="0"
-                step="0.01"
-                value={valor}
-                onChange={(event) => setValor(event.target.value)}
-                placeholder="Ex.: 250.00"
+                value={quilometragem}
+                onChange={(event) =>
+                  setQuilometragem(event.target.value)
+                }
+                placeholder="Ex.: 50000"
                 className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
               />
             </div>
 
-            {/* Datas */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                  Data da manutenção
-                </label>
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+                Próxima KM (opcional)
+              </label>
 
-                <input
-                  type="date"
-                  value={dataManutencao}
-                  onChange={(event) =>
-                    setDataManutencao(event.target.value)
-                  }
-                  className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                  Próxima manutenção (opcional)
-                </label>
-
-                <input
-                  type="date"
-                  value={proximaData}
-                  onChange={(event) =>
-                    setProximaData(event.target.value)
-                  }
-                  className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
-                />
-              </div>
+              <input
+                type="number"
+                min="0"
+                value={proximaQuilometragem}
+                onChange={(event) =>
+                  setProximaQuilometragem(event.target.value)
+                }
+                placeholder="Ex.: 60000"
+                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+              />
             </div>
+          </div>
 
-            {/* KM */}
-            <div className="grid grid-cols-2 gap-4">
+          {/* Peças usadas */}
+          <div className="rounded-lg border border-gray-200 p-4">
+            <div className="flex items-start justify-between gap-3">
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                  KM atual (opcional)
-                </label>
-
-                <input
-                  type="number"
-                  min="0"
-                  value={quilometragem}
-                  onChange={(event) =>
-                    setQuilometragem(event.target.value)
-                  }
-                  placeholder="Ex.: 50000"
-                  className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1.5 block text-xs font-medium text-gray-700">
-                  Próxima KM (opcional)
-                </label>
-
-                <input
-                  type="number"
-                  min="0"
-                  value={proximaQuilometragem}
-                  onChange={(event) =>
-                    setProximaQuilometragem(event.target.value)
-                  }
-                  placeholder="Ex.: 60000"
-                  className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
-                />
-              </div>
-            </div>
-
-            {/* Peças usadas */}
-            <div className="rounded-lg border border-gray-200 p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs font-medium text-gray-700">
-                    Peças usadas (opcional)
-                  </p>
-
-                  <p className="mt-1 text-[11px] text-gray-400">
-                    Ficam registradas no veículo, sem precisar cadastrar de
-                    novo.
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setPecas((atuais) => [
-                      ...atuais,
-                      { tipo: "", especificacao: "", marca: "" },
-                    ])
-                  }
-                  disabled={!veiculoId}
-                  title={
-                    veiculoId ? undefined : "Selecione o veículo primeiro"
-                  }
-                  className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 px-3 text-[11px] font-medium text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <Plus size={13} />
-                  Adicionar
-                </button>
-              </div>
-
-              {!veiculoId && pecas.length === 0 && (
-                <p className="mt-3 text-[11px] text-gray-400">
-                  Selecione o veículo para registrar as peças.
+                <p className="text-xs font-medium text-gray-700">
+                  Peças usadas (opcional)
                 </p>
-              )}
 
-              {pecas.length > 0 && (
-                <div className="mt-3 space-y-3">
-                  {pecas.map((peca, indice) => {
-                    const sugestao = peca.tipo
-                      ? sugestaoPara(peca.tipo)
-                      : undefined;
+                <p className="mt-1 text-[11px] text-gray-400">
+                  Ficam registradas no veículo, sem precisar cadastrar de
+                  novo.
+                </p>
+              </div>
 
-                    return (
-                      <div
-                        key={indice}
-                        className="space-y-2 rounded-lg bg-gray-50 p-3"
-                      >
-                        <div className="flex items-center gap-2">
-                          <select
-                            value={peca.tipo}
-                            onChange={(event) =>
-                              alterarPeca(indice, { tipo: event.target.value })
-                            }
-                            aria-label="Tipo da peça"
-                            className="h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
-                          >
-                            <option value="">Tipo da peça</option>
+              <button
+                type="button"
+                onClick={() =>
+                  setPecas((atuais) => [
+                    ...atuais,
+                    { tipo: "", especificacao: "", marca: "" },
+                  ])
+                }
+                disabled={!veiculoId}
+                title={
+                  veiculoId ? undefined : "Selecione o veículo primeiro"
+                }
+                className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 px-3 text-[11px] font-medium text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Plus size={13} />
+                Adicionar
+              </button>
+            </div>
 
-                            {Object.entries(tiposPeca).map(([chave, rotulo]) => (
-                              <option key={chave} value={chave}>
-                                {rotulo}
-                              </option>
-                            ))}
+            {!veiculoId && pecas.length === 0 && (
+              <p className="mt-3 text-[11px] text-gray-400">
+                Selecione o veículo para registrar as peças.
+              </p>
+            )}
 
-                            {/* Mantém visível o tipo de uma peça já salva enquanto a lista não chega. */}
-                            {peca.tipo && !tiposPeca[peca.tipo] && (
-                              <option value={peca.tipo}>{peca.tipo}</option>
-                            )}
-                          </select>
+            {pecas.length > 0 && (
+              <div className="mt-3 space-y-3">
+                {pecas.map((peca, indice) => {
+                  const sugestao = peca.tipo
+                    ? sugestaoPara(peca.tipo)
+                    : undefined;
+
+                  return (
+                    <div
+                      key={indice}
+                      className="space-y-2 rounded-lg bg-gray-50 p-3"
+                    >
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={peca.tipo}
+                          onChange={(event) =>
+                            alterarPeca(indice, { tipo: event.target.value })
+                          }
+                          aria-label="Tipo da peça"
+                          className="h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+                        >
+                          <option value="">Tipo da peça</option>
+
+                          {Object.entries(tiposPeca).map(([chave, rotulo]) => (
+                            <option key={chave} value={chave}>
+                              {rotulo}
+                            </option>
+                          ))}
+
+                          {/* Mantém visível o tipo de uma peça já salva enquanto a lista não chega. */}
+                          {peca.tipo && !tiposPeca[peca.tipo] && (
+                            <option value={peca.tipo}>{peca.tipo}</option>
+                          )}
+                        </select>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setPecas((atuais) =>
+                              atuais.filter((_, i) => i !== indice),
+                            )
+                          }
+                          title="Remover peça"
+                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-red-600"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                        <input
+                          type="text"
+                          value={peca.especificacao}
+                          onChange={(event) =>
+                            alterarPeca(indice, {
+                              especificacao: event.target.value,
+                            })
+                          }
+                          maxLength={120}
+                          placeholder="Código ou especificação"
+                          aria-label="Código ou especificação da peça"
+                          className="h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+                        />
+
+                        <input
+                          type="text"
+                          value={peca.marca}
+                          onChange={(event) =>
+                            alterarPeca(indice, { marca: event.target.value })
+                          }
+                          maxLength={60}
+                          placeholder="Marca (opcional)"
+                          aria-label="Marca da peça"
+                          className="h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+                        />
+                      </div>
+
+                      {sugestao && (
+                        <p className="flex flex-wrap items-center gap-x-2 text-[11px] text-gray-500">
+                          <span>
+                            {sugestao.fonte === "servico"
+                              ? "Da última vez usamos"
+                              : "Referência do veículo"}
+                            :{" "}
+                            <strong className="font-semibold text-gray-700">
+                              {sugestao.especificacao}
+                            </strong>
+                            {sugestao.marca ? ` (${sugestao.marca})` : ""}
+                          </span>
 
                           <button
                             type="button"
                             onClick={() =>
-                              setPecas((atuais) =>
-                                atuais.filter((_, i) => i !== indice),
-                              )
-                            }
-                            title="Remover peça"
-                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-red-600"
-                          >
-                            <Trash2 size={15} />
-                          </button>
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                          <input
-                            type="text"
-                            value={peca.especificacao}
-                            onChange={(event) =>
                               alterarPeca(indice, {
-                                especificacao: event.target.value,
+                                especificacao: sugestao.especificacao,
+                                marca: sugestao.marca ?? "",
                               })
                             }
-                            maxLength={120}
-                            placeholder="Código ou especificação"
-                            aria-label="Código ou especificação da peça"
-                            className="h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
-                          />
-
-                          <input
-                            type="text"
-                            value={peca.marca}
-                            onChange={(event) =>
-                              alterarPeca(indice, { marca: event.target.value })
-                            }
-                            maxLength={60}
-                            placeholder="Marca (opcional)"
-                            aria-label="Marca da peça"
-                            className="h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
-                          />
-                        </div>
-
-                        {sugestao && (
-                          <p className="flex flex-wrap items-center gap-x-2 text-[11px] text-gray-500">
-                            <span>
-                              {sugestao.fonte === "servico"
-                                ? "Da última vez usamos"
-                                : "Referência do veículo"}
-                              :{" "}
-                              <strong className="font-semibold text-gray-700">
-                                {sugestao.especificacao}
-                              </strong>
-                              {sugestao.marca ? ` (${sugestao.marca})` : ""}
-                            </span>
-
-                            <button
-                              type="button"
-                              onClick={() =>
-                                alterarPeca(indice, {
-                                  especificacao: sugestao.especificacao,
-                                  marca: sugestao.marca ?? "",
-                                })
-                              }
-                              className="font-semibold text-blue-600 hover:underline"
-                            >
-                              Usar a mesma
-                            </button>
-                          </p>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+                            className="font-semibold text-blue-600 hover:underline"
+                          >
+                            Usar a mesma
+                          </button>
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
+        </div>
 
-          {/* Footer */}
-          <div className="flex justify-end gap-2 border-t border-gray-200 bg-gray-50 px-6 py-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-xs font-medium text-gray-600 transition hover:bg-gray-50"
-            >
-              Cancelar
-            </button>
+        {/* Footer */}
+        <div className="flex justify-end gap-2 border-t border-gray-200 bg-gray-50 px-6 py-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-xs font-medium text-gray-600 transition hover:bg-gray-50"
+          >
+            Cancelar
+          </button>
 
-            <button
-              type="submit"
-              className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white transition hover:bg-blue-700"
-            >
-              {manutencao
-                ? "Salvar alterações"
-                : "Criar manutenção"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+          <button
+            type="submit"
+            className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white transition hover:bg-blue-700"
+          >
+            {manutencao
+              ? "Salvar alterações"
+              : "Criar manutenção"}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }

@@ -67,16 +67,6 @@ function hojeCadastro() {
 }
 
 export const clientesService = {
-  /**
-   * Retorna todos os clientes de uma vez (sem paginação).
-   * Usado para preencher combos/selects em outras telas.
-   */
-  async listar() {
-    const { data } = await api.get<ClienteApi[]>("/clientes", {
-      params: { all: 1 },
-    });
-    return data.map(mapearCliente);
-  },
 
   /**
    * Busca no servidor para selects com pesquisa: só os primeiros resultados
