@@ -25,6 +25,8 @@ export interface ResumoOrdensServico {
   emAndamento: number;
   finalizadas: number;
   valorTotal: number;
+  /** Faturamento: soma das ordens finalizadas (ausente em backends antigos). */
+  valorFinalizadas?: number;
 }
 
 interface RespostaPaginadaApi<T> {
