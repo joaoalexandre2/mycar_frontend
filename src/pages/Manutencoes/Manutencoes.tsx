@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useToast, useConfirmar } from "../../hooks/useNotificacoes";
 import { useCarregarLista } from "../../hooks/useCarregarLista";
 import {
   AlertTriangle,
@@ -47,6 +48,8 @@ interface PecaEditavel {
 }
 
 export function Manutencoes() {
+  const toast = useToast();
+  const pedirConfirmacao = useConfirmar();
   const [manutencoes, setManutencoes] = useState<Manutencao[]>([]);
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
 
@@ -110,7 +113,7 @@ export function Manutencoes() {
         setVeiculos(listaVeiculos);
       } catch (error) {
         if (ativo()) {
-          window.alert(mensagemErro(error));
+          toast.erro(mensagemErro(error));
         }
       }
     },
@@ -134,9 +137,11 @@ export function Manutencoes() {
   }
 
   async function excluirManutencao(id: number) {
-    const confirmar = window.confirm(
-      "Deseja realmente excluir esta manutenção?",
-    );
+    const confirmar = await pedirConfirmacao({
+      mensagem: "Deseja realmente excluir esta manutenção?",
+      confirmarTexto: "Excluir",
+      perigo: true,
+    });
 
     if (!confirmar) {
       return;
@@ -146,7 +151,7 @@ export function Manutencoes() {
       await manutencoesService.remover(id);
       recarregar();
     } catch (error) {
-      window.alert(mensagemErro(error));
+      toast.erro(mensagemErro(error));
     }
   }
 
@@ -184,7 +189,7 @@ export function Manutencoes() {
       setManutencaoEditando(null);
       recarregar();
     } catch (error) {
-      window.alert(mensagemErro(error));
+      toast.erro(mensagemErro(error));
     }
   }
 
@@ -620,6 +625,7 @@ function ManutencaoModal({
     pecas: PecaManutencao[];
   }) => void;
 }) {
+  const toast = useToast();
   const [veiculoId, setVeiculoId] = useState(
     manutencao?.veiculoId?.toString() ?? "",
   );
@@ -714,7 +720,7 @@ function ManutencaoModal({
     event.preventDefault();
 
     if (!veiculoId || !tipo.trim() || !descricao.trim() || !dataManutencao) {
-      window.alert(
+      toast.aviso(
         "Preencha veículo, tipo, descrição e data da manutenção.",
       );
 
@@ -738,7 +744,7 @@ function ManutencaoModal({
       (valorNumerico !== null &&
         (Number.isNaN(valorNumerico) || valorNumerico < 0))
     ) {
-      window.alert("Informe valores numéricos válidos.");
+      toast.aviso("Informe valores numéricos válidos.");
 
       return;
     }
@@ -753,7 +759,7 @@ function ManutencaoModal({
         (peca) => !peca.tipo || !peca.especificacao.trim(),
       )
     ) {
-      window.alert(
+      toast.aviso(
         "Em cada peça, escolha o tipo e informe o código ou a especificação (ou remova a linha).",
       );
 

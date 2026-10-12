@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useToast } from "../../hooks/useNotificacoes";
 import {
   ArrowUpRight,
   Car,
@@ -21,6 +22,7 @@ import { mensagemErro } from "../../services/api";
 import { formatarData, formatarMoeda } from "../../utils/formatters";
 
 export function Dashboard() {
+  const toast = useToast();
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
   const [ordens, setOrdens] = useState<OrdemServico[]>([]);
@@ -47,14 +49,14 @@ export function Dashboard() {
         setOrdens(listaOrdens);
         setManutencoes(listaManutencoes);
       } catch (error) {
-        window.alert(mensagemErro(error));
+        toast.erro(mensagemErro(error));
       } finally {
         setCarregando(false);
       }
     }
 
     void carregar();
-  }, []);
+  }, [toast]);
 
   const ordensAbertas = ordens.filter(
     (ordem) => ordem.status === "aberta",

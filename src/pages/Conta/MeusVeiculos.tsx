@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useToast, useConfirmar } from "../../hooks/useNotificacoes";
 import {
   ChevronLeft,
   ChevronRight,
@@ -42,6 +43,8 @@ function nomeDoVeiculo(veiculo: VeiculoConta) {
 }
 
 export function MeusVeiculos() {
+  const toast = useToast();
+  const pedirConfirmacao = useConfirmar();
   const { usuario } = useAuth();
   const ehFrota = usuario?.perfil === "frota";
 
@@ -85,7 +88,7 @@ export function MeusVeiculos() {
         setValorTotalFipe(resultado.valorTotalFipe);
       })
       .catch((erro) => {
-        if (!cancelado) window.alert(mensagemErro(erro));
+        if (!cancelado) toast.erro(mensagemErro(erro));
       })
       .finally(() => {
         if (!cancelado) setCarregando(false);
@@ -94,7 +97,7 @@ export function MeusVeiculos() {
     return () => {
       cancelado = true;
     };
-  }, [pagina, buscaDebounced, recarga]);
+  }, [pagina, buscaDebounced, recarga, toast]);
 
   function recarregar() {
     setCarregando(true);
@@ -132,12 +135,16 @@ export function MeusVeiculos() {
       setEditando(null);
       recarregar();
     } catch (erro) {
-      window.alert(mensagemErro(erro));
+      toast.erro(mensagemErro(erro));
     }
   }
 
   async function remover(veiculo: VeiculoConta) {
-    if (!window.confirm(`Remover "${nomeDoVeiculo(veiculo)}" (${veiculo.placa})?`)) {
+    if (!(await pedirConfirmacao({
+      mensagem: `Remover "${nomeDoVeiculo(veiculo)}" (${veiculo.placa})?`,
+      confirmarTexto: "Remover",
+      perigo: true,
+    }))) {
       return;
     }
 
@@ -145,7 +152,7 @@ export function MeusVeiculos() {
       await contaService.removerVeiculo(veiculo.id);
       recarregar();
     } catch (erro) {
-      window.alert(mensagemErro(erro));
+      toast.erro(mensagemErro(erro));
     }
   }
 
@@ -155,7 +162,7 @@ export function MeusVeiculos() {
       await contaService.consultarFipe(veiculo.id);
       recarregar();
     } catch (erro) {
-      window.alert(mensagemErro(erro));
+      toast.erro(mensagemErro(erro));
     } finally {
       setConsultandoId(null);
     }
@@ -346,6 +353,7 @@ function VeiculoContaModal({
   onClose: () => void;
   onSave: (dados: DadosForm) => void;
 }) {
+  const toast = useToast();
   const [apelido, setApelido] = useState(veiculo?.apelido ?? "");
   const [placa, setPlaca] = useState(veiculo?.placa ?? "");
   const [marca, setMarca] = useState(veiculo?.marca ?? "");
@@ -367,7 +375,7 @@ function VeiculoContaModal({
     const anoMaximo = new Date().getFullYear() + 1; // ano modelo pode ser o do ano seguinte
 
     if (!placaValida(placa)) {
-      window.alert("Placa inválida. Use o padrão antigo (ABC1234) ou o Mercosul (ABC1D23).");
+      toast.aviso("Placa inválida. Use o padrão antigo (ABC1234) ou o Mercosul (ABC1D23).");
       return;
     }
 
@@ -379,7 +387,7 @@ function VeiculoContaModal({
       anoNumerico < 1900 ||
       anoNumerico > anoMaximo
     ) {
-      window.alert(`Informe os dados do veículo, com ano modelo entre 1900 e ${anoMaximo}.`);
+      toast.aviso(`Informe os dados do veículo, com ano modelo entre 1900 e ${anoMaximo}.`);
       return;
     }
 
@@ -392,7 +400,7 @@ function VeiculoContaModal({
         anoNumerico - anoFabNumerico < 0 ||
         anoNumerico - anoFabNumerico > 1)
     ) {
-      window.alert("O ano de fabricação deve ser igual ao ano modelo ou um ano antes dele (ex.: 2018/2019).");
+      toast.aviso("O ano de fabricação deve ser igual ao ano modelo ou um ano antes dele (ex.: 2018/2019).");
       return;
     }
 

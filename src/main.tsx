@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import { NotificacoesProvider } from './contexts/NotificacoesProvider'
 import '@fontsource/barlow/latin-400.css'
 import '@fontsource/barlow/latin-500.css'
 import '@fontsource/barlow/latin-600.css'
@@ -23,6 +24,8 @@ if (obterToken()) {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <NotificacoesProvider>
+      <App />
+    </NotificacoesProvider>
   </StrictMode>,
 )

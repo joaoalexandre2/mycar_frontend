@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { useConfirmar } from "../../hooks/useNotificacoes";
 import { FileText, Trash2, X } from "lucide-react";
 import { documentoService } from "../../services/conta";
 import { mensagemErro } from "../../services/api";
@@ -35,6 +36,7 @@ export function DocumentosModal({
   veiculo: VeiculoConta;
   onClose: () => void;
 }) {
+  const pedirConfirmacao = useConfirmar();
   const [dados, setDados] = useState<DocumentosDoVeiculo | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
@@ -91,7 +93,11 @@ export function DocumentosModal({
   }
 
   async function remover(id: number) {
-    if (!window.confirm("Remover este documento da lista?")) return;
+    if (!(await pedirConfirmacao({
+      mensagem: "Remover este documento da lista?",
+      confirmarTexto: "Remover",
+      perigo: true,
+    }))) return;
 
     try {
       setDados(await documentoService.remover(veiculo.id, id));

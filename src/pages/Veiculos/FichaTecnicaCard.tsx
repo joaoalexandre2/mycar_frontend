@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useToast } from "../../hooks/useNotificacoes";
 import { Pencil } from "lucide-react";
 import {
   fichaTecnicaService,
@@ -42,6 +43,7 @@ const CAMPOS_NUMERICOS = new Set<string>(
 );
 
 export function FichaTecnicaCard({ veiculoId }: { veiculoId: number }) {
+  const toast = useToast();
   const [ficha, setFicha] = useState<FichaTecnica | null>(null);
   const [editando, setEditando] = useState(false);
   const [form, setForm] = useState<Record<string, string>>({});
@@ -56,13 +58,13 @@ export function FichaTecnicaCard({ veiculoId }: { veiculoId: number }) {
         if (ativo) setFicha(dados);
       })
       .catch((error) => {
-        if (ativo) window.alert(mensagemErro(error));
+        if (ativo) toast.erro(mensagemErro(error));
       });
 
     return () => {
       ativo = false;
     };
-  }, [veiculoId]);
+  }, [veiculoId, toast]);
 
   function iniciarEdicao() {
     const atual: Partial<Record<Chave, unknown>> = ficha?.dados ?? {};
@@ -95,7 +97,7 @@ export function FichaTecnicaCard({ veiculoId }: { veiculoId: number }) {
       setFicha(await fichaTecnicaService.salvar(veiculoId, payload));
       setEditando(false);
     } catch (error) {
-      window.alert(mensagemErro(error));
+      toast.erro(mensagemErro(error));
     } finally {
       setSalvando(false);
     }

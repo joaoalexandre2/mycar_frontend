@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useToast, useConfirmar } from "../../hooks/useNotificacoes";
 import { useCarregarLista } from "../../hooks/useCarregarLista";
 import {
   Car,
@@ -50,6 +51,8 @@ const RESUMO_INICIAL: ResumoVeiculos = {
 };
 
 export function Veiculos() {
+  const toast = useToast();
+  const pedirConfirmacao = useConfirmar();
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [busca, setBusca] = useState("");
@@ -107,7 +110,7 @@ export function Veiculos() {
         setClientes(listaClientes);
       } catch (error) {
         if (ativo()) {
-          window.alert(mensagemErro(error));
+          toast.erro(mensagemErro(error));
         }
       }
     },
@@ -130,9 +133,15 @@ export function Veiculos() {
       return;
     }
 
-    const confirmar = window.confirm(
-      `Deseja realmente excluir o veículo "${veiculo.marca} ${veiculo.modelo}"?`,
-    );
+    const confirmar = await pedirConfirmacao({
+
+      mensagem: `Deseja realmente excluir o veículo "${veiculo.marca} ${veiculo.modelo}"?`,
+
+      confirmarTexto: "Excluir",
+
+      perigo: true,
+
+    });
 
     if (!confirmar) {
       return;
@@ -142,7 +151,7 @@ export function Veiculos() {
       await veiculosService.remover(id);
       recarregar();
     } catch (error) {
-      window.alert(mensagemErro(error));
+      toast.erro(mensagemErro(error));
     }
   }
 
@@ -152,7 +161,7 @@ export function Veiculos() {
       await veiculosService.consultarFipe(id);
       recarregar();
     } catch (error) {
-      window.alert(mensagemErro(error));
+      toast.erro(mensagemErro(error));
     } finally {
       setConsultandoId(null);
     }
@@ -185,7 +194,7 @@ export function Veiculos() {
       setVeiculoEditando(null);
       recarregar();
     } catch (error) {
-      window.alert(mensagemErro(error));
+      toast.erro(mensagemErro(error));
     }
   }
 
@@ -523,6 +532,7 @@ function VeiculoModal({
   onClose: () => void;
   onSave: (veiculo: DadosVeiculoForm) => void;
 }) {
+  const toast = useToast();
   const [clienteId, setClienteId] = useState(
     veiculo?.clienteId?.toString() ?? "",
   );
@@ -545,7 +555,7 @@ function VeiculoModal({
     const anoMaximo = new Date().getFullYear() + 1; // ano modelo pode ser o do ano seguinte
 
     if (!placaValida(placa)) {
-      window.alert("Placa inválida. Use o padrão antigo (ABC1234) ou o Mercosul (ABC1D23).");
+      toast.aviso("Placa inválida. Use o padrão antigo (ABC1234) ou o Mercosul (ABC1D23).");
       return;
     }
 
@@ -558,7 +568,7 @@ function VeiculoModal({
       anoNumerico < 1900 ||
       anoNumerico > anoMaximo
     ) {
-      window.alert(`Informe os dados do veículo com ano modelo entre 1900 e ${anoMaximo}.`);
+      toast.aviso(`Informe os dados do veículo com ano modelo entre 1900 e ${anoMaximo}.`);
       return;
     }
 
@@ -570,7 +580,7 @@ function VeiculoModal({
         anoNumerico - anoFabNumerico < 0 ||
         anoNumerico - anoFabNumerico > 1)
     ) {
-      window.alert("O ano de fabricação deve ser igual ao ano modelo ou um ano antes dele (ex.: 2018/2019).");
+      toast.aviso("O ano de fabricação deve ser igual ao ano modelo ou um ano antes dele (ex.: 2018/2019).");
       return;
     }
 

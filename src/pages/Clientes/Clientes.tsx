@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useToast, useConfirmar } from "../../hooks/useNotificacoes";
 import { useCarregarLista } from "../../hooks/useCarregarLista";
 import {
   ChevronLeft,
@@ -32,6 +33,8 @@ const RESUMO_INICIAL: ResumoClientes = {
 };
 
 export function Clientes() {
+  const toast = useToast();
+  const pedirConfirmacao = useConfirmar();
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [busca, setBusca] = useState("");
   const [buscaDebounced, setBuscaDebounced] = useState("");
@@ -85,7 +88,7 @@ export function Clientes() {
         setResumo(resultado.resumo);
       } catch (error) {
         if (ativo()) {
-          window.alert(mensagemErro(error));
+          toast.erro(mensagemErro(error));
         }
       }
     },
@@ -108,9 +111,15 @@ export function Clientes() {
       return;
     }
 
-    const confirmar = window.confirm(
-      `Deseja realmente excluir o cliente "${cliente.nome}"?`,
-    );
+    const confirmar = await pedirConfirmacao({
+
+      mensagem: `Deseja realmente excluir o cliente "${cliente.nome}"?`,
+
+      confirmarTexto: "Excluir",
+
+      perigo: true,
+
+    });
 
     if (!confirmar) {
       return;
@@ -120,7 +129,7 @@ export function Clientes() {
       await clientesService.remover(id);
       recarregar();
     } catch (error) {
-      window.alert(mensagemErro(error));
+      toast.erro(mensagemErro(error));
     }
   }
 
@@ -150,7 +159,7 @@ export function Clientes() {
       setClienteEditando(null);
       recarregar();
     } catch (error) {
-      window.alert(mensagemErro(error));
+      toast.erro(mensagemErro(error));
     }
   }
 
@@ -434,6 +443,7 @@ function ClienteModal({
     ativo: boolean;
   }) => void;
 }) {
+  const toast = useToast();
   const [nome, setNome] = useState(cliente?.nome ?? "");
   const [cpf, setCpf] = useState(
     cliente?.cpf ? formatarCpf(cliente.cpf) : "",
@@ -447,7 +457,7 @@ function ClienteModal({
     event.preventDefault();
 
     if (!nome.trim() || soDigitos(cpf).length !== 11 || !telefone.trim()) {
-      window.alert("Preencha nome, CPF com 11 dígitos e telefone.");
+      toast.aviso("Preencha nome, CPF com 11 dígitos e telefone.");
       return;
     }
 

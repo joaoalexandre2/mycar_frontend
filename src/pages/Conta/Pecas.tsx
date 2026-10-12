@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useConfirmar } from "../../hooks/useNotificacoes";
 import { Link } from "react-router-dom";
 import { ExternalLink, Info, Package, Search, Trash2 } from "lucide-react";
 import {
@@ -47,6 +48,7 @@ function PecaItem({
   modeloCatalogo?: string;
   aoMudarCodigos: (pecaId: string, codigos: CodigoPeca[]) => void;
 }) {
+  const pedirConfirmacao = useConfirmar();
   const [aberto, setAberto] = useState(false);
   const [marca, setMarca] = useState("");
   const [codigo, setCodigo] = useState("");
@@ -84,7 +86,11 @@ function PecaItem({
   }
 
   async function remover(item: CodigoPeca) {
-    if (!veiculo || !window.confirm(`Remover o código ${item.codigo}?`)) return;
+    if (!veiculo || !(await pedirConfirmacao({
+      mensagem: `Remover o código ${item.codigo}?`,
+      confirmarTexto: "Remover",
+      perigo: true,
+    }))) return;
 
     try {
       await codigoPecaService.remover(veiculo.id, item.id);
