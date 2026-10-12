@@ -1,165 +1,47 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import {
   BrowserRouter,
-  Navigate,
   Route,
   Routes,
 } from "react-router-dom";
 
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
-import { AdminRoute } from "./components/auth/AdminRoute";
 import { useAuth } from "./hooks/useAuth";
 
 import { Header } from "./components/layout/Header";
 import { Sidebar } from "./components/layout/Sidebar";
 import { AparenciaDoUsuario } from "./components/layout/AparenciaDoUsuario";
-
-import { Dashboard } from "./components/dashboard/Dashboard";
+import { CarregandoTela } from "./components/layout/CarregandoTela";
+import { ErroDeTela } from "./components/layout/ErroDeTela";
 
 import { Login } from "./pages/Login/Login";
-import { Register } from "./pages/Register/Register";
-import { EmailConfirmado } from "./pages/EmailConfirmado/EmailConfirmado";
-import { EsqueciSenha } from "./pages/EsqueciSenha/EsqueciSenha";
-import { RedefinirSenha } from "./pages/RedefinirSenha/RedefinirSenha";
-import { Clientes } from "./pages/Clientes/Clientes";
-import { Veiculos } from "./pages/Veiculos/Veiculos";
-import { OrdensServico } from "./pages/OrdensServico/OrdensServico";
-import { Manutencoes } from "./pages/Manutencoes/Manutencoes";
-import { Configuracoes } from "./pages/Configuracoes/Configuracoes";
-import { Admin } from "./pages/Admin/Admin";
-import { ContaInicio } from "./pages/Conta/ContaInicio";
-import { MeusVeiculos } from "./pages/Conta/MeusVeiculos";
-import { Servicos } from "./pages/Conta/Servicos";
-import { Pecas } from "./pages/Conta/Pecas";
-import { FichaTecnica } from "./pages/Conta/FichaTecnica";
-import { Comparador } from "./pages/Conta/Comparador";
-import { Sugestoes } from "./pages/Sugestoes/Sugestoes";
 import { ehConta, perfilDe } from "./utils/perfil";
 
-/** Telas do perfil Oficina (MyCar Oficina). */
-function RotasOficina() {
-  return (
-    <Routes>
-      <Route
-        path="/"
-        element={<Dashboard />}
-      />
+// Cada perfil vira um pacote próprio: quem usa a oficina não baixa as telas de
+// "Cuidados com seu carro" (e vice-versa), e quem ainda vai entrar só baixa o login.
+const RotasOficina = lazy(() => import("./routes/RotasOficina"));
+const RotasConta = lazy(() => import("./routes/RotasConta"));
 
-      <Route
-        path="/clientes"
-        element={<Clientes />}
-      />
-
-      <Route
-        path="/veiculos"
-        element={<Veiculos />}
-      />
-
-      <Route
-        path="/ordens-servico"
-        element={<OrdensServico />}
-      />
-
-      <Route
-        path="/manutencoes"
-        element={<Manutencoes />}
-      />
-
-      <Route
-        path="/sugestoes"
-        element={<Sugestoes />}
-      />
-
-      <Route
-        path="/configuracoes"
-        element={<Configuracoes />}
-      />
-
-      <Route element={<AdminRoute />}>
-        <Route
-          path="/admin"
-          element={<Admin />}
-        />
-      </Route>
-
-      <Route
-        path="*"
-        element={
-          <Navigate
-            to="/"
-            replace
-          />
-        }
-      />
-    </Routes>
-  );
-}
-
-/** Telas dos perfis Cuidados com seu carro (pessoa) e Frota. */
-function RotasConta() {
-  return (
-    <Routes>
-      <Route
-        path="/"
-        element={<ContaInicio />}
-      />
-
-      <Route
-        path="/veiculos"
-        element={<MeusVeiculos />}
-      />
-
-      <Route
-        path="/servicos"
-        element={<Servicos />}
-      />
-
-      <Route
-        path="/pecas"
-        element={<Pecas />}
-      />
-
-      <Route
-        path="/ficha-tecnica"
-        element={<FichaTecnica />}
-      />
-
-      <Route
-        path="/comparador"
-        element={<Comparador />}
-      />
-
-      <Route
-        path="/sugestoes"
-        element={<Sugestoes />}
-      />
-
-      <Route
-        path="/configuracoes"
-        element={<Configuracoes />}
-      />
-
-      {/* O operador da plataforma segue com a Administração mesmo usando outro perfil. */}
-      <Route element={<AdminRoute />}>
-        <Route
-          path="/admin"
-          element={<Admin />}
-        />
-      </Route>
-
-      <Route
-        path="*"
-        element={
-          <Navigate
-            to="/"
-            replace
-          />
-        }
-      />
-    </Routes>
-  );
-}
+// Telas públicas pouco acessadas: fora do pacote inicial do login.
+const Register = lazy(() =>
+  import("./pages/Register/Register").then((m) => ({ default: m.Register })),
+);
+const EmailConfirmado = lazy(() =>
+  import("./pages/EmailConfirmado/EmailConfirmado").then((m) => ({
+    default: m.EmailConfirmado,
+  })),
+);
+const EsqueciSenha = lazy(() =>
+  import("./pages/EsqueciSenha/EsqueciSenha").then((m) => ({
+    default: m.EsqueciSenha,
+  })),
+);
+const RedefinirSenha = lazy(() =>
+  import("./pages/RedefinirSenha/RedefinirSenha").then((m) => ({
+    default: m.RedefinirSenha,
+  })),
+);
 
 function AppLayout() {
   const [menuAberto, setMenuAberto] = useState(false);
@@ -175,7 +57,12 @@ function AppLayout() {
       <main className="min-h-screen md:ml-[250px] print:ml-0">
         <Header aoAbrirMenu={() => setMenuAberto(true)} />
 
-        {ehConta(perfilDe(usuario)) ? <RotasConta /> : <RotasOficina />}
+        {/* Menu e cabeçalho ficam na tela enquanto o pacote do perfil chega. */}
+        <ErroDeTela>
+          <Suspense fallback={<CarregandoTela />}>
+            {ehConta(perfilDe(usuario)) ? <RotasConta /> : <RotasOficina />}
+          </Suspense>
+        </ErroDeTela>
       </main>
     </div>
   );
@@ -187,39 +74,43 @@ function App() {
       <AuthProvider>
         <AparenciaDoUsuario />
 
-        <Routes>
-          <Route
-            path="/login"
-            element={<Login />}
-          />
+        <ErroDeTela>
+          <Suspense fallback={<CarregandoTela />}>
+            <Routes>
+              <Route
+                path="/login"
+                element={<Login />}
+              />
 
-          <Route
-            path="/registrar"
-            element={<Register />}
-          />
+              <Route
+                path="/registrar"
+                element={<Register />}
+              />
 
-          <Route
-            path="/email-confirmado"
-            element={<EmailConfirmado />}
-          />
+              <Route
+                path="/email-confirmado"
+                element={<EmailConfirmado />}
+              />
 
-          <Route
-            path="/esqueci-senha"
-            element={<EsqueciSenha />}
-          />
+              <Route
+                path="/esqueci-senha"
+                element={<EsqueciSenha />}
+              />
 
-          <Route
-            path="/redefinir-senha"
-            element={<RedefinirSenha />}
-          />
+              <Route
+                path="/redefinir-senha"
+                element={<RedefinirSenha />}
+              />
 
-          <Route element={<ProtectedRoute />}>
-            <Route
-              path="/*"
-              element={<AppLayout />}
-            />
-          </Route>
-        </Routes>
+              <Route element={<ProtectedRoute />}>
+                <Route
+                  path="/*"
+                  element={<AppLayout />}
+                />
+              </Route>
+            </Routes>
+          </Suspense>
+        </ErroDeTela>
       </AuthProvider>
     </BrowserRouter>
   );
