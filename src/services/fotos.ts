@@ -6,6 +6,8 @@ export interface FotoVeiculo {
   id: number;
   legenda: string | null;
   criadaEm: string;
+  /** Foto escolhida pelo dono como capa do veículo. */
+  capa: boolean;
   /** Links temporários (valem por algumas horas): recarregue o álbum para renovar. */
   url: string;
   urlMiniatura: string;
@@ -22,6 +24,7 @@ interface AlbumApi {
     id: number;
     legenda: string | null;
     criada_em: string;
+    capa?: boolean;
     url: string;
     url_miniatura: string;
   }[];
@@ -34,6 +37,7 @@ export function mapearAlbum(resposta: AlbumApi): AlbumDoVeiculo {
       id: f.id,
       legenda: f.legenda,
       criadaEm: dataISO(f.criada_em),
+      capa: f.capa ?? false,
       url: urlDaFoto(f.url),
       urlMiniatura: urlDaFoto(f.url_miniatura),
     })),
@@ -54,6 +58,12 @@ export const fotosVeiculoService = {
     if (legenda) corpo.append("legenda", legenda);
 
     const { data } = await api.post<AlbumApi>(`/conta/veiculos/${veiculoId}/fotos`, corpo);
+    return mapearAlbum(data);
+  },
+
+  /** Escolhe a foto que aparece como capa do veículo na tela principal. */
+  async definirCapa(veiculoId: number, fotoId: number): Promise<AlbumDoVeiculo> {
+    const { data } = await api.put<AlbumApi>(`/conta/veiculos/${veiculoId}/fotos/${fotoId}/capa`);
     return mapearAlbum(data);
   },
 

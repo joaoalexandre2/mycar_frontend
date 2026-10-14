@@ -45,6 +45,19 @@ describe("fotosVeiculoService", () => {
     expect(corpo.get("miniatura")).toBeInstanceOf(Blob);
   });
 
+  it("marca a capa e define a capa pela rota da foto", async () => {
+    const putSpy = vi
+      .spyOn(api, "put")
+      .mockResolvedValueOnce({ data: { ...resposta, fotos: [{ ...resposta.fotos[0], capa: true }] } } as never);
+
+    expect(mapearAlbum(resposta).fotos[0].capa).toBe(false);
+
+    const album = await fotosVeiculoService.definirCapa(7, 1);
+
+    expect(putSpy).toHaveBeenCalledWith("/conta/veiculos/7/fotos/1/capa");
+    expect(album.fotos[0].capa).toBe(true);
+  });
+
   it("lista e remove nas rotas do veículo", async () => {
     const getSpy = vi.spyOn(api, "get").mockResolvedValueOnce({ data: resposta } as never);
     const deleteSpy = vi.spyOn(api, "delete").mockResolvedValueOnce({ data: resposta } as never);
