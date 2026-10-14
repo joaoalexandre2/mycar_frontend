@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useConfirmar } from "../../hooks/useNotificacoes";
-import { Camera, ImagePlus, Trash2, X } from "lucide-react";
+import { Camera, ImagePlus, Star, Trash2, X } from "lucide-react";
 import { fotosVeiculoService, type AlbumDoVeiculo, type FotoVeiculo } from "../../services/fotos";
 import { mensagemErro } from "../../services/api";
 import { Modal, ModalTelaCheia } from "../../components/ui/Modal";
@@ -101,6 +101,17 @@ export function FotosModal({
     }
   }
 
+  async function definirCapa(foto: FotoVeiculo) {
+    if (foto.capa) return;
+
+    try {
+      setAlbum(await fotosVeiculoService.definirCapa(veiculo.id, foto.id));
+      setAberta((atual) => (atual?.id === foto.id ? { ...atual, capa: true } : atual));
+    } catch (error) {
+      setErro(mensagemErro(error));
+    }
+  }
+
   const nome = veiculo.apelido?.trim() || `${veiculo.marca} ${veiculo.modelo}`;
   const cheio = album !== null && album.fotos.length >= album.limite;
 
@@ -164,18 +175,44 @@ export function FotosModal({
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
             {album.fotos.map((foto) => (
               <li key={foto.id}>
-                <button
-                  type="button"
-                  onClick={() => setAberta(foto)}
-                  className="group block w-full overflow-hidden rounded-lg border border-gray-200 bg-gray-50"
-                >
-                  <img
-                    src={foto.urlMiniatura}
-                    alt={foto.legenda ?? `Foto de ${formatarData(foto.criadaEm)}`}
-                    loading="lazy"
-                    className="aspect-square w-full object-cover transition group-hover:scale-105"
-                  />
-                </button>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setAberta(foto)}
+                    className="group block w-full overflow-hidden rounded-lg border border-gray-200 bg-gray-50"
+                  >
+                    <img
+                      src={foto.urlMiniatura}
+                      alt={foto.legenda ?? `Foto de ${formatarData(foto.criadaEm)}`}
+                      loading="lazy"
+                      className="aspect-square w-full object-cover transition group-hover:scale-105"
+                    />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void definirCapa(foto)}
+                    disabled={foto.capa}
+                    title={foto.capa ? "Capa do veículo" : "Usar como capa"}
+                    aria-label={foto.capa ? "Capa do veículo" : "Usar como capa"}
+                    className={`absolute left-1.5 top-1.5 flex h-7 items-center gap-1 rounded-full px-2 text-[10px] font-semibold shadow ${
+                      foto.capa
+                        ? "bg-amber-400 text-amber-950"
+                        : "bg-white/90 text-gray-600 hover:bg-amber-100 hover:text-amber-700"
+                    }`}
+                  >
+                    <Star size={12} fill={foto.capa ? "currentColor" : "none"} />
+                    {foto.capa && "Capa"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void remover(foto)}
+                    title="Remover foto"
+                    aria-label="Remover foto"
+                    className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-gray-600 shadow hover:bg-red-600 hover:text-white"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
                 <p className="mt-1 truncate text-[10px] text-gray-400">
                   {foto.legenda ?? formatarData(foto.criadaEm)}
                 </p>
@@ -196,6 +233,15 @@ export function FotosModal({
               {aberta.legenda ?? formatarData(aberta.criadaEm)}
             </span>
             <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                disabled={aberta.capa}
+                onClick={() => void definirCapa(aberta)}
+                className="flex h-9 items-center gap-2 rounded-lg bg-white/10 px-3 text-xs font-semibold hover:bg-amber-500 disabled:opacity-70 disabled:hover:bg-white/10"
+              >
+                <Star size={15} fill={aberta.capa ? "currentColor" : "none"} />
+                {aberta.capa ? "Capa do veículo" : "Usar como capa"}
+              </button>
               <button
                 type="button"
                 onClick={() => void remover(aberta)}
