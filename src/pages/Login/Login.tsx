@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Car, Lock, Mail } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
-import { authService } from "../../services/auth";
+import { authService, type ProvedorSocial } from "../../services/auth";
 import { mensagemErro } from "../../services/api";
 
 export function Login() {
@@ -17,6 +17,7 @@ export function Login() {
   const [precisaConfirmarEmail, setPrecisaConfirmarEmail] = useState(false);
   const [reenviando, setReenviando] = useState(false);
   const [reenviado, setReenviado] = useState(false);
+  const [socialEnviando, setSocialEnviando] = useState<ProvedorSocial | null>(null);
 
   const estadoRota = location.state as { from?: string } | null;
   const destino = estadoRota?.from ?? "/";
@@ -37,6 +38,18 @@ export function Login() {
       setPrecisaConfirmarEmail(mensagem.toLowerCase().includes("confirme seu e-mail"));
     } finally {
       setEnviando(false);
+    }
+  }
+
+  async function handleSocial(provedor: ProvedorSocial) {
+    setErro(null);
+    setSocialEnviando(provedor);
+
+    try {
+      window.location.href = await authService.urlLoginSocial(provedor);
+    } catch (error) {
+      setErro(mensagemErro(error));
+      setSocialEnviando(null);
     }
   }
 
@@ -155,6 +168,32 @@ export function Login() {
             {enviando ? "Entrando..." : "Entrar"}
           </button>
 
+          <div className="flex items-center gap-3 text-xs text-gray-400">
+            <span className="h-px flex-1 bg-gray-200" />
+            ou entre com
+            <span className="h-px flex-1 bg-gray-200" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => handleSocial("google")}
+              disabled={socialEnviando !== null}
+              className="rounded-lg border border-gray-200 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:opacity-60"
+            >
+              Google
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleSocial("facebook")}
+              disabled={socialEnviando !== null}
+              className="rounded-lg border border-gray-200 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:opacity-60"
+            >
+              Facebook
+            </button>
+          </div>
+
           <p className="text-center text-xs text-gray-500">
             Ainda não tem conta?{" "}
             <Link
@@ -162,6 +201,16 @@ export function Login() {
               className="font-semibold text-blue-600 hover:text-blue-700"
             >
               Criar conta
+            </Link>
+          </p>
+
+          <p className="text-center text-xs text-gray-400">
+            <Link to="/termos" className="hover:text-gray-600">
+              Termos de Serviço
+            </Link>
+            {" · "}
+            <Link to="/privacidade" className="hover:text-gray-600">
+              Privacidade
             </Link>
           </p>
         </form>

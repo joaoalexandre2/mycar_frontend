@@ -32,6 +32,15 @@ const EmailConfirmado = lazy(() =>
     default: m.EmailConfirmado,
   })),
 );
+const LoginSocial = lazy(() =>
+  import("./pages/Login/LoginSocial").then((m) => ({ default: m.LoginSocial })),
+);
+const Privacidade = lazy(() =>
+  import("./pages/Legal/Privacidade").then((m) => ({ default: m.Privacidade })),
+);
+const Termos = lazy(() =>
+  import("./pages/Legal/Termos").then((m) => ({ default: m.Termos })),
+);
 const EsqueciSenha = lazy(() =>
   import("./pages/EsqueciSenha/EsqueciSenha").then((m) => ({
     default: m.EsqueciSenha,
@@ -80,6 +89,21 @@ function App() {
               <Route
                 path="/login"
                 element={<Login />}
+              />
+
+              <Route
+                path="/login/social"
+                element={<LoginSocial />}
+              />
+
+              <Route
+                path="/privacidade"
+                element={<Privacidade />}
+              />
+
+              <Route
+                path="/termos"
+                element={<Termos />}
               />
 
               <Route
