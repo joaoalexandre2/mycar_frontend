@@ -7,6 +7,8 @@ import {
   salvarUsuario,
 } from "../utils/authStorage";
 
+export type ProvedorSocial = "google" | "facebook";
+
 interface LoginResposta {
   user: Usuario;
   token: string;
@@ -15,6 +17,22 @@ interface LoginResposta {
 export const authService = {
   async login(payload: LoginPayload): Promise<Usuario> {
     const { data } = await api.post<LoginResposta>("/login", payload);
+
+    salvarSessao(data.token, data.user);
+
+    return data.user;
+  },
+
+  /** URL do provedor (Google/Facebook) para onde o navegador deve ir. */
+  async urlLoginSocial(provedor: ProvedorSocial): Promise<string> {
+    const { data } = await api.get<{ url: string }>(`/auth/${provedor}/redirect`);
+
+    return data.url;
+  },
+
+  /** Troca o código de uso único (vindo do callback) pela sessão. */
+  async concluirLoginSocial(codigo: string): Promise<Usuario> {
+    const { data } = await api.post<LoginResposta>("/auth/social/trocar", { codigo });
 
     salvarSessao(data.token, data.user);
 
