@@ -157,7 +157,7 @@ describe("Comparador: medida do pneu", () => {
         fipe: null,
         fipe_status: "sem_codigo",
         especificacoes: [],
-        dados_modelo: null,
+        dados_catalogo: null,
         manutencao: medida ? { pneu_medida: medida } : null,
       },
     };

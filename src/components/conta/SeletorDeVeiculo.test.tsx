@@ -33,7 +33,7 @@ function simularListagem() {
     .mockImplementation(async (url: string, config?: { params?: Parametros }) => {
       if (url !== "/conta/veiculos") {
         // fichas técnicas e afins: vazias
-        return { data: { manutencao: null, especificacoes: [], fipe: null, fipe_status: "sem_codigo", dados_modelo: null, veiculo: { nome: "x", placa: "x", marca: "x", modelo: "x", ano: 2018 } } } as never;
+        return { data: { manutencao: null, especificacoes: [], fipe: null, fipe_status: "sem_codigo", dados_catalogo: null, veiculo: { nome: "x", placa: "x", marca: "x", modelo: "x", ano: 2018 } } } as never;
       }
 
       const busca = String(config?.params?.busca ?? "").toLowerCase();

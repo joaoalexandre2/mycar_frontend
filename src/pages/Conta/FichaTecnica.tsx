@@ -88,6 +88,21 @@ function Lista({ campos }: { campos: CampoFicha[] }) {
   );
 }
 
+function ListaDoGrupo({ campos }: { campos: { rotulo: string; valor: string }[] }) {
+  return (
+    <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
+      {campos.map((campo, i) => (
+        <div key={`${campo.rotulo}-${i}`}>
+          <dt className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">
+            {campo.rotulo}
+          </dt>
+          <dd className="mt-0.5 text-xs text-gray-800">{campo.valor}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
 export function FichaTecnica() {
   const veiculosDaConta = useVeiculosDaConta();
   // null = ainda não escolheu: vale o primeiro veículo da conta (ou nenhum).
@@ -304,32 +319,39 @@ export function FichaTecnica() {
           </Cartao>
 
           <Cartao
-            titulo="Dados do modelo"
+            titulo="Ficha técnica do modelo"
             descricao={
-              ficha.dadosModelo
-                ? `Coletados da ${ficha.dadosModelo.fonte} para o ${ficha.dadosModelo.modelo}.`
+              ficha.dadosCatalogo
+                ? `Versão de referência: ${ficha.dadosCatalogo.versao}.`
                 : undefined
             }
           >
-            {ficha.dadosModelo ? (
+            {ficha.dadosCatalogo ? (
               <>
-                <Lista campos={ficha.dadosModelo.campos} />
+                <div className="flex flex-col gap-5">
+                  {ficha.dadosCatalogo.grupos.map((grupo) => (
+                    <section key={grupo.grupo}>
+                      <h3 className="mb-2 text-xs font-bold text-gray-700">
+                        {grupo.grupo}
+                      </h3>
+                      <ListaDoGrupo campos={grupo.campos} />
+                    </section>
+                  ))}
+                </div>
                 <p className="mt-4 flex items-start gap-2 text-[11px] text-gray-400">
                   <Info size={14} className="mt-0.5 shrink-0" />
                   <span>
-                    São dados do modelo como um todo: podem juntar gerações,
-                    versões e mercados diferentes e não valem para a sua versão
-                    exata. Confira no manual. Fonte:{" "}
+                    É a ficha da versão mais recente do modelo e pode diferir da
+                    sua versão exata. Confira no manual. Fonte:{" "}
                     <a
-                      href={ficha.dadosModelo.url}
+                      href={ficha.dadosCatalogo.url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-semibold text-blue-600 hover:text-blue-700"
                     >
-                      {ficha.dadosModelo.fonte} ({ficha.dadosModelo.pagina})
+                      {ficha.dadosCatalogo.fonte}
                     </a>
-                    , licença {ficha.dadosModelo.licenca}, coletado em{" "}
-                    {formatarData(ficha.dadosModelo.coletadoEm)}.
+                    , coletado em {formatarData(ficha.dadosCatalogo.coletadoEm)}.
                   </span>
                 </p>
               </>
