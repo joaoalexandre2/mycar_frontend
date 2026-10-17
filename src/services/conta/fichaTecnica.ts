@@ -3,6 +3,7 @@ import { dataISO } from "../../utils/formatters";
 import type {
   CampoFicha,
   FichaTecnicaConta,
+  GrupoDaFicha,
   ManutencaoFicha,
 } from "../../types/conta";
 
@@ -17,14 +18,15 @@ interface FichaTecnicaContaApi {
   } | null;
   fipe_status: "ok" | "sem_codigo" | "indisponivel";
   especificacoes: CampoFicha[];
-  dados_modelo: {
+  dados_catalogo: {
+    marca: string;
     modelo: string;
     fonte: string;
-    pagina: string;
     url: string;
-    licenca: string;
+    versao: string;
+    ano: number;
     coletado_em: string;
-    campos: CampoFicha[];
+    grupos: GrupoDaFicha[];
   } | null;
   manutencao: ManutencaoFicha | null;
 }
@@ -43,15 +45,16 @@ export function mapearFichaTecnicaConta(resposta: FichaTecnicaContaApi): FichaTe
       : null,
     fipeStatus: resposta.fipe_status,
     especificacoes: resposta.especificacoes,
-    dadosModelo: resposta.dados_modelo
+    dadosCatalogo: resposta.dados_catalogo
       ? {
-          modelo: resposta.dados_modelo.modelo,
-          fonte: resposta.dados_modelo.fonte,
-          pagina: resposta.dados_modelo.pagina,
-          url: resposta.dados_modelo.url,
-          licenca: resposta.dados_modelo.licenca,
-          coletadoEm: dataISO(resposta.dados_modelo.coletado_em),
-          campos: resposta.dados_modelo.campos,
+          marca: resposta.dados_catalogo.marca,
+          modelo: resposta.dados_catalogo.modelo,
+          fonte: resposta.dados_catalogo.fonte,
+          url: resposta.dados_catalogo.url,
+          versao: resposta.dados_catalogo.versao,
+          ano: resposta.dados_catalogo.ano,
+          coletadoEm: dataISO(resposta.dados_catalogo.coletado_em),
+          grupos: resposta.dados_catalogo.grupos,
         }
       : null,
     manutencao: resposta.manutencao,

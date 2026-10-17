@@ -656,9 +656,10 @@ describe("ficha técnica da conta", () => {
     fipe: { codigo_fipe: "001004-9", combustivel: "Gasolina", ano_modelo: 2018, valor: 41000.5, mes_referencia: "outubro de 2026" },
     fipe_status: "ok" as const,
     especificacoes: [{ chave: "motor", rotulo: "Motor (cilindrada)", valor: "1.0 litros" }],
-    dados_modelo: {
-      modelo: "Fiat Uno", fonte: "Wikipédia", pagina: "Fiat Uno", url: "https://pt.wikipedia.org/wiki/Fiat_Uno",
-      licenca: "CC BY-SA 4.0", coletado_em: "2026-10-07", campos: [{ chave: "potencia", rotulo: "Potência", valor: "75 cv" }],
+    dados_catalogo: {
+      marca: "fiat", modelo: "uno", fonte: "Ficha Completa", url: "https://www.fichacompleta.com.br/carros/fiat/uno",
+      versao: "Fiat Uno 1.0 2021", ano: 2021, coletado_em: "2026-10-15",
+      grupos: [{ grupo: "Motor", campos: [{ rotulo: "Potência", valor: "75 cv" }] }],
     },
     manutencao: { oleo_viscosidade: "5W30" },
   };
@@ -670,18 +671,20 @@ describe("ficha técnica da conta", () => {
     expect(ficha.fipe?.codigoFipe).toBe("001004-9");
     expect(ficha.fipe?.valor).toBe(41000.5);
     expect(ficha.fipeStatus).toBe("ok");
-    expect(ficha.dadosModelo?.licenca).toBe("CC BY-SA 4.0");
-    expect(ficha.dadosModelo?.coletadoEm).toBe("2026-10-07");
+    expect(ficha.dadosCatalogo?.fonte).toBe("Ficha Completa");
+    expect(ficha.dadosCatalogo?.versao).toBe("Fiat Uno 1.0 2021");
+    expect(ficha.dadosCatalogo?.coletadoEm).toBe("2026-10-15");
+    expect(ficha.dadosCatalogo?.grupos[0].campos[0].valor).toBe("75 cv");
     expect(ficha.especificacoes[0].valor).toBe("1.0 litros");
     expect(ficha.manutencao?.oleo_viscosidade).toBe("5W30");
   });
 
   it("sem FIPE nem dados do modelo, vêm nulos", async () => {
     const { mapearFichaTecnicaConta } = await import("./conta");
-    const ficha = mapearFichaTecnicaConta({ ...resposta, fipe: null, fipe_status: "sem_codigo" as const, dados_modelo: null, manutencao: null });
+    const ficha = mapearFichaTecnicaConta({ ...resposta, fipe: null, fipe_status: "sem_codigo" as const, dados_catalogo: null, manutencao: null });
 
     expect(ficha.fipe).toBeNull();
-    expect(ficha.dadosModelo).toBeNull();
+    expect(ficha.dadosCatalogo).toBeNull();
     expect(ficha.manutencao).toBeNull();
   });
 

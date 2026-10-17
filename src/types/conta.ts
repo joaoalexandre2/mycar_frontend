@@ -387,15 +387,22 @@ export interface DadosFipeFicha {
   mesReferencia: string | null;
 }
 
-/** Dados do MODELO coletados de uma fonte pública (hoje, a Wikipédia). */
-export interface DadosDoModelo {
+/** Ficha de referência do modelo (versão mais recente), coletada do Ficha Completa. */
+export interface DadosDoCatalogo {
+  marca: string;
   modelo: string;
   fonte: string;
-  pagina: string;
   url: string;
-  licenca: string;
+  /** Versão a que a ficha se refere, ex.: "Chevrolet Onix 1.0 2026". */
+  versao: string;
+  ano: number;
   coletadoEm: string;
-  campos: CampoFicha[];
+  grupos: GrupoDaFicha[];
+}
+
+export interface GrupoDaFicha {
+  grupo: string;
+  campos: { rotulo: string; valor: string }[];
 }
 
 export type ManutencaoFicha = Partial<
@@ -431,6 +438,6 @@ export interface FichaTecnicaConta {
   fipeStatus: "ok" | "sem_codigo" | "indisponivel";
   /** Lido do nome da versão (ex.: "1.4 8V Flex 5p Mec."). */
   especificacoes: CampoFicha[];
-  dadosModelo: DadosDoModelo | null;
+  dadosCatalogo: DadosDoCatalogo | null;
   manutencao: ManutencaoFicha | null;
 }
