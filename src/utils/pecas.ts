@@ -1,4 +1,29 @@
-import type { PecaCatalogo, VeiculoConta } from "../types/conta";
+import type { CodigoDoCatalogo, PecaCatalogo, VeiculoConta } from "../types/conta";
+
+/** "2008–2012", "a partir de 2013", "até 2012" ou "todos os anos". */
+export function descreverAnos(de: number | null, ate: number | null): string {
+  if (de !== null && ate !== null) {
+    return de === ate ? String(de) : `${de}–${ate}`;
+  }
+
+  if (de !== null) return `a partir de ${de}`;
+  if (ate !== null) return `até ${ate}`;
+
+  return "todos os anos";
+}
+
+/** Linha de detalhe do código: anos, motor e observação, sem partes vazias. */
+export function detalhesDoCodigo(
+  c: Pick<CodigoDoCatalogo, "anoDe" | "anoAte" | "motor" | "observacao">,
+): string {
+  return [
+    descreverAnos(c.anoDe, c.anoAte),
+    c.motor ? `motor ${c.motor}` : null,
+    c.observacao,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
 
 /**
  * Busca pronta para achar o código certo da peça, já com o veículo e o ano.

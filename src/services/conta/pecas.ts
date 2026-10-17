@@ -40,6 +40,16 @@ interface CatalogoPecasApi {
     observacao: string | null;
     marcas: string[];
     meus_codigos: CodigoPecaApi[];
+    /** Ausente em servidores que ainda não têm a base de códigos. */
+    codigos_catalogo?: {
+      fabricante: string;
+      codigo: string;
+      ano_de: number | null;
+      ano_ate: number | null;
+      motor: string | null;
+      observacao: string | null;
+      fonte: string | null;
+    }[];
   }[];
   modelos_no_catalogo: number;
   aviso: string;
@@ -68,6 +78,15 @@ export function mapearCatalogoPecas(resposta: CatalogoPecasApi): CatalogoDePecas
       observacao: peca.observacao,
       marcas: peca.marcas,
       meusCodigos: peca.meus_codigos.map(mapearCodigoPeca),
+      codigosCatalogo: (peca.codigos_catalogo ?? []).map((c) => ({
+        fabricante: c.fabricante,
+        codigo: c.codigo,
+        anoDe: c.ano_de,
+        anoAte: c.ano_ate,
+        motor: c.motor,
+        observacao: c.observacao,
+        fonte: c.fonte,
+      })),
     })),
     modelosNoCatalogo: resposta.modelos_no_catalogo,
     aviso: resposta.aviso,
