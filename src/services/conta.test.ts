@@ -596,11 +596,28 @@ describe("catálogo de peças", () => {
         observacao: null,
         marcas: ["Cofap", "Monroe"],
         meus_codigos: [{ id: 5, peca_id: "amortecedor-dianteiro", marca: "Cofap", codigo: "GP 123", observacoes: null }],
+        codigos_catalogo: [
+          { fabricante: "Marca A", codigo: "TESTE-1", ano_de: 2008, ano_ate: 2012, motor: "1.0", observacao: "par", fonte: "Catálogo de teste" },
+        ],
       },
     ],
     modelos_no_catalogo: 86,
     aviso: "Confirme pelo chassi.",
   };
+
+  it("servidor sem a base de códigos: a lista do catálogo vem vazia", () => {
+    const antiga = {
+      ...resposta,
+      pecas: resposta.pecas.map((peca) => {
+        const semCodigos: Partial<typeof peca> = { ...peca };
+        delete semCodigos.codigos_catalogo;
+
+        return semCodigos as Omit<typeof peca, "codigos_catalogo">;
+      }),
+    };
+
+    expect(mapearCatalogoPecas(antiga).pecas[0].codigosCatalogo).toEqual([]);
+  });
 
   it("converte o modelo achado e as peças", () => {
     const dados = mapearCatalogoPecas(resposta);
@@ -608,6 +625,9 @@ describe("catálogo de peças", () => {
     expect(dados.modelo).toEqual({ nome: "Fiat Uno", categoriaRotulo: "Hatch", original: "Mopar" });
     expect(dados.pecas[0].marcas).toEqual(["Cofap", "Monroe"]);
     expect(dados.pecas[0].meusCodigos[0]).toEqual({ id: 5, pecaId: "amortecedor-dianteiro", marca: "Cofap", codigo: "GP 123", observacoes: null });
+    expect(dados.pecas[0].codigosCatalogo).toEqual([
+      { fabricante: "Marca A", codigo: "TESTE-1", anoDe: 2008, anoAte: 2012, motor: "1.0", observacao: "par", fonte: "Catálogo de teste" },
+    ]);
     expect(dados.escopo).toBe("modelo");
     expect(dados.pecas[0].sistemaRotulo).toBe("Suspensão");
     expect(dados.pecas[0].intervaloKm).toBe(70000);

@@ -331,6 +331,19 @@ export interface PecaCatalogo {
   marcas: string[];
   /** Códigos que a própria pessoa confirmou para este veículo. */
   meusCodigos: CodigoPeca[];
+  /** Códigos de catálogos de aplicação que servem ao ano e ao motor do veículo. */
+  codigosCatalogo: CodigoDoCatalogo[];
+}
+
+/** Código de fabricante vindo de um catálogo de aplicação (com a fonte). */
+export interface CodigoDoCatalogo {
+  fabricante: string;
+  codigo: string;
+  anoDe: number | null;
+  anoAte: number | null;
+  motor: string | null;
+  observacao: string | null;
+  fonte: string | null;
 }
 
 export interface SistemaCatalogo {

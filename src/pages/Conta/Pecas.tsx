@@ -10,7 +10,7 @@ import { SeletorDeVeiculo } from "../../components/conta/SeletorDeVeiculo";
 import { useVeiculosDaConta } from "../../hooks/useVeiculosDaConta";
 import { mensagemErro } from "../../services/api";
 import { formatarKm } from "../../utils/formatters";
-import { linksDeBusca } from "../../utils/pecas";
+import { detalhesDoCodigo, linksDeBusca } from "../../utils/pecas";
 import type {
   CatalogoDePecas,
   CodigoPeca,
@@ -135,6 +135,31 @@ function PecaItem({
               {m}
             </span>
           ))}
+        </div>
+      )}
+
+      {peca.codigosCatalogo.length > 0 && (
+        <div className="mt-2 rounded-lg border border-blue-100 bg-blue-50/60 px-3 py-2">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-blue-700">
+            Códigos do catálogo para o seu veículo
+          </p>
+          <ul className="mt-1 space-y-1">
+            {peca.codigosCatalogo.map((c) => (
+              <li
+                key={`${c.fabricante}-${c.codigo}-${c.anoDe}-${c.anoAte}-${c.motor}`}
+                className="text-[11px] text-gray-700"
+                title={c.fonte ? `Fonte: ${c.fonte}` : undefined}
+              >
+                <span className="select-text font-semibold text-gray-900">
+                  {c.fabricante} · {c.codigo}
+                </span>
+                <span className="ml-1.5 text-gray-500">{detalhesDoCodigo(c)}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-1 text-[10px] text-gray-400">
+            Confirme pelo chassi ou pelo código da peça original antes de comprar.
+          </p>
         </div>
       )}
 
