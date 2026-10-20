@@ -19,6 +19,16 @@ import {
   mapearVeiculoConta,
 } from "./conta";
 
+describe("mapearVeiculoConta: isenção de IPVA", () => {
+  const dados = { id: 9, placa: "ABC1D26", marca: "Fiat", modelo: "Palio", ano: 2001 };
+
+  it("lê isento_ipva do servidor e, sem o campo, assume que não é isento", () => {
+    expect(mapearVeiculoConta({ ...dados, isento_ipva: true }).isentoIpva).toBe(true);
+    expect(mapearVeiculoConta({ ...dados, isento_ipva: false }).isentoIpva).toBe(false);
+    expect(mapearVeiculoConta(dados).isentoIpva).toBe(false);
+  });
+});
+
 describe("mapearVeiculoConta", () => {
   it("converte o veículo da API e normaliza campos ausentes", () => {
     const veiculo = mapearVeiculoConta({

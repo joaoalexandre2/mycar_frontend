@@ -65,10 +65,13 @@ function Imposto({
   vencimento,
   aproximado = false,
   aliquotaMedia = false,
+  isento = false,
 }: {
   rotulo: string;
   valor: number | null;
   vencimento: string | null;
+  /** Veículo isento: no lugar do valor e da data, mostra "Isento". */
+  isento?: boolean;
   /** O valor é uma aproximação (IPVA = FIPE × alíquota): mostra "≈". */
   aproximado?: boolean;
   /** Faltou a alíquota do estado e foi usada a média do país. */
@@ -82,13 +85,22 @@ function Imposto({
       <p className="text-[10px] font-medium tracking-wide text-gray-500 uppercase">
         {rotulo}
       </p>
-      <p className="font-display text-xl leading-tight font-semibold text-gray-900">
-        {valor !== null ? `${aproximado ? "≈ " : ""}${formatarMoeda(valor)}` : "—"}
-      </p>
-      {aliquotaMedia && valor !== null && (
+      {isento ? (
+        <>
+          <p className="font-display text-xl leading-tight font-semibold text-emerald-700">
+            Isento
+          </p>
+          <p className="text-[10px] text-gray-400">mais de 20 anos de fabricação</p>
+        </>
+      ) : (
+        <p className="font-display text-xl leading-tight font-semibold text-gray-900">
+          {valor !== null ? `${aproximado ? "≈ " : ""}${formatarMoeda(valor)}` : "—"}
+        </p>
+      )}
+      {aliquotaMedia && valor !== null && !isento && (
         <p className="text-[10px] text-amber-600">alíquota média do país</p>
       )}
-      {vencimento && (
+      {vencimento && !isento && (
         <p
           className={`mt-0.5 text-[10px] ${
             perto ? "font-semibold text-blue-600" : "text-gray-400"
@@ -220,7 +232,7 @@ export function CartaoVeiculo({
           )}
         </div>
 
-        {veiculo.uf ? (
+        {veiculo.uf || veiculo.isentoIpva ? (
           <div className="grid grid-cols-2 gap-2">
             <Imposto
               rotulo="IPVA"
@@ -228,6 +240,7 @@ export function CartaoVeiculo({
               vencimento={veiculo.proximoVencimentoIpva}
               aproximado
               aliquotaMedia={veiculo.ipvaAliquotaMedia}
+              isento={veiculo.isentoIpva}
             />
             <Imposto
               rotulo="Licenciamento"
@@ -244,7 +257,7 @@ export function CartaoVeiculo({
 
         {veiculo.possivelIsencaoIpva && (
           <p className="text-[10px] text-amber-600">
-            Carro com 15+ anos: alguns estados isentam o IPVA. Confira na Sefaz.
+            Carro com 15 a 20 anos: alguns estados isentam o IPVA. Confira na Sefaz.
           </p>
         )}
 
