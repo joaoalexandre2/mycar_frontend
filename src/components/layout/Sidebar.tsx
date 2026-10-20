@@ -7,6 +7,8 @@ import {
     Scale,
     Lightbulb,
     ClipboardList,
+    CalendarDays,
+    Building2,
     Settings,
     ShieldCheck,
     LogOut,
@@ -107,6 +109,24 @@ import {
                   label={perfil === "frota" ? "Veículos da frota" : "Meus veículos"}
                   aoNavegar={aoFechar}
                 />
+
+                {perfil === "frota" && (
+                  <>
+                    <SidebarItem
+                      to="/agenda"
+                      icon={<CalendarDays size={19} />}
+                      label="Agenda"
+                      aoNavegar={aoFechar}
+                    />
+
+                    <SidebarItem
+                      to="/frota/cadastros"
+                      icon={<Building2 size={19} />}
+                      label="Motoristas e centros"
+                      aoNavegar={aoFechar}
+                    />
+                  </>
+                )}
 
                 <SidebarItem
                   to="/servicos"

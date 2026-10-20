@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import type { VeiculoConta } from "../../types/conta";
 import { CartaoVeiculo } from "./CartaoVeiculo";
@@ -38,6 +39,9 @@ const base: VeiculoConta = {
   fipeAno: null,
   fipeValor: null,
   fipeConsultadoEm: null,
+  kmAtual: null,
+  kmAtualizadoEm: null,
+  centroCustoId: null,
 };
 
 const fotoModelo = {
@@ -131,5 +135,50 @@ describe("CartaoVeiculo: capa", () => {
     montar(base);
 
     expect(screen.queryByText(/Foto ilustrativa/)).not.toBeInTheDocument();
+  });
+});
+
+describe("CartaoVeiculo: km atual da frota", () => {
+  it("sem a ação de corrigir (oficina e pessoa) e sem km, a linha não aparece", () => {
+    montar(base);
+
+    expect(screen.queryByText(/Km atual/)).not.toBeInTheDocument();
+  });
+
+  it("mostra o km e a data da última atualização", () => {
+    montar({ ...base, kmAtual: 45310, kmAtualizadoEm: "2026-11-10" });
+
+    expect(screen.getByText(/Km atual/)).toHaveTextContent("Km atual 45.310 km · em");
+    expect(screen.queryByRole("button", { name: "corrigir" })).not.toBeInTheDocument();
+  });
+
+  it("na frota, veículo sem km oferece 'informar' e chama a ação", async () => {
+    const corrigirKm = vi.fn();
+    render(
+      <CartaoVeiculo
+        veiculo={base}
+        nome="Strada"
+        consultandoFipe={false}
+        acoes={{ ...acoes, corrigirKm } as never}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "informar" }));
+
+    expect(corrigirKm).toHaveBeenCalledTimes(1);
+  });
+
+  it("na frota, veículo com km oferece 'corrigir'", () => {
+    render(
+      <CartaoVeiculo
+        veiculo={{ ...base, kmAtual: 100 }}
+        nome="Strada"
+        consultandoFipe={false}
+        acoes={{ ...acoes, corrigirKm: vi.fn() } as never}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "corrigir" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "informar" })).not.toBeInTheDocument();
   });
 });

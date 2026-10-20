@@ -14,6 +14,8 @@ import { DocumentosModal } from "./DocumentosModal";
 import { DespesasModal } from "../../components/layout/DespesasModal";
 import { FotosModal } from "./FotosModal";
 import { contaService } from "../../services/conta";
+import { centrosCustoService } from "../../services/frota";
+import { CorrigirKmModal } from "../../components/frota/CorrigirKmModal";
 import { mensagemErro } from "../../services/api";
 import { Modal } from "../../components/ui/Modal";
 import { useAuth } from "../../hooks/useAuth";
@@ -21,6 +23,7 @@ import { ESTADOS } from "../../utils/estados";
 import { formatarMoeda } from "../../utils/formatters";
 import { limparPlaca, padraoDaPlaca, placaValida, ROTULO_PADRAO } from "../../utils/placa";
 import type { VeiculoConta, VeiculoContaPayload } from "../../types/conta";
+import type { CentroCusto } from "../../types/frota";
 
 interface DadosForm {
   apelido: string;
@@ -32,6 +35,8 @@ interface DadosForm {
   uf: string;
   revisao: string;
   fipe: FipeSelecao;
+  /** Centro de custo padrão (só a frota escolhe). */
+  centroCustoId: number | null;
 }
 
 function nomeDoVeiculo(veiculo: VeiculoConta) {
@@ -53,6 +58,8 @@ export function MeusVeiculos() {
   const [valorTotalFipe, setValorTotalFipe] = useState(0);
   const [modalAberto, setModalAberto] = useState(false);
   const [editando, setEditando] = useState<VeiculoConta | null>(null);
+  const [centros, setCentros] = useState<CentroCusto[] | null>(null);
+  const [corrigindoKm, setCorrigindoKm] = useState<VeiculoConta | null>(null);
   const [consultandoId, setConsultandoId] = useState<number | null>(null);
   const [abastecendo, setAbastecendo] = useState<VeiculoConta | null>(null);
   const [segurando, setSegurando] = useState<VeiculoConta | null>(null);
@@ -109,6 +116,26 @@ export function MeusVeiculos() {
     },
   );
 
+  // Centros de custo para o campo "padrão" do veículo: só a frota usa.
+  useEffect(() => {
+    if (!ehFrota) return;
+
+    let ativo = true;
+
+    centrosCustoService
+      .listar()
+      .then((lista) => {
+        if (ativo) setCentros(lista);
+      })
+      .catch(() => {
+        // Sem a lista o campo só fica vazio: o veículo continua podendo ser salvo.
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, [ehFrota]);
+
   async function salvar(dados: DadosForm) {
     const payload: VeiculoContaPayload = {
       apelido: dados.apelido.trim() || null,
@@ -122,6 +149,8 @@ export function MeusVeiculos() {
       fipe_marca_id: dados.fipe.marcaId ? Number(dados.fipe.marcaId) : null,
       fipe_modelo_id: dados.fipe.modeloId ? Number(dados.fipe.modeloId) : null,
       fipe_ano: dados.fipe.ano || null,
+      // Só a frota usa centro de custo: nos outros perfis o campo nem é enviado.
+      ...(ehFrota ? { centro_custo_id: dados.centroCustoId } : {}),
     };
 
     try {
@@ -259,6 +288,7 @@ export function MeusVeiculos() {
                     setModalAberto(true);
                   },
                   remover: () => void remover(veiculo),
+                  corrigirKm: ehFrota ? () => setCorrigindoKm(veiculo) : undefined,
                 }}
               />
             ))}
@@ -330,9 +360,21 @@ export function MeusVeiculos() {
         />
       )}
 
+      {corrigindoKm && (
+        <CorrigirKmModal
+          veiculo={corrigindoKm}
+          onSalvo={() => {
+            setCorrigindoKm(null);
+            recarregar();
+          }}
+          onClose={() => setCorrigindoKm(null)}
+        />
+      )}
+
       {modalAberto && (
         <VeiculoContaModal
           veiculo={editando}
+          centros={ehFrota ? (centros ?? []) : null}
           onClose={() => {
             setModalAberto(false);
             setEditando(null);
@@ -346,10 +388,13 @@ export function MeusVeiculos() {
 
 function VeiculoContaModal({
   veiculo,
+  centros,
   onClose,
   onSave,
 }: {
   veiculo: VeiculoConta | null;
+  /** Centros de custo da frota; vazio (null) nos outros perfis, que não escolhem. */
+  centros: CentroCusto[] | null;
   onClose: () => void;
   onSave: (dados: DadosForm) => void;
 }) {
@@ -362,6 +407,7 @@ function VeiculoContaModal({
   const [anoFab, setAnoFab] = useState(veiculo?.anoFabricacao?.toString() ?? "");
   const [uf, setUf] = useState(veiculo?.uf ?? "");
   const [revisao, setRevisao] = useState(veiculo?.revisaoPrevistaEm ?? "");
+  const [centroId, setCentroId] = useState(veiculo?.centroCustoId ? String(veiculo.centroCustoId) : "");
   const [fipe, setFipe] = useState<FipeSelecao>({
     marcaId: veiculo?.fipeMarcaId?.toString() ?? "",
     modeloId: veiculo?.fipeModeloId?.toString() ?? "",
@@ -414,6 +460,7 @@ function VeiculoContaModal({
       uf,
       revisao,
       fipe,
+      centroCustoId: centroId ? Number(centroId) : null,
     });
   }
 
@@ -576,6 +623,33 @@ function VeiculoContaModal({
               Avisamos por e-mail quando faltar até 30 dias.
             </p>
           </div>
+
+          {centros && (
+            <div>
+              <label
+                htmlFor="veiculo-centro"
+                className="mb-1.5 block text-xs font-medium text-gray-700"
+              >
+                Centro de custo padrão (opcional)
+              </label>
+              <select
+                id="veiculo-centro"
+                value={centroId}
+                onChange={(event) => setCentroId(event.target.value)}
+                className={classeCampo}
+              >
+                <option value="">Nenhum</option>
+                {centros.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nome}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-[11px] text-gray-400">
+                Vale nas reservas que não escolherem outro centro.
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="flex justify-end gap-2 border-t border-gray-200 bg-gray-50 px-6 py-4">

@@ -29,6 +29,35 @@ describe("mapearVeiculoConta: isenção de IPVA", () => {
   });
 });
 
+describe("mapearVeiculoConta: km e centro de custo da frota", () => {
+  const dados = { id: 9, placa: "ABC1D26", marca: "Fiat", modelo: "Strada", ano: 2022 };
+
+  it("traz o km atual, quando foi atualizado e o centro de custo padrão", () => {
+    const veiculo = mapearVeiculoConta({
+      ...dados,
+      km_atual: 45310,
+      km_atualizado_em: "2026-11-10T11:50:00-03:00",
+      centro_custo_id: 5,
+    });
+
+    expect(veiculo.kmAtual).toBe(45310);
+    expect(veiculo.kmAtualizadoEm).toBe("2026-11-10");
+    expect(veiculo.centroCustoId).toBe(5);
+  });
+
+  it("sem esses campos (oficina e pessoa), ficam nulos", () => {
+    const veiculo = mapearVeiculoConta(dados);
+
+    expect(veiculo.kmAtual).toBeNull();
+    expect(veiculo.kmAtualizadoEm).toBeNull();
+    expect(veiculo.centroCustoId).toBeNull();
+  });
+
+  it("km zero é um km válido, não ausência", () => {
+    expect(mapearVeiculoConta({ ...dados, km_atual: 0 }).kmAtual).toBe(0);
+  });
+});
+
 describe("mapearVeiculoConta", () => {
   it("converte o veículo da API e normaliza campos ausentes", () => {
     const veiculo = mapearVeiculoConta({
@@ -248,6 +277,18 @@ describe("contaService", () => {
     expect(pagina.totalRegistros).toBe(25);
     expect(pagina.valorTotalFipe).toBe(99000);
     expect(pagina.dados[0].placa).toBe("AAA1B11");
+  });
+
+  it("lista todos os veículos de uma vez (para a agenda da frota)", async () => {
+    const getSpy = vi.spyOn(api, "get").mockResolvedValueOnce({
+      data: [{ id: 1, placa: "AAA1B11", marca: "Fiat", modelo: "Uno", ano: 2018, km_atual: 1200 }],
+    } as never);
+
+    const veiculos = await contaService.listarTodosVeiculos();
+
+    expect(getSpy).toHaveBeenCalledWith("/conta/veiculos", { params: { all: 1 } });
+    expect(veiculos).toHaveLength(1);
+    expect(veiculos[0].kmAtual).toBe(1200);
   });
 
   it("busca vazia não vai como string vazia", async () => {
