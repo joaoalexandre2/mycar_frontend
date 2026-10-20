@@ -25,6 +25,20 @@ export const fipeService = {
     }));
   },
 
+  /** Anos da marca, já com o combustível ("2014 Flex"), para escolher o ano antes do modelo. */
+  async anosDaMarca(marcaId: string): Promise<FipeItem[]> {
+    const { data } = await api.get<FipeItem[]>(`/fipe/marcas/${marcaId}/anos`);
+    return data;
+  },
+
+  /** Só os modelos da marca que existem naquele ano (código "2014-5"). */
+  async modelosDoAno(marcaId: string, ano: string): Promise<FipeItem[]> {
+    const { data } = await api.get<FipeItem[]>(
+      `/fipe/marcas/${marcaId}/anos/${ano}/modelos`,
+    );
+    return data;
+  },
+
   async anos(marcaId: string, modeloId: string): Promise<FipeItem[]> {
     const { data } = await api.get<FipeItem[]>(
       `/fipe/marcas/${marcaId}/modelos/${modeloId}/anos`,
