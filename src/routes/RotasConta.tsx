@@ -2,12 +2,15 @@ import { lazy } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import { AdminRoute } from "../components/auth/AdminRoute";
+import { FrotaRoute } from "../components/auth/FrotaRoute";
 import { ContaInicio } from "../pages/Conta/ContaInicio";
 import { MeusVeiculos } from "../pages/Conta/MeusVeiculos";
 import { Servicos } from "../pages/Conta/Servicos";
 import { Pecas } from "../pages/Conta/Pecas";
 import { FichaTecnica } from "../pages/Conta/FichaTecnica";
 import { Comparador } from "../pages/Conta/Comparador";
+import { Agenda } from "../pages/Frota/Agenda";
+import { Cadastros } from "../pages/Frota/Cadastros";
 import { Configuracoes } from "../pages/Configuracoes/Configuracoes";
 import { Sugestoes } from "../pages/Sugestoes/Sugestoes";
 
@@ -48,6 +51,19 @@ export default function RotasConta() {
         path="/comparador"
         element={<Comparador />}
       />
+
+      {/* Só o perfil frota: agenda de uso dos veículos, motoristas e centros de custo. */}
+      <Route element={<FrotaRoute />}>
+        <Route
+          path="/agenda"
+          element={<Agenda />}
+        />
+
+        <Route
+          path="/frota/cadastros"
+          element={<Cadastros />}
+        />
+      </Route>
 
       <Route
         path="/sugestoes"

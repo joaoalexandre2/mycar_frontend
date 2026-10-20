@@ -44,6 +44,11 @@ export interface VeiculoConta {
   fipeAno: string | null;
   fipeValor: number | null;
   fipeConsultadoEm: string | null;
+  /** Quilometragem atual: sobe a cada saída ou chegada de uso (frota). */
+  kmAtual: number | null;
+  kmAtualizadoEm: string | null;
+  /** Centro de custo padrão do veículo (frota). */
+  centroCustoId: number | null;
 }
 
 export interface VeiculoContaPayload {
@@ -58,6 +63,7 @@ export interface VeiculoContaPayload {
   fipe_marca_id?: number | null;
   fipe_modelo_id?: number | null;
   fipe_ano?: string | null;
+  centro_custo_id?: number | null;
 }
 
 export type TipoVencimento =

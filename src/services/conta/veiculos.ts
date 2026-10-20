@@ -43,6 +43,9 @@ interface VeiculoContaApi {
   fipe_ano?: string | null;
   fipe_valor?: number | string | null;
   fipe_consultado_em?: string | null;
+  km_atual?: number | null;
+  km_atualizado_em?: string | null;
+  centro_custo_id?: number | null;
 }
 
 interface ResumoContaApi {
@@ -141,6 +144,9 @@ export function mapearVeiculoConta(item: VeiculoContaApi): VeiculoConta {
         ? null
         : Number(item.fipe_valor),
     fipeConsultadoEm: item.fipe_consultado_em ?? null,
+    kmAtual: item.km_atual ?? null,
+    kmAtualizadoEm: item.km_atualizado_em ? dataISO(item.km_atualizado_em) : null,
+    centroCustoId: item.centro_custo_id ?? null,
   };
 }
 
@@ -207,6 +213,14 @@ export const contaService = {
       totalRegistros: data.meta.total,
       valorTotalFipe: data.resumo.valorTotalFipe,
     };
+  },
+
+  /** Todos os veículos da conta, sem paginação: para escolher em listas (agenda da frota). */
+  async listarTodosVeiculos(): Promise<VeiculoConta[]> {
+    const { data } = await api.get<VeiculoContaApi[]>("/conta/veiculos", {
+      params: { all: 1 },
+    });
+    return data.map(mapearVeiculoConta);
   },
 
   async criarVeiculo(payload: VeiculoContaPayload): Promise<VeiculoConta> {

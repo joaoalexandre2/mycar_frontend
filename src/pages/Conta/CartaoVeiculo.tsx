@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { Placa } from "../../components/veiculos/Placa";
 import { placaValida } from "../../utils/placa";
-import { formatarData, formatarMoeda } from "../../utils/formatters";
+import { formatarData, formatarKm, formatarMoeda } from "../../utils/formatters";
 import { diasAteData } from "../../utils/prazos";
 import type { VeiculoConta } from "../../types/conta";
 
@@ -25,6 +25,8 @@ export interface AcoesDoVeiculo {
   abastecimentos: () => void;
   editar: () => void;
   remover: () => void;
+  /** Só na frota: corrige o km atual do veículo. */
+  corrigirKm?: () => void;
 }
 
 function Botao({
@@ -252,6 +254,23 @@ export function CartaoVeiculo({
           <p className="rounded-xl bg-gray-50 px-3 py-2.5 text-[11px] text-gray-500">
             Informe o estado de emplacamento (editar) para ver o IPVA e o
             licenciamento estimados.
+          </p>
+        )}
+
+        {(veiculo.kmAtual !== null || acoes.corrigirKm) && (
+          <p className="text-[11px] text-gray-600">
+            Km atual{" "}
+            <span className="font-semibold text-gray-900">{formatarKm(veiculo.kmAtual)}</span>
+            {veiculo.kmAtualizadoEm && ` · em ${formatarData(veiculo.kmAtualizadoEm)}`}
+            {acoes.corrigirKm && (
+              <button
+                type="button"
+                onClick={acoes.corrigirKm}
+                className="ml-2 font-semibold text-blue-600 hover:text-blue-700"
+              >
+                {veiculo.kmAtual === null ? "informar" : "corrigir"}
+              </button>
+            )}
           </p>
         )}
 
