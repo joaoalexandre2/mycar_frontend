@@ -22,7 +22,9 @@ export interface VeiculoConta {
   anoFabricacao: number | null;
   /** Como no CRLV: "2018/2019", ou só "2018". */
   anoCompleto: string;
-  /** Aviso: com 15+ anos de fabricação, alguns estados isentam o IPVA (confira na Sefaz). */
+  /** Isento de IPVA em todo o país: mais de 20 anos de fabricação (EC 137/2025). */
+  isentoIpva: boolean;
+  /** Aviso: de 15 a 20 anos de fabricação, alguns estados isentam o IPVA (confira na Sefaz). */
   possivelIsencaoIpva: boolean;
   /** Miniatura da foto mais recente do álbum (link temporário); nulo sem foto. */
   fotoCapaUrl: string | null;

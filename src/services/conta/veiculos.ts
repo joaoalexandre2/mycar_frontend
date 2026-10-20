@@ -20,6 +20,7 @@ interface VeiculoContaApi {
   ano_fabricacao?: number | null;
   ano_completo?: string | null;
   possivel_isencao_ipva?: boolean;
+  isento_ipva?: boolean;
   foto_capa_url?: string | null;
   foto_modelo?: {
     modelo: string;
@@ -105,6 +106,7 @@ export function mapearVeiculoConta(item: VeiculoContaApi): VeiculoConta {
     ano: item.ano,
     anoFabricacao: item.ano_fabricacao ?? null,
     anoCompleto: item.ano_completo ?? String(item.ano),
+    isentoIpva: Boolean(item.isento_ipva),
     possivelIsencaoIpva: Boolean(item.possivel_isencao_ipva),
     fotoCapaUrl: item.foto_capa_url ? urlDaFoto(item.foto_capa_url) : null,
     fotoModelo: item.foto_modelo

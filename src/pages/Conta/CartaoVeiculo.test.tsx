@@ -23,6 +23,7 @@ const base: VeiculoConta = {
   ano: 2020,
   anoFabricacao: null,
   anoCompleto: "2020",
+  isentoIpva: false,
   possivelIsencaoIpva: false,
   fotoCapaUrl: null,
   fotoModelo: null,
@@ -54,6 +55,50 @@ function montar(veiculo: VeiculoConta) {
     <CartaoVeiculo veiculo={veiculo} nome="Strada" consultandoFipe={false} acoes={acoes as never} />,
   );
 }
+
+describe("CartaoVeiculo: IPVA e a isenção por idade", () => {
+  it("carro com mais de 20 anos mostra Isento, sem valor nem data de vencimento", () => {
+    montar({
+      ...base,
+      modelo: "Palio",
+      ano: 2001,
+      anoFabricacao: 2001,
+      anoCompleto: "2001",
+      isentoIpva: true,
+      ipvaEstimado: null,
+      proximoVencimentoIpva: null,
+    });
+
+    expect(screen.getByText("Isento")).toBeInTheDocument();
+    expect(screen.getByText(/mais de 20 anos de fabricação/i)).toBeInTheDocument();
+    expect(screen.queryByText(/vence \(est\.\)/)).not.toBeInTheDocument();
+    // O aviso de "pode ser isento" é só para 15 a 20 anos.
+    expect(screen.queryByText(/15 a 20 anos/)).not.toBeInTheDocument();
+  });
+
+  it("isento aparece mesmo sem o estado informado (a regra vale no país todo)", () => {
+    montar({ ...base, uf: null, isentoIpva: true });
+
+    expect(screen.getByText("Isento")).toBeInTheDocument();
+    expect(screen.queryByText(/Informe o estado de emplacamento/)).not.toBeInTheDocument();
+  });
+
+  it("carro comum mostra o valor estimado e o vencimento, sem Isento", () => {
+    montar({ ...base, ipvaEstimado: 1520, proximoVencimentoIpva: "2027-01-31" });
+
+    expect(screen.queryByText("Isento")).not.toBeInTheDocument();
+    expect(screen.getByText(/≈/)).toBeInTheDocument();
+    expect(screen.getByText(/vence \(est\.\)/)).toBeInTheDocument();
+  });
+
+  it("de 15 a 20 anos continua só o aviso de possível isenção, com o valor estimado", () => {
+    montar({ ...base, ano: 2011, possivelIsencaoIpva: true, ipvaEstimado: 900, proximoVencimentoIpva: "2027-01-31" });
+
+    expect(screen.getByText(/Carro com 15 a 20 anos: alguns estados isentam o IPVA/)).toBeInTheDocument();
+    expect(screen.queryByText("Isento")).not.toBeInTheDocument();
+    expect(screen.getByText(/≈/)).toBeInTheDocument();
+  });
+});
 
 describe("CartaoVeiculo: capa", () => {
   it("sem foto do dono, usa a foto do modelo e mostra autor, licença e fonte", () => {

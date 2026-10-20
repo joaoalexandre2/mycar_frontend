@@ -12,6 +12,7 @@ interface VeiculoApi {
   ano_fabricacao?: number | null;
   ano_completo?: string | null;
   possivel_isencao_ipva?: boolean;
+  isento_ipva?: boolean;
   uf?: string | null;
   ipva_estimado?: number | null;
   ipva_aliquota_media?: boolean;
@@ -72,6 +73,7 @@ export function mapearVeiculo(veiculo: VeiculoApi): Veiculo {
     ano: Number(veiculo.ano),
     anoFabricacao: veiculo.ano_fabricacao ?? null,
     anoCompleto: veiculo.ano_completo ?? String(veiculo.ano),
+    isentoIpva: Boolean(veiculo.isento_ipva),
     possivelIsencaoIpva: Boolean(veiculo.possivel_isencao_ipva),
     uf: veiculo.uf ?? null,
     ipvaEstimado: veiculo.ipva_estimado ?? null,

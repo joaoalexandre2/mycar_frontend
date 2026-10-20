@@ -316,14 +316,20 @@ export function Veiculos() {
                     )}
                   </td>
                   <td data-label="IPVA / Lic." className="px-5 py-4">
-                    {veiculo.uf ? (
+                    {veiculo.uf || veiculo.isentoIpva ? (
                       <div className="space-y-1 text-[11px] text-gray-600">
                         <p>
                           IPVA{" "}
-                          <span className="font-semibold text-gray-900">
-                            {veiculo.ipvaEstimado !== null
-                              ? `≈ ${formatarMoeda(veiculo.ipvaEstimado)}`
-                              : "—"}
+                          <span
+                            className={`font-semibold ${
+                              veiculo.isentoIpva ? "text-emerald-700" : "text-gray-900"
+                            }`}
+                          >
+                            {veiculo.isentoIpva
+                              ? "Isento (mais de 20 anos)"
+                              : veiculo.ipvaEstimado !== null
+                                ? `≈ ${formatarMoeda(veiculo.ipvaEstimado)}`
+                                : "—"}
                           </span>
                           {veiculo.ipvaAliquotaMedia && veiculo.ipvaEstimado !== null && (
                             <span className="ml-1 text-[10px] text-amber-600">
@@ -333,7 +339,7 @@ export function Veiculos() {
                         </p>
                         {veiculo.possivelIsencaoIpva && (
                           <p className="text-[10px] text-amber-600">
-                            Carro com 15+ anos: alguns estados isentam o IPVA. Confira na Sefaz.
+                            Carro com 15 a 20 anos: alguns estados isentam o IPVA. Confira na Sefaz.
                           </p>
                         )}
                         <p>
