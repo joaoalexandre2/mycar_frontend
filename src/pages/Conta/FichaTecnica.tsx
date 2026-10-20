@@ -1,13 +1,13 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { ExternalLink, Info, Pencil } from "lucide-react";
+import { ExternalLink, Info, Pencil, TriangleAlert } from "lucide-react";
 import { fichaTecnicaContaService } from "../../services/conta";
 import { SeletorDeVeiculo } from "../../components/conta/SeletorDeVeiculo";
 import { useVeiculosDaConta } from "../../hooks/useVeiculosDaConta";
 import { mensagemErro } from "../../services/api";
 import { lerNumeroBR } from "../../utils/numero";
 import { formatarData, formatarMoeda } from "../../utils/formatters";
-import { linksDaFicha } from "../../utils/fichaTecnica";
+import { avisoDeAnoDaFicha, linksDaFicha } from "../../utils/fichaTecnica";
 import type {
   CampoFicha,
   FichaTecnicaConta,
@@ -205,6 +205,9 @@ export function FichaTecnica() {
   }
 
   const links = ficha ? linksDaFicha(ficha.veiculo) : null;
+  const avisoDeAno = ficha?.dadosCatalogo
+    ? avisoDeAnoDaFicha(ficha.dadosCatalogo.ano, ficha.veiculo.ano, ficha.dadosCatalogo.versao)
+    : null;
   const manutencao = ficha?.manutencao ?? null;
 
   const manutencaoPreenchida = GRUPOS.map((grupo) => ({
@@ -328,6 +331,19 @@ export function FichaTecnica() {
           >
             {ficha.dadosCatalogo ? (
               <>
+                {avisoDeAno && (
+                  <p
+                    role="status"
+                    className={`mb-4 flex items-start gap-2 rounded-lg border px-3 py-2 text-[11px] ${
+                      avisoDeAno.nivel === "forte"
+                        ? "border-amber-200 bg-amber-50 text-amber-800"
+                        : "border-gray-200 bg-gray-50 text-gray-600"
+                    }`}
+                  >
+                    <TriangleAlert size={14} className="mt-0.5 shrink-0" />
+                    <span>{avisoDeAno.texto}</span>
+                  </p>
+                )}
                 <div className="flex flex-col gap-5">
                   {ficha.dadosCatalogo.grupos.map((grupo) => (
                     <section key={grupo.grupo}>
