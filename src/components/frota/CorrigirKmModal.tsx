@@ -22,6 +22,7 @@ export function CorrigirKmModal({
   onClose: () => void;
 }) {
   const [km, setKm] = useState(veiculo.kmAtual !== null ? String(veiculo.kmAtual) : "");
+  const [motivo, setMotivo] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
 
@@ -36,9 +37,14 @@ export function CorrigirKmModal({
       return;
     }
 
+    if (motivo.trim().length < 5) {
+      setErro("Explique o motivo da correção (mínimo 5 letras). Ele fica registrado no histórico.");
+      return;
+    }
+
     try {
       setSalvando(true);
-      const { kmAtual } = await usosService.corrigirKm(veiculo.id, lido.valor);
+      const { kmAtual } = await usosService.corrigirKm(veiculo.id, lido.valor, motivo.trim());
       onSalvo(kmAtual);
     } catch (error) {
       setErro(mensagemErro(error));
@@ -72,6 +78,22 @@ export function CorrigirKmModal({
             O km sobe sozinho a cada saída ou chegada registrada. Use isto só para corrigir um número errado ou para
             informar o km de um veículo novo.
           </p>
+        </div>
+
+        <div>
+          <label htmlFor="km-motivo" className="mb-1.5 block text-xs font-medium text-gray-700">
+            Motivo da correção
+          </label>
+          <input
+            id="km-motivo"
+            type="text"
+            maxLength={255}
+            value={motivo}
+            onChange={(e) => setMotivo(e.target.value)}
+            placeholder="Ex.: hodômetro digitado errado na saída"
+            className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+          />
+          <p className="mt-1.5 text-[11px] text-gray-500">Fica registrado no histórico, com seu nome e a data.</p>
         </div>
 
         {erro && (

@@ -104,8 +104,8 @@ describe("usosService: saída e chegada", () => {
   it("corrige o km do veículo", async () => {
     const put = vi.spyOn(api, "put").mockResolvedValue({ data: { km_atual: 8500 } } as never);
 
-    await expect(usosService.corrigirKm(3, 8500)).resolves.toEqual({ kmAtual: 8500 });
-    expect(put).toHaveBeenCalledWith("/conta/veiculos/3/km", { km: 8500 });
+    await expect(usosService.corrigirKm(3, 8500, "Digitado errado")).resolves.toEqual({ kmAtual: 8500 });
+    expect(put).toHaveBeenCalledWith("/conta/veiculos/3/km", { km: 8500, motivo: "Digitado errado" });
   });
 
   it("lista a agenda do período com os filtros", async () => {

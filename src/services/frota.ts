@@ -226,9 +226,9 @@ export const usosService = {
     return mapearUso(data);
   },
 
-  /** Corrige o km atual do veículo (o único jeito de ele diminuir). */
-  async corrigirKm(veiculoId: number, km: number): Promise<{ kmAtual: number }> {
-    const { data } = await api.put<{ km_atual: number }>(`/conta/veiculos/${veiculoId}/km`, { km });
+  /** Corrige o km atual do veículo (o único jeito de ele diminuir). O motivo fica na trilha de auditoria. */
+  async corrigirKm(veiculoId: number, km: number, motivo: string): Promise<{ kmAtual: number }> {
+    const { data } = await api.put<{ km_atual: number }>(`/conta/veiculos/${veiculoId}/km`, { km, motivo });
 
     return { kmAtual: data.km_atual };
   },
