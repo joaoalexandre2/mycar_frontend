@@ -5,6 +5,7 @@ import { abastecimentoService } from "../../services/conta";
 import { mensagemErro } from "../../services/api";
 import { Modal } from "../../components/ui/Modal";
 import { lerInteiroBR, lerNumeroBR } from "../../utils/numero";
+import { temEstimativas, tipoDe } from "../../utils/tipoVeiculo";
 import { formatarData, formatarKm, formatarMoeda, hojeISO } from "../../utils/formatters";
 import {
   COMBUSTIVEIS,
@@ -267,7 +268,9 @@ export function AbastecimentosModal({
 
           {cheio && dados && tanqueLitros === null && (
             <p className="text-[11px] text-gray-500">
-              A ficha deste modelo não traz a capacidade do tanque: digite os litros abastecidos.
+              {temEstimativas(tipoDe(veiculo.tipoVeiculo))
+                ? "A ficha deste modelo não traz a capacidade do tanque: digite os litros abastecidos."
+                : "Para motos e caminhões não temos a capacidade do tanque: digite os litros abastecidos."}
             </p>
           )}
 

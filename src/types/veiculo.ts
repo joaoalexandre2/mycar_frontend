@@ -5,9 +5,13 @@ export interface ClienteResumo {
   telefone?: string;
 }
 
+/** Carro, moto ou caminhão: define a tabela da FIPE e o que o app estima. */
+export type TipoVeiculo = "carro" | "moto" | "caminhao";
+
 export interface Veiculo {
   id: number;
   clienteId: number;
+  tipoVeiculo: TipoVeiculo;
   placa: string;
   marca: string;
   modelo: string;
@@ -37,6 +41,7 @@ export interface Veiculo {
 
 export interface VeiculoPayload {
   cliente_id: number;
+  tipo_veiculo?: TipoVeiculo;
   placa: string;
   marca: string;
   modelo: string;

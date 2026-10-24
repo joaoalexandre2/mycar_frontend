@@ -4,7 +4,8 @@ import { useToast } from "../../hooks/useNotificacoes";
 
 import { clientesService } from "../../services/clientes";
 import { SelectComBusca } from "../../components/ui/SelectComBusca";
-import type { Veiculo } from "../../types/veiculo";
+import type { TipoVeiculo, Veiculo } from "../../types/veiculo";
+import { SeletorDeTipo } from "../../components/veiculos/SeletorDeTipo";
 import {
   FipeSeletor,
   type FipeSelecao,
@@ -19,6 +20,7 @@ import {
 
 export interface DadosVeiculoForm {
   clienteId: number;
+  tipo: TipoVeiculo;
   placa: string;
   marca: string;
   modelo: string;
@@ -41,6 +43,7 @@ export function VeiculoModal({
   const [clienteId, setClienteId] = useState(
     veiculo?.clienteId?.toString() ?? "",
   );
+  const [tipo, setTipo] = useState<TipoVeiculo>(veiculo?.tipoVeiculo ?? "carro");
   const [placa, setPlaca] = useState(veiculo?.placa ?? "");
   const [marca, setMarca] = useState(veiculo?.marca ?? "");
   const [modelo, setModelo] = useState(veiculo?.modelo ?? "");
@@ -91,6 +94,7 @@ export function VeiculoModal({
 
     onSave({
       clienteId: Number(clienteId),
+      tipo,
       placa: placa.trim().toUpperCase(),
       marca: marca.trim(),
       modelo: modelo.trim(),
@@ -128,7 +132,18 @@ export function VeiculoModal({
             />
           </div>
 
+          <SeletorDeTipo
+            valor={tipo}
+            onChange={(novo) => {
+              // Os códigos da FIPE de um tipo não servem para outro.
+              setTipo(novo);
+              setFipe({ marcaId: "", modeloId: "", ano: "" });
+            }}
+          />
+
           <FipeSeletor
+            key={tipo}
+            tipo={tipo}
             valor={fipe}
             onChange={(selecao, nomes) => {
               setFipe(selecao);

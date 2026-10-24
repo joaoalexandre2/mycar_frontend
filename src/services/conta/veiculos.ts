@@ -2,6 +2,7 @@ import api from "../api";
 import { obterItensPorPagina } from "../../utils/preferencias";
 import { dataISO } from "../../utils/formatters";
 import { urlDaFoto } from "../../utils/imagem";
+import { tipoDe } from "../../utils/tipoVeiculo";
 import type {
   PreferenciasConta,
   ResumoConta,
@@ -12,6 +13,7 @@ import type {
 
 interface VeiculoContaApi {
   id: number;
+  tipo_veiculo?: string;
   apelido?: string | null;
   placa: string;
   marca: string;
@@ -123,6 +125,7 @@ export function mapearVeiculoConta(item: VeiculoContaApi): VeiculoConta {
           fonte: item.foto_modelo.fonte ?? "Wikimedia Commons",
         }
       : null,
+    tipoVeiculo: tipoDe(item.tipo_veiculo),
     uf: item.uf ?? null,
     ipvaEstimado: item.ipva_estimado ?? null,
     ipvaAliquotaMedia: Boolean(item.ipva_aliquota_media),

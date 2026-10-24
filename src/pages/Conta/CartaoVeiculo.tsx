@@ -15,6 +15,7 @@ import { placaValida } from "../../utils/placa";
 import { formatarData, formatarKm, formatarMoeda } from "../../utils/formatters";
 import { diasAteData } from "../../utils/prazos";
 import type { VeiculoConta } from "../../types/conta";
+import { ROTULO_TIPO, temEstimativas, tipoDe } from "../../utils/tipoVeiculo";
 
 export interface AcoesDoVeiculo {
   atualizarFipe: () => void;
@@ -171,6 +172,7 @@ export function CartaoVeiculo({
           </h3>
           <p className="mt-1 truncate text-[11px] text-white/75">
             {veiculo.marca} {veiculo.modelo} · {veiculo.anoCompleto}
+            {!temEstimativas(tipoDe(veiculo.tipoVeiculo)) && ` · ${ROTULO_TIPO[tipoDe(veiculo.tipoVeiculo)]}`}
           </p>
         </div>
       </div>
@@ -252,8 +254,16 @@ export function CartaoVeiculo({
           </div>
         ) : (
           <p className="rounded-xl bg-gray-50 px-3 py-2.5 text-[11px] text-gray-500">
-            Informe o estado de emplacamento (editar) para ver o IPVA e o
-            licenciamento estimados.
+            {temEstimativas(tipoDe(veiculo.tipoVeiculo))
+              ? "Informe o estado de emplacamento (editar) para ver o IPVA e o licenciamento estimados."
+              : "Informe o estado de emplacamento (editar) para ver as datas de vencimento."}
+          </p>
+        )}
+
+        {!temEstimativas(tipoDe(veiculo.tipoVeiculo)) && (veiculo.uf || veiculo.isentoIpva) && (
+          <p className="text-[10px] text-gray-400">
+            O valor do IPVA e do licenciamento é estimado só para carros. As datas seguem o final
+            da placa.
           </p>
         )}
 

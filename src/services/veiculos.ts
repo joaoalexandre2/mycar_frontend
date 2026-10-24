@@ -1,10 +1,12 @@
 import api from "./api";
 import { obterItensPorPagina } from "../utils/preferencias";
 import type { Veiculo, VeiculoPayload } from "../types/veiculo";
+import { tipoDe } from "../utils/tipoVeiculo";
 
 interface VeiculoApi {
   id: number;
   cliente_id: number;
+  tipo_veiculo?: string;
   placa: string;
   marca: string;
   modelo: string;
@@ -67,6 +69,7 @@ export function mapearVeiculo(veiculo: VeiculoApi): Veiculo {
   return {
     id: veiculo.id,
     clienteId: veiculo.cliente_id,
+    tipoVeiculo: tipoDe(veiculo.tipo_veiculo),
     placa: veiculo.placa,
     marca: veiculo.marca,
     modelo: veiculo.modelo,

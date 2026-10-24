@@ -1,4 +1,6 @@
 import api from "./api";
+import type { TipoVeiculo } from "../types/veiculo";
+import { tipoDaFipe } from "../utils/tipoVeiculo";
 
 export interface FipeItem {
   codigo: string;
@@ -9,15 +11,24 @@ interface FipeModelosApi {
   modelos: { codigo: number | string; nome: string }[];
 }
 
+/**
+ * Qual tabela da FIPE consultar. Carro é o padrão do servidor: só moto e
+ * caminhão levam o tipo na consulta.
+ */
+function opcoes(tipo: TipoVeiculo) {
+  return tipo === "carro" ? undefined : { params: { tipo: tipoDaFipe(tipo) } };
+}
+
 export const fipeService = {
-  async marcas(): Promise<FipeItem[]> {
-    const { data } = await api.get<FipeItem[]>("/fipe/marcas");
+  async marcas(tipo: TipoVeiculo = "carro"): Promise<FipeItem[]> {
+    const { data } = await api.get<FipeItem[]>("/fipe/marcas", opcoes(tipo));
     return data;
   },
 
-  async modelos(marcaId: string): Promise<FipeItem[]> {
+  async modelos(marcaId: string, tipo: TipoVeiculo = "carro"): Promise<FipeItem[]> {
     const { data } = await api.get<FipeModelosApi>(
       `/fipe/marcas/${marcaId}/modelos`,
+      opcoes(tipo),
     );
     return data.modelos.map((item) => ({
       codigo: String(item.codigo),
@@ -26,22 +37,24 @@ export const fipeService = {
   },
 
   /** Anos da marca, já com o combustível ("2014 Flex"), para escolher o ano antes do modelo. */
-  async anosDaMarca(marcaId: string): Promise<FipeItem[]> {
-    const { data } = await api.get<FipeItem[]>(`/fipe/marcas/${marcaId}/anos`);
+  async anosDaMarca(marcaId: string, tipo: TipoVeiculo = "carro"): Promise<FipeItem[]> {
+    const { data } = await api.get<FipeItem[]>(`/fipe/marcas/${marcaId}/anos`, opcoes(tipo));
     return data;
   },
 
   /** Só os modelos da marca que existem naquele ano (código "2014-5"). */
-  async modelosDoAno(marcaId: string, ano: string): Promise<FipeItem[]> {
+  async modelosDoAno(marcaId: string, ano: string, tipo: TipoVeiculo = "carro"): Promise<FipeItem[]> {
     const { data } = await api.get<FipeItem[]>(
       `/fipe/marcas/${marcaId}/anos/${ano}/modelos`,
+      opcoes(tipo),
     );
     return data;
   },
 
-  async anos(marcaId: string, modeloId: string): Promise<FipeItem[]> {
+  async anos(marcaId: string, modeloId: string, tipo: TipoVeiculo = "carro"): Promise<FipeItem[]> {
     const { data } = await api.get<FipeItem[]>(
       `/fipe/marcas/${marcaId}/modelos/${modeloId}/anos`,
+      opcoes(tipo),
     );
     return data;
   },

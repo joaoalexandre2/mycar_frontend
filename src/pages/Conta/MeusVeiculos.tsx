@@ -23,9 +23,12 @@ import { ESTADOS } from "../../utils/estados";
 import { formatarMoeda } from "../../utils/formatters";
 import { limparPlaca, padraoDaPlaca, placaValida, ROTULO_PADRAO } from "../../utils/placa";
 import type { VeiculoConta, VeiculoContaPayload } from "../../types/conta";
+import type { TipoVeiculo } from "../../types/veiculo";
+import { SeletorDeTipo } from "../../components/veiculos/SeletorDeTipo";
 import type { CentroCusto } from "../../types/frota";
 
 interface DadosForm {
+  tipo: TipoVeiculo;
   apelido: string;
   placa: string;
   marca: string;
@@ -138,6 +141,7 @@ export function MeusVeiculos() {
 
   async function salvar(dados: DadosForm) {
     const payload: VeiculoContaPayload = {
+      tipo_veiculo: dados.tipo,
       apelido: dados.apelido.trim() || null,
       placa: dados.placa,
       marca: dados.marca,
@@ -386,7 +390,7 @@ export function MeusVeiculos() {
   );
 }
 
-function VeiculoContaModal({
+export function VeiculoContaModal({
   veiculo,
   centros,
   onClose,
@@ -399,6 +403,7 @@ function VeiculoContaModal({
   onSave: (dados: DadosForm) => void;
 }) {
   const toast = useToast();
+  const [tipo, setTipo] = useState<TipoVeiculo>(veiculo?.tipoVeiculo ?? "carro");
   const [apelido, setApelido] = useState(veiculo?.apelido ?? "");
   const [placa, setPlaca] = useState(veiculo?.placa ?? "");
   const [marca, setMarca] = useState(veiculo?.marca ?? "");
@@ -451,6 +456,7 @@ function VeiculoContaModal({
     }
 
     onSave({
+      tipo,
       apelido,
       placa: placa.trim().toUpperCase(),
       marca: marca.trim(),
@@ -490,7 +496,18 @@ function VeiculoContaModal({
             />
           </div>
 
+          <SeletorDeTipo
+            valor={tipo}
+            onChange={(novo) => {
+              // Os códigos da FIPE de um tipo não servem para outro.
+              setTipo(novo);
+              setFipe({ marcaId: "", modeloId: "", ano: "" });
+            }}
+          />
+
           <FipeSeletor
+            key={tipo}
+            tipo={tipo}
             valor={fipe}
             onChange={(selecao, nomes) => {
               setFipe(selecao);

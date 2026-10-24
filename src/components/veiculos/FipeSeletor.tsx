@@ -3,6 +3,7 @@ import { anoDoCodigoFipe, fipeService, type FipeItem } from "../../services/fipe
 import { mensagemErro } from "../../services/api";
 import { ListaComBusca } from "../ui/ListaComBusca";
 import { modeloDaFipe, modelosDistintos, versoesDoModelo } from "../../utils/fipeModelos";
+import type { TipoVeiculo } from "../../types/veiculo";
 
 export interface FipeSelecao {
   marcaId: string;
@@ -22,12 +23,17 @@ export interface FipeNomes {
  * Marca → modelo → versão → ano, cada um com busca. A tabela FIPE guarda modelo
  * e versão num texto só; aqui eles são separados para a lista de cada campo
  * ficar curta. O ano vem por último porque cada versão tem os seus anos.
+ *
+ * Consulta a tabela do tipo (carros, motos ou caminhões). Ao trocar o tipo, quem
+ * usa o seletor o remonta com `key` e zera a escolha.
  */
 export function FipeSeletor({
   valor,
+  tipo = "carro",
   onChange,
 }: {
   valor: FipeSelecao;
+  tipo?: TipoVeiculo;
   onChange: (selecao: FipeSelecao, nomes: FipeNomes) => void;
 }) {
   const [inicial] = useState(valor);
@@ -45,12 +51,12 @@ export function FipeSeletor({
 
     async function carregarInicial() {
       try {
-        const listaMarcas = await fipeService.marcas();
+        const listaMarcas = await fipeService.marcas(tipo);
         if (!ativo) return;
         setMarcas(listaMarcas);
 
         if (inicial.marcaId) {
-          const listaModelos = await fipeService.modelos(inicial.marcaId);
+          const listaModelos = await fipeService.modelos(inicial.marcaId, tipo);
           if (!ativo) return;
           setItens(listaModelos);
 
@@ -58,7 +64,7 @@ export function FipeSeletor({
           if (salvo) setModelo(modeloDaFipe(salvo.nome));
 
           if (salvo) {
-            const listaAnos = await fipeService.anos(inicial.marcaId, inicial.modeloId);
+            const listaAnos = await fipeService.anos(inicial.marcaId, inicial.modeloId, tipo);
             if (!ativo) return;
             setAnos(listaAnos);
           }
@@ -75,7 +81,7 @@ export function FipeSeletor({
     return () => {
       ativo = false;
     };
-  }, [inicial]);
+  }, [inicial, tipo]);
 
   async function escolherMarca(marcaId: string) {
     const minha = ++rodada.current;
@@ -92,7 +98,7 @@ export function FipeSeletor({
 
     try {
       setCarregando(true);
-      const lista = await fipeService.modelos(marcaId);
+      const lista = await fipeService.modelos(marcaId, tipo);
       if (minha === rodada.current) setItens(lista);
     } catch (error) {
       if (minha === rodada.current) setErro(mensagemErro(error));
@@ -122,7 +128,7 @@ export function FipeSeletor({
 
     try {
       setCarregando(true);
-      const lista = await fipeService.anos(valor.marcaId, modeloId);
+      const lista = await fipeService.anos(valor.marcaId, modeloId, tipo);
       if (minha === rodada.current) setAnos(lista);
     } catch (error) {
       if (minha === rodada.current) setErro(mensagemErro(error));
