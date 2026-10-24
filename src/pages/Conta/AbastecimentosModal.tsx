@@ -20,6 +20,10 @@ const numero = (valor: number | null, casas: number, sufixo = "") =>
     ? "—"
     : `${valor.toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas })}${sufixo}`;
 
+/** Capacidade do tanque sem zero à toa: "53" e "38,5". */
+const litrosDoTanque = (valor: number | null) =>
+  valor === null ? "" : valor.toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+
 export function AbastecimentosModal({
   veiculo,
   onClose,
@@ -39,6 +43,11 @@ export function AbastecimentosModal({
   const [cheio, setCheio] = useState(true);
   const [combustivel, setCombustivel] = useState("");
   const [posto, setPosto] = useState("");
+
+  // Tanque cheio: os litros são a capacidade do tanque na ficha do modelo e o
+  // campo fica travado. Sem a capacidade na ficha, a pessoa digita os litros.
+  const tanqueLitros = dados?.tanqueLitros ?? null;
+  const litrosTravados = cheio && tanqueLitros !== null;
 
   useEffect(() => {
     let ativo = true;
@@ -63,7 +72,11 @@ export function AbastecimentosModal({
 
     const kmLido = lerInteiroBR(km);
     // Litros costumam vir com casas decimais ("38.5"): ponto não é milhar aqui.
-    const litrosLidos = lerNumeroBR(litros, { pontoComoMilhar: false });
+    // Com o tanque cheio e a capacidade na ficha, os litros são os da ficha.
+    const litrosLidos: ReturnType<typeof lerNumeroBR> =
+      litrosTravados && tanqueLitros !== null
+        ? { estado: "ok", valor: tanqueLitros }
+        : lerNumeroBR(litros, { pontoComoMilhar: false });
     const valorLido = lerNumeroBR(valor);
 
     if (
@@ -184,10 +197,12 @@ export function AbastecimentosModal({
               <input
                 type="text"
                 inputMode="decimal"
-                value={litros}
+                value={litrosTravados ? litrosDoTanque(tanqueLitros) : litros}
                 placeholder="Ex.: 38,5"
                 onChange={(e) => setLitros(e.target.value)}
-                className={`mt-1 ${classeCampo}`}
+                disabled={litrosTravados}
+                title={litrosTravados ? "Capacidade do tanque, da ficha técnica do modelo" : undefined}
+                className={`mt-1 ${classeCampo} disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500`}
                 required
               />
             </label>
@@ -242,6 +257,19 @@ export function AbastecimentosModal({
             />
             Encheu o tanque (necessário para calcular o consumo)
           </label>
+
+          {litrosTravados && (
+            <p className="text-[11px] text-gray-500">
+              Litros preenchidos com a capacidade do tanque na ficha técnica do modelo (
+              {litrosDoTanque(tanqueLitros)} l). Desmarque para informar um valor diferente.
+            </p>
+          )}
+
+          {cheio && dados && tanqueLitros === null && (
+            <p className="text-[11px] text-gray-500">
+              A ficha deste modelo não traz a capacidade do tanque: digite os litros abastecidos.
+            </p>
+          )}
 
           {erro && (
             <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">

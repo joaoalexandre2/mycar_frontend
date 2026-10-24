@@ -20,6 +20,7 @@ interface AbastecimentoApi {
 }
 
 interface AbastecimentosApi {
+  tanque_litros?: number | string | null;
   abastecimentos: AbastecimentoApi[];
   resumo: {
     consumo_medio_km_l: number | null;
@@ -33,7 +34,10 @@ interface AbastecimentosApi {
 }
 
 export function mapearAbastecimentos(resposta: AbastecimentosApi): AbastecimentosDoVeiculo {
+  const tanque = resposta.tanque_litros == null ? null : Number(resposta.tanque_litros);
+
   return {
+    tanqueLitros: tanque !== null && tanque > 0 ? tanque : null,
     abastecimentos: resposta.abastecimentos.map((item) => ({
       id: item.id,
       data: dataISO(item.data),
