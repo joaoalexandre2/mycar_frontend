@@ -270,6 +270,11 @@ export interface Seguro {
 }
 
 export interface SegurosDoVeiculo {
+  /**
+   * Resposta de "este veículo já tem seguro?": true = tem (resposta ou apólice
+   * cadastrada), false = não tem, null = ainda não respondeu.
+   */
+  possuiSeguro: boolean | null;
   seguros: Seguro[];
   referencia: { baixo: number; medio: number; alto: number } | null;
   apoliceAtualId: number | null;

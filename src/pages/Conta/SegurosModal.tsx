@@ -52,7 +52,7 @@ export function SegurosModal({
     seguroService
       .listar(veiculo.id)
       .then((resposta) => {
-        if (ativo) setDados(resposta);
+        if (ativo) aplicar(resposta);
       })
       .catch((error) => {
         if (ativo) setErro(mensagemErro(error));
@@ -62,6 +62,31 @@ export function SegurosModal({
       ativo = false;
     };
   }, [veiculo.id]);
+
+  /**
+   * Guarda a resposta do servidor e ajusta o formulário à pergunta "já tem
+   * seguro?": quem tem e ainda não cadastrou o seguro atual começa por ele
+   * (com o vencimento); quem não tem só cadastra propostas.
+   */
+  function aplicar(resposta: SegurosDoVeiculo) {
+    setDados(resposta);
+
+    if (resposta.possuiSeguro === false) {
+      setTipo("proposta");
+    } else if (resposta.possuiSeguro === true && resposta.apoliceAtualId === null) {
+      setTipo("apolice");
+    }
+  }
+
+  async function responder(possui: boolean) {
+    setErro(null);
+
+    try {
+      aplicar(await seguroService.definirPossui(veiculo.id, possui));
+    } catch (error) {
+      setErro(mensagemErro(error));
+    }
+  }
 
   async function registrar(event: FormEvent) {
     event.preventDefault();
@@ -96,7 +121,7 @@ export function SegurosModal({
 
     try {
       setSalvando(true);
-      setDados(
+      aplicar(
         await seguroService.registrar(veiculo.id, {
           tipo,
           seguradora: seguradora.trim(),
@@ -126,7 +151,7 @@ export function SegurosModal({
     }))) return;
 
     try {
-      setDados(await seguroService.remover(veiculo.id, id));
+      aplicar(await seguroService.remover(veiculo.id, id));
     } catch (error) {
       setErro(mensagemErro(error));
     }
@@ -134,6 +159,8 @@ export function SegurosModal({
 
   const nome = veiculo.apelido?.trim() || `${veiculo.marca} ${veiculo.modelo}`;
   const referencia = dados?.referencia ?? null;
+  const possui = dados ? dados.possuiSeguro : null;
+  const apolice = dados?.seguros.find((s) => s.id === dados.apoliceAtualId) ?? null;
 
   return (
     <Modal
@@ -144,6 +171,69 @@ export function SegurosModal({
       onClose={onClose}
     >
       <div className="space-y-5 px-6 py-5">
+        <div className="rounded-lg border border-gray-200 p-4">
+          <p className="text-xs font-medium text-gray-700">Este veículo já tem seguro?</p>
+
+          {possui === null && (
+            <>
+              <p className="mt-1 text-[11px] text-gray-500">
+                Se tem, informe o vencimento: avisamos por e-mail antes de vencer.
+              </p>
+              <div className="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => void responder(true)}
+                  className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700"
+                >
+                  Sim, já tem
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void responder(false)}
+                  className="h-9 rounded-lg border border-gray-200 px-4 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+                >
+                  Não tem
+                </button>
+              </div>
+            </>
+          )}
+
+          {possui === true && (
+            <p className="mt-2 text-[11px] text-gray-600">
+              {apolice?.vigenciaFim ? (
+                <>
+                  Sim. O seguro de <strong>{apolice.seguradora}</strong> vence em{" "}
+                  <strong>{formatarData(apolice.vigenciaFim)}</strong>.
+                </>
+              ) : (
+                "Sim. Informe abaixo a seguradora e o vencimento do seguro: avisamos por e-mail 45 dias antes."
+              )}
+              {!apolice && (
+                <button
+                  type="button"
+                  onClick={() => void responder(false)}
+                  className="ml-2 font-semibold text-blue-600 hover:text-blue-700"
+                >
+                  Na verdade não tem
+                </button>
+              )}
+            </p>
+          )}
+
+          {possui === false && (
+            <p className="mt-2 text-[11px] text-gray-600">
+              Sem seguro neste veículo. Cadastre as propostas que receber para compará-las.
+              <button
+                type="button"
+                onClick={() => void responder(true)}
+                className="ml-2 font-semibold text-blue-600 hover:text-blue-700"
+              >
+                Na verdade já tem
+              </button>
+            </p>
+          )}
+        </div>
+
         <div className="rounded-lg border border-gray-200 p-4">
           <p className="text-xs font-medium text-gray-700">Referência de mercado</p>
 
@@ -177,24 +267,28 @@ export function SegurosModal({
         >
           <p className="text-xs font-medium text-gray-700">Adicionar</p>
 
-          <div className="flex flex-wrap gap-4 text-xs text-gray-600">
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                checked={tipo === "proposta"}
-                onChange={() => setTipo("proposta")}
-              />
-              Proposta que recebi
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                checked={tipo === "apolice"}
-                onChange={() => setTipo("apolice")}
-              />
-              Meu seguro atual
-            </label>
-          </div>
+          {possui === false ? (
+            <p className="text-[11px] text-gray-500">Proposta que recebi</p>
+          ) : (
+            <div className="flex flex-wrap gap-4 text-xs text-gray-600">
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  checked={tipo === "proposta"}
+                  onChange={() => setTipo("proposta")}
+                />
+                Proposta que recebi
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  checked={tipo === "apolice"}
+                  onChange={() => setTipo("apolice")}
+                />
+                Meu seguro atual
+              </label>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <label className="block text-[11px] text-gray-500">
@@ -234,7 +328,7 @@ export function SegurosModal({
 
           {tipo === "apolice" && (
             <label className="block text-[11px] text-gray-500">
-              O seguro vai até
+              Vencimento do seguro (fim da vigência)
               <input
                 type="date"
                 value={vigenciaFim}
