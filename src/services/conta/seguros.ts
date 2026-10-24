@@ -20,6 +20,7 @@ interface SeguroApi {
 }
 
 interface SegurosApi {
+  possui_seguro?: boolean | null;
   seguros: SeguroApi[];
   referencia: { baixo: number; medio: number; alto: number } | null;
   apolice_atual_id: number | null;
@@ -29,6 +30,7 @@ interface SegurosApi {
 
 export function mapearSeguros(resposta: SegurosApi): SegurosDoVeiculo {
   return {
+    possuiSeguro: resposta.possui_seguro ?? null,
     seguros: resposta.seguros.map((item) => ({
       id: item.id,
       tipo: item.tipo,
@@ -56,6 +58,12 @@ export const seguroService = {
 
   async registrar(veiculoId: number, seguro: NovoSeguro): Promise<SegurosDoVeiculo> {
     const { data } = await api.post<SegurosApi>(`/conta/veiculos/${veiculoId}/seguros`, seguro);
+    return mapearSeguros(data);
+  },
+
+  /** "Este veículo já tem seguro?": guarda a resposta do veículo. */
+  async definirPossui(veiculoId: number, possui: boolean): Promise<SegurosDoVeiculo> {
+    const { data } = await api.put<SegurosApi>(`/conta/veiculos/${veiculoId}/possui-seguro`, { possui });
     return mapearSeguros(data);
   },
 
