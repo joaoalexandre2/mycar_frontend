@@ -25,6 +25,13 @@ export const PERFIS: Record<Perfil, InfoPerfil> = {
   },
 };
 
+/** Nome curto de cada produto, para espaços apertados (menu lateral). */
+export const NOME_CURTO_PERFIL: Record<Perfil, string> = {
+  oficina: "Oficina",
+  pessoa: "Cuidados com seu carro",
+  frota: "Frota",
+};
+
 export const ORDEM_PERFIS: Perfil[] = ["pessoa", "oficina", "frota"];
 
 export function ehPerfil(valor: string | null | undefined): valor is Perfil {
