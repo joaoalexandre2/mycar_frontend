@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   descreverJanela,
   diasDoCalendario,
+  fimAoMudarInicio,
   hojeAs,
   mesVizinho,
   paraCampoDeHorario,
@@ -108,5 +109,53 @@ describe("descreverJanela e campos de horário", () => {
   it("gera o valor do campo datetime-local no relógio local", () => {
     expect(paraCampoDeHorario(new Date(2026, 10, 5, 7, 5))).toBe("2026-11-05T07:05");
     expect(hojeAs(18, new Date(2026, 10, 5, 9, 41))).toBe("2026-11-05T18:00");
+  });
+});
+
+describe("fimAoMudarInicio", () => {
+  it("mudou o dia do início: o fim vai junto, com a mesma hora", () => {
+    expect(fimAoMudarInicio("2026-10-26T08:00", "2026-10-28T08:00", "2026-10-26T18:00")).toBe("2026-10-28T18:00");
+    expect(fimAoMudarInicio("2026-10-26T08:00", "2026-10-25T08:00", "2026-10-26T18:00")).toBe("2026-10-25T18:00");
+  });
+
+  it("reserva de vários dias continua com a mesma duração em dias", () => {
+    expect(fimAoMudarInicio("2026-10-26T08:00", "2026-11-02T08:00", "2026-10-29T17:00")).toBe("2026-11-05T17:00");
+  });
+
+  it("atravessa mês e ano sem errar", () => {
+    expect(fimAoMudarInicio("2026-12-30T08:00", "2027-01-02T08:00", "2026-12-31T18:00")).toBe("2027-01-03T18:00");
+    expect(fimAoMudarInicio("2028-02-27T08:00", "2028-03-01T08:00", "2028-02-27T18:00")).toBe("2028-03-01T18:00");
+  });
+
+  it("mudou só a hora e o fim continua depois: não mexe", () => {
+    expect(fimAoMudarInicio("2026-10-26T08:00", "2026-10-26T10:30", "2026-10-26T18:00")).toBe("2026-10-26T18:00");
+  });
+
+  it("início passou do fim no mesmo dia: o fim vira 18:00, ou uma hora depois se já é tarde", () => {
+    expect(fimAoMudarInicio("2026-10-26T08:00", "2026-10-26T18:00", "2026-10-26T12:00")).toBe("2026-10-26T19:00");
+    expect(fimAoMudarInicio("2026-10-26T08:00", "2026-10-26T23:30", "2026-10-26T18:00")).toBe("2026-10-27T00:30");
+    expect(fimAoMudarInicio("2026-10-26T08:00", "2026-10-26T14:00", "2026-10-26T10:00")).toBe("2026-10-26T18:00");
+  });
+
+  it("fim vazio ou antes do início vira o fim do dia do início", () => {
+    expect(fimAoMudarInicio("2026-10-26T08:00", "2026-10-27T08:00", "")).toBe("2026-10-27T18:00");
+    expect(fimAoMudarInicio("", "2026-10-27T08:00", "2026-10-20T18:00")).toBe("2026-10-27T18:00");
+  });
+
+  it("início apagado ou incompleto não altera o fim", () => {
+    expect(fimAoMudarInicio("2026-10-26T08:00", "", "2026-10-26T18:00")).toBe("2026-10-26T18:00");
+    expect(fimAoMudarInicio("2026-10-26T08:00", "2026-10-2", "2026-10-26T18:00")).toBe("2026-10-26T18:00");
+  });
+
+  it("digitar o ano aos poucos (0002, 0020, 0202, 2026) termina com o fim no lugar certo", () => {
+    let inicio = "2026-10-26T08:00";
+    let fim = "2026-10-26T18:00";
+
+    for (const novo of ["0002-10-26T08:00", "0020-10-26T08:00", "0202-10-26T08:00", "2026-10-26T08:00"]) {
+      fim = fimAoMudarInicio(inicio, novo, fim);
+      inicio = novo;
+    }
+
+    expect(fim).toBe("2026-10-26T18:00");
   });
 });

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { NotificacoesProvider } from "../../contexts/NotificacoesProvider";
@@ -218,6 +218,45 @@ describe("UsoFormModal", () => {
     expect(screen.getByLabelText("Centro de custo")).toHaveValue("5");
     expect(screen.getByLabelText("Início")).toHaveValue("2026-11-10T08:00");
     expect(screen.getByLabelText("Fim previsto")).toHaveValue("2026-11-10T18:00");
+  });
+
+  it("mudar o dia do início leva o fim junto, já pré-preenchido", () => {
+    formulario({ diaInicial: "2026-10-26" });
+
+    fireEvent.change(screen.getByLabelText("Início"), { target: { value: "2026-10-28T08:00" } });
+
+    expect(screen.getByLabelText("Início")).toHaveValue("2026-10-28T08:00");
+    expect(screen.getByLabelText("Fim previsto")).toHaveValue("2026-10-28T18:00");
+  });
+
+  it("o fim não aceita data antes do início (limite mínimo no campo)", () => {
+    formulario({ diaInicial: "2026-10-26" });
+
+    expect(screen.getByLabelText("Fim previsto")).toHaveAttribute("min", "2026-10-26T08:00");
+
+    fireEvent.change(screen.getByLabelText("Início"), { target: { value: "2026-10-30T09:00" } });
+
+    expect(screen.getByLabelText("Fim previsto")).toHaveAttribute("min", "2026-10-30T09:00");
+  });
+
+  it("sem início ou sem fim, avisa e não chama o servidor", async () => {
+    const criar = vi.spyOn(usosService, "criar");
+    formulario({ diaInicial: "2026-10-26" });
+
+    await userEvent.selectOptions(screen.getByLabelText("Veículo"), "1");
+    fireEvent.change(screen.getByLabelText("Fim previsto"), { target: { value: "" } });
+    await userEvent.click(screen.getByRole("button", { name: "Reservar" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Informe o início e o fim da reserva");
+    expect(criar).not.toHaveBeenCalled();
+  });
+
+  it("início depois do fim no mesmo dia empurra o fim para frente", () => {
+    formulario({ diaInicial: "2026-10-26" });
+
+    fireEvent.change(screen.getByLabelText("Início"), { target: { value: "2026-10-26T19:30" } });
+
+    expect(screen.getByLabelText("Fim previsto")).toHaveValue("2026-10-26T20:30");
   });
 
   it("não troca um centro que a pessoa já escolheu", async () => {
