@@ -17,6 +17,7 @@ import {
   import { NavLink, useNavigate } from "react-router-dom";
   import { useAuth } from "../../hooks/useAuth";
   import { Avatar } from "./Avatar";
+  import { SeletorDeMycar } from "./SeletorDeMycar";
   import { ehConta, perfilDe } from "../../utils/perfil";
 
   interface SidebarProps {
@@ -70,11 +71,7 @@ import {
                   MyCar
                 </span>
 
-                {perfil !== "oficina" && (
-                  <span className="text-[10px] text-gray-400">
-                    {perfil === "pessoa" ? "Cuidados com seu carro" : "Frota"}
-                  </span>
-                )}
+                <SeletorDeMycar perfil={perfil} />
               </div>
             </div>
 
