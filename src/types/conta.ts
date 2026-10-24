@@ -233,6 +233,11 @@ export interface ResumoAbastecimentos {
 }
 
 export interface AbastecimentosDoVeiculo {
+  /**
+   * Capacidade do tanque (litros) na ficha técnica do modelo; nulo quando a ficha
+   * não traz. É o que a tela usa quando a pessoa marca "encheu o tanque".
+   */
+  tanqueLitros: number | null;
   abastecimentos: Abastecimento[];
   resumo: ResumoAbastecimentos;
 }
