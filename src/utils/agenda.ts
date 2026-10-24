@@ -93,6 +93,69 @@ export function paraCampoDeHorario(data: Date): string {
   return `${data.getFullYear()}-${doisDigitos(data.getMonth() + 1)}-${doisDigitos(data.getDate())}T${doisDigitos(data.getHours())}:${doisDigitos(data.getMinutes())}`;
 }
 
+const FORMATO_DO_CAMPO = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
+
+/** "2026-11-10" → dias desde 1970 (conta pelo calendário, sem fuso nem horário de verão). */
+function diasDesde1970(data: string): number {
+  const [ano, mes, dia] = data.split("-").map(Number);
+  const t = new Date(0);
+  // setUTCFullYear (e não Date.UTC) para anos abaixo de 100 não virarem 19xx.
+  t.setUTCFullYear(ano, mes - 1, dia);
+
+  return Math.round(t.getTime() / 86_400_000);
+}
+
+function deDiasDesde1970(dias: number): string {
+  const t = new Date(dias * 86_400_000);
+
+  return `${String(t.getUTCFullYear()).padStart(4, "0")}-${doisDigitos(t.getUTCMonth() + 1)}-${doisDigitos(t.getUTCDate())}`;
+}
+
+/** Soma minutos a "2026-11-10T08:00" (passa para o dia seguinte quando precisa). */
+function somarMinutos(horario: string, minutos: number): string {
+  const total = diasDesde1970(horario.slice(0, 10)) * 1440 + Number(horario.slice(11, 13)) * 60 + Number(horario.slice(14, 16)) + minutos;
+  const dias = Math.floor(total / 1440);
+  const resto = total - dias * 1440;
+
+  return `${deDiasDesde1970(dias)}T${doisDigitos(Math.floor(resto / 60))}:${doisDigitos(resto % 60)}`;
+}
+
+/** Fim sugerido quando o início muda para uma hora em que o fim padrão (18h) já passou. */
+const HORA_PADRAO_DO_FIM = "18:00";
+
+/**
+ * Fim da reserva depois que o início mudou. Quem escolhe outro dia de início
+ * quer o fim junto dele, nunca antes:
+ * - mudou o dia do início: o fim anda os mesmos dias (uma reserva de 3 dias
+ *   continua com 3 dias);
+ * - se mesmo assim o fim ficou antes ou igual ao início (ou está vazio), vira o
+ *   fim do expediente do dia do início (18:00), ou uma hora depois quando o
+ *   início já é tarde demais para isso.
+ */
+export function fimAoMudarInicio(inicioAntigo: string, inicioNovo: string, fimAtual: string): string {
+  if (!FORMATO_DO_CAMPO.test(inicioNovo)) {
+    return fimAtual;
+  }
+
+  let fim = fimAtual;
+
+  if (FORMATO_DO_CAMPO.test(inicioAntigo) && FORMATO_DO_CAMPO.test(fimAtual)) {
+    const dias = diasDesde1970(inicioNovo.slice(0, 10)) - diasDesde1970(inicioAntigo.slice(0, 10));
+
+    if (dias !== 0) {
+      fim = `${deDiasDesde1970(diasDesde1970(fimAtual.slice(0, 10)) + dias)}T${fimAtual.slice(11, 16)}`;
+    }
+  }
+
+  if (FORMATO_DO_CAMPO.test(fim) && fim > inicioNovo) {
+    return fim;
+  }
+
+  const fimDoDia = `${inicioNovo.slice(0, 10)}T${HORA_PADRAO_DO_FIM}`;
+
+  return fimDoDia > inicioNovo ? fimDoDia : somarMinutos(inicioNovo, 60);
+}
+
 /** Hoje às `hora`:00, no relógio do navegador. */
 export function hojeAs(hora: number, agora: Date = new Date()): string {
   const d = new Date(agora);

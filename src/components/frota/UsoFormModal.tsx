@@ -3,7 +3,7 @@ import { CalendarPlus } from "lucide-react";
 import { Modal } from "../ui/Modal";
 import { usosService } from "../../services/frota";
 import { mensagemErro } from "../../services/api";
-import { hojeAs } from "../../utils/agenda";
+import { fimAoMudarInicio, hojeAs } from "../../utils/agenda";
 import type { VeiculoConta } from "../../types/conta";
 import type { CentroCusto, Motorista, UsoVeiculo } from "../../types/frota";
 
@@ -69,6 +69,11 @@ export function UsoFormModal({
       return;
     }
 
+    if (!inicio || !fim) {
+      setErro("Informe o início e o fim da reserva.");
+      return;
+    }
+
     if (fim <= inicio) {
       setErro("O fim da reserva precisa ser depois do início.");
       return;
@@ -102,7 +107,7 @@ export function UsoFormModal({
       onClose={onClose}
       larguraMax="max-w-xl"
     >
-      <form onSubmit={(e) => void salvar(e)} className="space-y-4 px-6 py-5">
+      <form onSubmit={(e) => void salvar(e)} noValidate className="space-y-4 px-6 py-5">
         <div>
           <label htmlFor="uso-veiculo" className={rotulo}>
             Veículo
@@ -172,7 +177,13 @@ export function UsoFormModal({
               id="uso-inicio"
               type="datetime-local"
               value={inicio}
-              onChange={(e) => setInicio(e.target.value)}
+              onChange={(e) => {
+                const novo = e.target.value;
+
+                // O fim acompanha o início: nunca fica antes dele.
+                setFim((atual) => fimAoMudarInicio(inicio, novo, atual));
+                setInicio(novo);
+              }}
               disabled={emUso}
               required
               className={classeCampo}
@@ -187,6 +198,7 @@ export function UsoFormModal({
               id="uso-fim"
               type="datetime-local"
               value={fim}
+              min={inicio || undefined}
               onChange={(e) => setFim(e.target.value)}
               required
               className={classeCampo}
