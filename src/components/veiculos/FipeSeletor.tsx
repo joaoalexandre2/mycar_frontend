@@ -1,26 +1,27 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { anoDoCodigoFipe, fipeService, type FipeItem } from "../../services/fipe";
 import { mensagemErro } from "../../services/api";
+import { ListaComBusca } from "../ui/ListaComBusca";
+import { modeloDaFipe, modelosDistintos, versoesDoModelo } from "../../utils/fipeModelos";
 
 export interface FipeSelecao {
   marcaId: string;
+  /** Código da FIPE da versão escolhida (a FIPE guarda modelo e versão juntos). */
   modeloId: string;
   ano: string;
 }
 
 export interface FipeNomes {
   marca?: string;
+  /** Nome completo da FIPE ("Gol 1.0 Mi Total Flex 8V 4p"). */
   modelo?: string;
   ano?: number;
 }
 
-const classeSelect =
-  "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none transition focus:border-blue-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400";
-
 /**
- * Marca → ano → modelo. Escolher o ano antes filtra a lista: só aparecem os
- * modelos que a tabela FIPE tem naquele ano (e combustível), em vez de todos
- * os modelos da marca de todos os tempos.
+ * Marca → modelo → versão → ano, cada um com busca. A tabela FIPE guarda modelo
+ * e versão num texto só; aqui eles são separados para a lista de cada campo
+ * ficar curta. O ano vem por último porque cada versão tem os seus anos.
  */
 export function FipeSeletor({
   valor,
@@ -31,8 +32,9 @@ export function FipeSeletor({
 }) {
   const [inicial] = useState(valor);
   const [marcas, setMarcas] = useState<FipeItem[]>([]);
+  const [itens, setItens] = useState<FipeItem[]>([]);
   const [anos, setAnos] = useState<FipeItem[]>([]);
-  const [modelos, setModelos] = useState<FipeItem[]>([]);
+  const [modelo, setModelo] = useState("");
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   // Cada escolha nova invalida a resposta que ainda estiver a caminho.
@@ -48,17 +50,17 @@ export function FipeSeletor({
         setMarcas(listaMarcas);
 
         if (inicial.marcaId) {
-          const listaAnos = await fipeService.anosDaMarca(inicial.marcaId);
+          const listaModelos = await fipeService.modelos(inicial.marcaId);
           if (!ativo) return;
-          setAnos(listaAnos);
+          setItens(listaModelos);
 
-          if (inicial.ano) {
-            const listaModelos = await fipeService.modelosDoAno(
-              inicial.marcaId,
-              inicial.ano,
-            );
+          const salvo = listaModelos.find((item) => item.codigo === inicial.modeloId);
+          if (salvo) setModelo(modeloDaFipe(salvo.nome));
+
+          if (salvo) {
+            const listaAnos = await fipeService.anos(inicial.marcaId, inicial.modeloId);
             if (!ativo) return;
-            setModelos(listaModelos);
+            setAnos(listaAnos);
           }
         }
       } catch (error) {
@@ -77,8 +79,9 @@ export function FipeSeletor({
 
   async function escolherMarca(marcaId: string) {
     const minha = ++rodada.current;
+    setItens([]);
     setAnos([]);
-    setModelos([]);
+    setModelo("");
     setErro("");
     onChange(
       { marcaId, modeloId: "", ano: "" },
@@ -89,7 +92,37 @@ export function FipeSeletor({
 
     try {
       setCarregando(true);
-      const lista = await fipeService.anosDaMarca(marcaId);
+      const lista = await fipeService.modelos(marcaId);
+      if (minha === rodada.current) setItens(lista);
+    } catch (error) {
+      if (minha === rodada.current) setErro(mensagemErro(error));
+    } finally {
+      if (minha === rodada.current) setCarregando(false);
+    }
+  }
+
+  function escolherModelo(nome: string) {
+    ++rodada.current;
+    setModelo(nome);
+    setAnos([]);
+    setErro("");
+    onChange({ ...valor, modeloId: "", ano: "" }, {});
+  }
+
+  async function escolherVersao(modeloId: string) {
+    const minha = ++rodada.current;
+    setAnos([]);
+    setErro("");
+    onChange(
+      { ...valor, modeloId, ano: "" },
+      { modelo: itens.find((item) => item.codigo === modeloId)?.nome },
+    );
+
+    if (!modeloId) return;
+
+    try {
+      setCarregando(true);
+      const lista = await fipeService.anos(valor.marcaId, modeloId);
       if (minha === rodada.current) setAnos(lista);
     } catch (error) {
       if (minha === rodada.current) setErro(mensagemErro(error));
@@ -98,108 +131,81 @@ export function FipeSeletor({
     }
   }
 
-  async function escolherAno(codigo: string) {
-    const minha = ++rodada.current;
-    setModelos([]);
-    setErro("");
-    onChange(
-      { ...valor, ano: codigo, modeloId: "" },
-      { ano: codigo ? (anoDoCodigoFipe(codigo) ?? undefined) : undefined },
-    );
-
-    if (!codigo) return;
-
-    try {
-      setCarregando(true);
-      const lista = await fipeService.modelosDoAno(valor.marcaId, codigo);
-      if (minha === rodada.current) setModelos(lista);
-    } catch (error) {
-      if (minha === rodada.current) setErro(mensagemErro(error));
-    } finally {
-      if (minha === rodada.current) setCarregando(false);
-    }
+  function escolherAno(codigo: string) {
+    onChange({ ...valor, ano: codigo }, { ano: anoDoCodigoFipe(codigo) ?? undefined });
   }
 
-  function escolherModelo(modeloId: string) {
-    onChange(
-      { ...valor, modeloId },
-      { modelo: modelos.find((item) => item.codigo === modeloId)?.nome },
-    );
-  }
-
-  const anosDisponiveis = anos.filter(
-    (item) => anoDoCodigoFipe(item.codigo) !== null,
+  const listaDeModelos = useMemo(
+    () => modelosDistintos(itens).map((nome) => ({ codigo: nome, nome })),
+    [itens],
   );
+  const versoes = useMemo(() => versoesDoModelo(itens, modelo), [itens, modelo]);
+  const anosDisponiveis = anos.filter((item) => anoDoCodigoFipe(item.codigo) !== null);
+
+  const carregandoMarcas = carregando && marcas.length === 0;
 
   return (
     <div className="space-y-3 rounded-lg border border-blue-100 bg-blue-50/40 p-4">
       <div>
         <p className="text-xs font-semibold text-gray-800">Tabela FIPE</p>
         <p className="mt-0.5 text-[11px] text-gray-500">
-          Opcional. Escolha marca, ano e modelo (nessa ordem, o ano filtra os
-          modelos) para preencher os campos e consultar o valor de mercado.
+          Opcional. Busque a marca, o modelo, a versão e o ano para preencher os campos e
+          consultar o valor de mercado.
         </p>
       </div>
 
-      <select
-        value={valor.marcaId}
-        onChange={(event) => void escolherMarca(event.target.value)}
-        disabled={carregando && marcas.length === 0}
-        className={classeSelect}
-        aria-label="Marca FIPE"
-      >
-        <option value="">
-          {carregando && marcas.length === 0
-            ? "Carregando marcas..."
-            : "Selecione a marca"}
-        </option>
-        {marcas.map((item) => (
-          <option key={item.codigo} value={item.codigo}>
-            {item.nome}
-          </option>
-        ))}
-      </select>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <ListaComBusca
+          rotulo="Marca FIPE"
+          valor={valor.marcaId}
+          opcoes={marcas}
+          placeholder={carregandoMarcas ? "Carregando marcas..." : "Busque a marca"}
+          desabilitado={carregandoMarcas}
+          onChange={(codigo) => void escolherMarca(codigo)}
+        />
+
+        <ListaComBusca
+          rotulo="Modelo FIPE"
+          valor={modelo}
+          opcoes={listaDeModelos}
+          placeholder={
+            !valor.marcaId
+              ? "Escolha a marca antes"
+              : itens.length === 0 && carregando
+                ? "Carregando modelos..."
+                : "Busque o modelo"
+          }
+          desabilitado={!valor.marcaId || listaDeModelos.length === 0}
+          onChange={escolherModelo}
+        />
+      </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <select
-          value={valor.ano}
-          onChange={(event) => void escolherAno(event.target.value)}
-          disabled={!valor.marcaId || anosDisponiveis.length === 0}
-          className={classeSelect}
-          aria-label="Ano FIPE"
-        >
-          <option value="">
-            {valor.marcaId && anos.length === 0 && carregando
-              ? "Carregando anos..."
-              : "Selecione o ano"}
-          </option>
-          {anosDisponiveis.map((item) => (
-            <option key={item.codigo} value={item.codigo}>
-              {item.nome}
-            </option>
-          ))}
-        </select>
+        <div className="sm:col-span-2">
+          <ListaComBusca
+            rotulo="Versão FIPE"
+            valor={valor.modeloId}
+            opcoes={versoes}
+            placeholder={!modelo ? "Escolha o modelo antes" : "Busque a versão"}
+            desabilitado={!modelo || versoes.length === 0}
+            onChange={(codigo) => void escolherVersao(codigo)}
+          />
+        </div>
 
-        <select
-          value={valor.modeloId}
-          onChange={(event) => escolherModelo(event.target.value)}
-          disabled={!valor.ano || modelos.length === 0}
-          className={`${classeSelect} sm:col-span-2`}
-          aria-label="Modelo FIPE"
-        >
-          <option value="">
-            {!valor.ano
-              ? "Escolha o ano antes"
-              : modelos.length === 0 && carregando
-                ? "Carregando modelos..."
-                : "Selecione o modelo"}
-          </option>
-          {modelos.map((item) => (
-            <option key={item.codigo} value={item.codigo}>
-              {item.nome}
-            </option>
-          ))}
-        </select>
+        <ListaComBusca
+          rotulo="Ano FIPE"
+          valor={valor.ano}
+          opcoes={anosDisponiveis}
+          placeholder={
+            !valor.modeloId
+              ? "Escolha a versão antes"
+              : anos.length === 0 && carregando
+                ? "Carregando anos..."
+                : "Busque o ano"
+          }
+          desabilitado={!valor.modeloId || anosDisponiveis.length === 0}
+          onChange={escolherAno}
+        />
       </div>
 
       {erro && <p className="text-[11px] text-red-600">{erro}</p>}
