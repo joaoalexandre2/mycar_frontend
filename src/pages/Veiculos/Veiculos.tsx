@@ -20,6 +20,7 @@ import { mensagemErro } from "../../services/api";
 import { Placa } from "../../components/veiculos/Placa";
 import { formatarData, formatarMoeda } from "../../utils/formatters";
 import { placaValida } from "../../utils/placa";
+import { ROTULO_TIPO } from "../../utils/tipoVeiculo";
 import { VeiculoModal, type DadosVeiculoForm } from "./VeiculoModal";
 import { InfoCard } from "../../components/ui/InfoCard";
 
@@ -149,6 +150,7 @@ export function Veiculos() {
   async function salvarVeiculo(payload: DadosVeiculoForm) {
     const dados = {
       cliente_id: payload.clienteId,
+      tipo_veiculo: payload.tipo,
       placa: payload.placa,
       marca: payload.marca,
       modelo: payload.modelo,
@@ -283,6 +285,7 @@ export function Veiculos() {
                         </p>
                         <p className="mt-1 text-[10px] text-gray-400">
                           ID #{veiculo.id}
+                          {veiculo.tipoVeiculo !== "carro" && ` · ${ROTULO_TIPO[veiculo.tipoVeiculo]}`}
                         </p>
                       </div>
                     </div>

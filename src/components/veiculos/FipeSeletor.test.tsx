@@ -93,7 +93,7 @@ describe("FipeSeletor (marca, modelo, versão e ano, todos com busca)", () => {
     await escolher("Marca FIPE", "VW - VolksWagen");
     await waitFor(() => expect(campo("Modelo FIPE")).toBeEnabled());
 
-    expect(mocks.modelos).toHaveBeenCalledWith("59");
+    expect(mocks.modelos).toHaveBeenCalledWith("59", "carro");
 
     const usuario = userEvent.setup();
     await usuario.click(campo("Modelo FIPE"));
@@ -125,7 +125,7 @@ describe("FipeSeletor (marca, modelo, versão e ano, todos com busca)", () => {
 
     await usuario.click(screen.getByRole("option", { name: "1.0 Mi Total Flex 8V 4p" }));
     await waitFor(() => expect(campo("Ano FIPE")).toBeEnabled());
-    expect(mocks.anos).toHaveBeenCalledWith("59", "7001");
+    expect(mocks.anos).toHaveBeenCalledWith("59", "7001", "carro");
     expect(aoMudar).toHaveBeenLastCalledWith(
       { marcaId: "59", modeloId: "7001", ano: "" },
       { modelo: "Gol 1.0 Mi Total Flex 8V 4p" },
@@ -176,7 +176,7 @@ describe("FipeSeletor (marca, modelo, versão e ano, todos com busca)", () => {
       { marcaId: "23", modeloId: "", ano: "" },
       { marca: "GM - Chevrolet" },
     );
-    await waitFor(() => expect(mocks.modelos).toHaveBeenLastCalledWith("23"));
+    await waitFor(() => expect(mocks.modelos).toHaveBeenLastCalledWith("23", "carro"));
   });
 
   it("ao editar um veículo já salvo, mostra marca, modelo, versão e ano da seleção", async () => {
@@ -185,8 +185,8 @@ describe("FipeSeletor (marca, modelo, versão e ano, todos com busca)", () => {
 
     await waitFor(() => expect(campo("Ano FIPE")).toBeEnabled());
 
-    expect(mocks.modelos).toHaveBeenCalledWith("59");
-    expect(mocks.anos).toHaveBeenCalledWith("59", "7001");
+    expect(mocks.modelos).toHaveBeenCalledWith("59", "carro");
+    expect(mocks.anos).toHaveBeenCalledWith("59", "7001", "carro");
     expect(campo("Marca FIPE")).toHaveValue("VW - VolksWagen");
     expect(campo("Modelo FIPE")).toHaveValue("Gol");
     expect(campo("Versão FIPE")).toHaveValue("1.0 Mi Total Flex 8V 4p");

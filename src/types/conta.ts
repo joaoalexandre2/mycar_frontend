@@ -1,3 +1,5 @@
+import type { TipoVeiculo } from "./veiculo";
+
 /** Foto livre de um modelo: o autor e a licença precisam aparecer junto dela. */
 export interface FotoModelo {
   modelo: string;
@@ -12,6 +14,8 @@ export interface FotoModelo {
 /** Veículo de uma conta (perfis pessoa e frota). */
 export interface VeiculoConta {
   id: number;
+  /** Carro, moto ou caminhão: define a tabela da FIPE e o que o app estima. */
+  tipoVeiculo: TipoVeiculo;
   apelido: string | null;
   placa: string;
   marca: string;
@@ -52,6 +56,7 @@ export interface VeiculoConta {
 }
 
 export interface VeiculoContaPayload {
+  tipo_veiculo?: TipoVeiculo;
   apelido?: string | null;
   placa: string;
   marca: string;
