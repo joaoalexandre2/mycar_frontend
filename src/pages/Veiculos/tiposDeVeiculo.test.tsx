@@ -216,23 +216,73 @@ describe("telas ajustadas ao tipo", () => {
     } as unknown as VeiculoConta;
   }
 
-  it("o cartão da moto mostra o tipo e avisa que o valor dos impostos é só de carro", () => {
-    render(<CartaoVeiculo veiculo={veiculo("moto")} nome="CG" consultandoFipe={false} acoes={acoes as never} />);
+  it("o cartão da moto mostra o tipo, o IPVA estimado e avisa que o licenciamento é só de carro", () => {
+    render(
+      <CartaoVeiculo
+        veiculo={{ ...veiculo("moto"), ipvaEstimado: 280 }}
+        nome="CG"
+        consultandoFipe={false}
+        acoes={acoes as never}
+      />,
+    );
 
     expect(screen.getByText(/Honda CG 160 Fan · 2022 · Moto/)).toBeInTheDocument();
-    expect(screen.getByText(/estimado só para carros/)).toBeInTheDocument();
+    expect(screen.getByText(/licenciamento é estimado só para carros/)).toBeInTheDocument();
+    expect(screen.getByText(/Motos de baixa cilindrada podem ser isentas de IPVA/)).toBeInTheDocument();
+    expect(screen.getByText(/R\$\s*280,00/)).toBeInTheDocument();
   });
 
-  it("o cartão do carro não mostra o tipo nem o aviso", () => {
+  it("o cartão do caminhão avisa do licenciamento, mas não fala de moto", () => {
+    render(<CartaoVeiculo veiculo={veiculo("caminhao")} nome="FH" consultandoFipe={false} acoes={acoes as never} />);
+
+    expect(screen.getByText(/licenciamento é estimado só para carros/)).toBeInTheDocument();
+    expect(screen.queryByText(/Motos de baixa cilindrada/)).not.toBeInTheDocument();
+  });
+
+  it("estado sem alíquota confirmada mostra o aviso de alíquota média também na moto", () => {
+    render(
+      <CartaoVeiculo
+        veiculo={{ ...veiculo("moto"), ipvaEstimado: 280, ipvaAliquotaMedia: true }}
+        nome="CG"
+        consultandoFipe={false}
+        acoes={acoes as never}
+      />,
+    );
+
+    expect(screen.getByText("alíquota média do país")).toBeInTheDocument();
+  });
+
+  it("o cartão do carro não mostra o tipo nem os avisos de moto e caminhão", () => {
     render(<CartaoVeiculo veiculo={veiculo("carro")} nome="Uno" consultandoFipe={false} acoes={acoes as never} />);
 
-    expect(screen.queryByText(/estimado só para carros/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/licenciamento é estimado só para carros/)).not.toBeInTheDocument();
     expect(screen.queryByText(/· Moto/)).not.toBeInTheDocument();
   });
 
-  it("seguro de moto explica que a referência de mercado é de carros", async () => {
+  it("seguro de caminhão explica que não há referência de mercado", async () => {
     vi.spyOn(api, "get").mockResolvedValue({
       data: { possui_seguro: null, seguros: [], referencia: null, apolice_atual_id: null, melhor_proposta_id: null, aviso: "" },
+    } as never);
+
+    render(
+      <NotificacoesProvider>
+        <SegurosModal veiculo={veiculo("caminhao")} onClose={() => {}} />
+      </NotificacoesProvider>,
+    );
+
+    expect(await screen.findByText(/Não há referência de mercado para caminhões/)).toBeInTheDocument();
+  });
+
+  it("seguro de moto mostra a referência de mercado que o servidor calculou", async () => {
+    vi.spyOn(api, "get").mockResolvedValue({
+      data: {
+        possui_seguro: null,
+        seguros: [],
+        referencia: { baixo: 938, medio: 1218, alto: 1414 },
+        apolice_atual_id: null,
+        melhor_proposta_id: null,
+        aviso: "",
+      },
     } as never);
 
     render(
@@ -241,7 +291,8 @@ describe("telas ajustadas ao tipo", () => {
       </NotificacoesProvider>,
     );
 
-    expect(await screen.findByText(/referência de mercado é calculada só para carros/)).toBeInTheDocument();
+    expect(await screen.findByText(/R\$\s*938,00 a R\$\s*1\.414,00 por ano/)).toBeInTheDocument();
+    expect(screen.queryByText(/Não há referência de mercado/)).not.toBeInTheDocument();
   });
 
   it("abastecimento de caminhão avisa que não há a capacidade do tanque", async () => {
