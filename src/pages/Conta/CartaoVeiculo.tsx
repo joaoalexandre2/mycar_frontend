@@ -256,14 +256,15 @@ export function CartaoVeiculo({
           <p className="rounded-xl bg-gray-50 px-3 py-2.5 text-[11px] text-gray-500">
             {temEstimativas(tipoDe(veiculo.tipoVeiculo))
               ? "Informe o estado de emplacamento (editar) para ver o IPVA e o licenciamento estimados."
-              : "Informe o estado de emplacamento (editar) para ver as datas de vencimento."}
+              : "Informe o estado de emplacamento (editar) para ver o IPVA estimado e as datas de vencimento."}
           </p>
         )}
 
         {!temEstimativas(tipoDe(veiculo.tipoVeiculo)) && (veiculo.uf || veiculo.isentoIpva) && (
           <p className="text-[10px] text-gray-400">
-            O valor do IPVA e do licenciamento é estimado só para carros. As datas seguem o final
-            da placa.
+            O valor do licenciamento é estimado só para carros; as datas seguem o final da placa.
+            {tipoDe(veiculo.tipoVeiculo) === "moto" &&
+              " Motos de baixa cilindrada podem ser isentas de IPVA em alguns estados."}
           </p>
         )}
 

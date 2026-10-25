@@ -28,8 +28,9 @@ export function tipoDaFipe(tipo: TipoVeiculo): "carros" | "motos" | "caminhoes" 
 }
 
 /**
- * As estimativas de IPVA e licenciamento, a ficha técnica do catálogo e a faixa
- * de seguro são só de carros: não há alíquotas nem fichas de motos e caminhões.
+ * A taxa de licenciamento, a isenção de IPVA por idade, a ficha técnica do catálogo e o
+ * tanque são só de carros. O IPVA estimado vale para os três tipos (com a alíquota do tipo)
+ * e a faixa de seguro vale para carro e moto: caminhão não tem fonte confiável.
  */
 export function temEstimativas(tipo: TipoVeiculo): boolean {
   return tipo === "carro";

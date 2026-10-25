@@ -6,7 +6,7 @@ import { mensagemErro } from "../../services/api";
 import { Modal } from "../../components/ui/Modal";
 import { lerNumeroBR } from "../../utils/numero";
 import { formatarData, formatarMoeda } from "../../utils/formatters";
-import { temEstimativas, tipoDe } from "../../utils/tipoVeiculo";
+import { tipoDe } from "../../utils/tipoVeiculo";
 import type {
   Seguro,
   SegurosDoVeiculo,
@@ -251,9 +251,9 @@ export function SegurosModal({
             </>
           ) : (
             <p className="mt-2 text-[11px] text-gray-500">
-              {temEstimativas(tipoDe(veiculo.tipoVeiculo))
-                ? "Para ver a referência, cadastre o veículo com a tabela FIPE: ela parte do valor do carro."
-                : "A referência de mercado é calculada só para carros. Cadastre as propostas que receber e compare uma com a outra."}
+              {tipoDe(veiculo.tipoVeiculo) === "caminhao"
+                ? "Não há referência de mercado para caminhões. Cadastre as propostas que receber e compare uma com a outra."
+                : "Para ver a referência, cadastre o veículo com a tabela FIPE: ela parte do valor do veículo."}
             </p>
           )}
 
