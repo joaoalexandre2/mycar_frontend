@@ -259,9 +259,11 @@ export function Comparador() {
               <Tag size={14} />
               Mais barato agora
             </p>
-            <p className="font-display mt-2 text-[44px] leading-none font-bold text-emerald-800">
-              {formatarMoeda(maisBarato.preco)}
-            </p>
+            <div className="valor-fluido-pai mt-2">
+              <p className="font-display valor-fluido leading-none font-bold text-emerald-800 [--valor-max:2.75rem]">
+                {formatarMoeda(maisBarato.preco)}
+              </p>
+            </div>
             <p className="mt-1 text-xs text-emerald-800">
               em <strong>{maisBarato.loja}</strong> ({resultado.fonte})
               {maisBarato.economiaVsMediana > 0 &&
