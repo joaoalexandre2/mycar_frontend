@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { CircleAlert, CircleCheck, TriangleAlert, X } from "lucide-react";
 import type { TipoToast } from "../../contexts/notificacoesDefinition";
 
@@ -33,11 +33,18 @@ function Toast({
   item: ToastItem;
   aoFechar: (id: number) => void;
 }) {
+  // Parado enquanto o mouse ou o foco estão no aviso, para dar tempo de ler.
+  const [pausado, setPausado] = useState(false);
+
   useEffect(() => {
+    if (pausado) {
+      return;
+    }
+
     const timer = setTimeout(() => aoFechar(item.id), DURACAO_MS[item.tipo]);
 
     return () => clearTimeout(timer);
-  }, [item.id, item.tipo, aoFechar]);
+  }, [item.id, item.tipo, aoFechar, pausado]);
 
   const Icone = ICONE[item.tipo];
 
@@ -45,6 +52,10 @@ function Toast({
     <div
       // Erros interrompem a leitura de tela; o resto espera a vez.
       role={item.tipo === "erro" ? "alert" : "status"}
+      onMouseEnter={() => setPausado(true)}
+      onMouseLeave={() => setPausado(false)}
+      onFocus={() => setPausado(true)}
+      onBlur={() => setPausado(false)}
       className={`pointer-events-auto flex items-start gap-3 rounded-xl border px-4 py-3 text-sm shadow-lg ${ESTILO[item.tipo]}`}
     >
       <Icone

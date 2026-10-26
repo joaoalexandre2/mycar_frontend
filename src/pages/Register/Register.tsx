@@ -202,7 +202,7 @@ export function Register() {
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           {perfil !== "pessoa" && (
             <div>
-              <label className="mb-1 block text-xs font-semibold text-gray-600">
+              <label htmlFor="reg-conta" className="mb-1 block text-xs font-semibold text-gray-600">
                 {nomeDaContaRotulo}
               </label>
 
@@ -210,6 +210,7 @@ export function Register() {
                 <Building2 size={16} className="text-gray-400" />
 
                 <input
+                  id="reg-conta"
                   type="text"
                   required
                   autoFocus
@@ -223,7 +224,7 @@ export function Register() {
           )}
 
           <div>
-            <label className="mb-1 block text-xs font-semibold text-gray-600">
+            <label htmlFor="reg-nome" className="mb-1 block text-xs font-semibold text-gray-600">
               Seu nome
             </label>
 
@@ -231,7 +232,9 @@ export function Register() {
               <User size={16} className="text-gray-400" />
 
               <input
+                id="reg-nome"
                 type="text"
+                autoComplete="name"
                 required
                 autoFocus={perfil === "pessoa"}
                 value={nome}
@@ -243,7 +246,7 @@ export function Register() {
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-semibold text-gray-600">
+            <label htmlFor="reg-email" className="mb-1 block text-xs font-semibold text-gray-600">
               E-mail
             </label>
 
@@ -251,7 +254,9 @@ export function Register() {
               <Mail size={16} className="text-gray-400" />
 
               <input
+                id="reg-email"
                 type="email"
+                autoComplete="email"
                 required
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
@@ -262,7 +267,7 @@ export function Register() {
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-semibold text-gray-600">
+            <label htmlFor="reg-senha" className="mb-1 block text-xs font-semibold text-gray-600">
               Senha
             </label>
 
@@ -270,7 +275,9 @@ export function Register() {
               <Lock size={16} className="text-gray-400" />
 
               <input
+                id="reg-senha"
                 type="password"
+                autoComplete="new-password"
                 required
                 minLength={8}
                 value={senha}
@@ -282,7 +289,7 @@ export function Register() {
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-semibold text-gray-600">
+            <label htmlFor="reg-confirmacao" className="mb-1 block text-xs font-semibold text-gray-600">
               Confirmar senha
             </label>
 
@@ -290,7 +297,9 @@ export function Register() {
               <Lock size={16} className="text-gray-400" />
 
               <input
+                id="reg-confirmacao"
                 type="password"
+                autoComplete="new-password"
                 required
                 minLength={8}
                 value={confirmacao}
@@ -302,7 +311,7 @@ export function Register() {
           </div>
 
           {erro && (
-            <p className="whitespace-pre-line rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
+            <p role="alert" className="whitespace-pre-line rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
               {erro}
             </p>
           )}

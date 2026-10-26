@@ -50,6 +50,7 @@ import { useState } from "react";
             type="button"
             onClick={aoAbrirMenu}
             title="Abrir menu"
+            aria-label="Abrir menu"
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:bg-gray-50 md:hidden"
           >
             <Menu size={19} />

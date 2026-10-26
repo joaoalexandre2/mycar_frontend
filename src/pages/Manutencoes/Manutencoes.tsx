@@ -9,7 +9,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
-  MoreHorizontal,
   Pencil,
   Plus,
   Search,
@@ -246,7 +245,7 @@ export function Manutencoes() {
               Manutenções cadastradas
             </h3>
 
-            <p className="mt-1 text-[11px] text-gray-400">
+            <p className="mt-1 text-xs text-gray-500">
               {carregando
                 ? "Carregando..."
                 : `${totalRegistros} manutenção(ões) encontrada(s)`}
@@ -298,31 +297,31 @@ export function Manutencoes() {
           <table className="w-full tabela-cartoes">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Manutenção
                 </th>
 
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Veículo
                 </th>
 
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Cliente
                 </th>
 
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Última
                 </th>
 
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Próxima
                 </th>
 
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   KM
                 </th>
 
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Situação
                 </th>
 
@@ -351,13 +350,13 @@ export function Manutencoes() {
                             {manutencao.tipo}
                           </span>
 
-                          <span className="max-w-[220px] truncate text-[10px] text-gray-400">
+                          <span className="max-w-[220px] truncate text-xs text-gray-500">
                             {manutencao.descricao}
                           </span>
 
                           {manutencao.pecas.length > 0 && (
                             <span
-                              className="max-w-[220px] truncate text-[10px] text-gray-500"
+                              className="max-w-[220px] truncate text-xs text-gray-500"
                               title={manutencao.pecas
                                 .map((peca) => peca.especificacao)
                                 .join(", ")}
@@ -379,7 +378,7 @@ export function Manutencoes() {
                           {veiculo?.marca} {veiculo?.modelo}
                         </span>
 
-                        <span className="text-[10px] text-gray-400">
+                        <span className="text-xs text-gray-500">
                           {veiculo?.placa}
                         </span>
                       </div>
@@ -399,7 +398,7 @@ export function Manutencoes() {
                           )}
                         </span>
 
-                        <span className="text-[10px] text-gray-400">
+                        <span className="text-xs text-gray-500">
                           {formatarKm(manutencao.quilometragem)}
                         </span>
                       </div>
@@ -446,6 +445,7 @@ export function Manutencoes() {
                           }
                           className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-blue-50 hover:text-blue-600"
                           title="Editar"
+                          aria-label="Editar"
                         >
                           <Pencil size={15} />
                         </button>
@@ -458,15 +458,9 @@ export function Manutencoes() {
                           }
                           className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-red-50 hover:text-red-600"
                           title="Excluir"
+                          aria-label="Excluir"
                         >
                           <Trash2 size={15} />
-                        </button>
-
-                        <button
-                          className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
-                          title="Mais opções"
-                        >
-                          <MoreHorizontal size={16} />
                         </button>
                       </div>
                     </td>
@@ -478,7 +472,7 @@ export function Manutencoes() {
                 <tr>
                   <td
                     colSpan={8}
-                    className="px-5 py-12 text-center text-xs text-gray-400"
+                    className="px-5 py-12 text-center text-xs text-gray-500"
                   >
                     Nenhuma manutenção encontrada.
                   </td>
@@ -489,7 +483,7 @@ export function Manutencoes() {
         </div>
 
         <div className="flex items-center justify-between border-t border-gray-200 px-5 py-3">
-          <p className="text-[11px] text-gray-400">
+          <p className="text-xs text-gray-500">
             Página {pagina} de {totalPaginas}
           </p>
 
@@ -498,7 +492,7 @@ export function Manutencoes() {
               type="button"
               onClick={() => setPagina((atual) => Math.max(1, atual - 1))}
               disabled={pagina <= 1 || carregando}
-              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-xs font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <ChevronLeft size={14} />
               Anterior
@@ -510,7 +504,7 @@ export function Manutencoes() {
                 setPagina((atual) => Math.min(totalPaginas, atual + 1))
               }
               disabled={pagina >= totalPaginas || carregando}
-              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-xs font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Próxima
               <ChevronRight size={14} />

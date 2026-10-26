@@ -92,9 +92,28 @@ input,
 textarea,
 select,
 [contenteditable="true"],
-.select-text {
+.select-text,
+td,
+th {
   -webkit-user-select: text;
   user-select: text;
+}
+
+/* Foco de teclado visível em qualquer controle (WCAG 2.4.7). Campos com
+   borda própria no foco continuam com ela; o contorno reforça. */
+:focus-visible {
+  outline: 2px solid var(--color-blue-600);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Barras de rolagem finas, no tom do tema (as nativas ficam grossas e com setas

@@ -46,6 +46,7 @@ import {
       <>
         {aberta && (
           <div
+            aria-hidden="true"
             className="fixed inset-0 z-30 bg-black/50 md:hidden"
             onClick={aoFechar}
           />
@@ -79,6 +80,7 @@ import {
               type="button"
               onClick={aoFechar}
               title="Fechar menu"
+              aria-label="Fechar menu"
               className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-800 hover:text-white md:hidden"
             >
               <X size={18} />
@@ -86,8 +88,8 @@ import {
           </div>
 
           {/* Menu */}
-          <nav className="flex flex-col gap-1">
-            <p className="mb-2 px-2 text-[10px] font-bold tracking-widest text-gray-500">
+          <nav aria-label="Principal" className="flex flex-col gap-1">
+            <p className="mb-2 px-2 text-xs font-bold tracking-widest text-gray-400">
               MENU
             </p>
 
@@ -192,7 +194,7 @@ import {
               </>
             )}
 
-            <p className="mb-2 mt-7 px-2 text-[10px] font-bold tracking-widest text-gray-500">
+            <p className="mb-2 mt-7 px-2 text-xs font-bold tracking-widest text-gray-400">
               SISTEMA
             </p>
 
@@ -230,7 +232,7 @@ import {
                   {usuario?.name ?? "Usuário"}
                 </strong>
 
-                <span className="truncate text-[11px] text-gray-500">
+                <span className="truncate text-xs text-gray-400">
                   {usuario?.email ?? ""}
                 </span>
               </div>
@@ -239,6 +241,7 @@ import {
                 type="button"
                 onClick={handleLogout}
                 title="Sair"
+                aria-label="Sair"
                 className="ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-800 hover:text-white"
               >
                 <LogOut size={16} />

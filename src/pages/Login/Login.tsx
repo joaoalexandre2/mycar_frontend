@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Car, Lock, Mail } from "lucide-react";
+import { Car, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { authService, type ProvedorSocial } from "../../services/auth";
 import { mensagemErro } from "../../services/api";
@@ -12,6 +12,7 @@ export function Login() {
 
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [mostrarSenha, setMostrarSenha] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [precisaConfirmarEmail, setPrecisaConfirmarEmail] = useState(false);
@@ -88,7 +89,10 @@ export function Login() {
           onSubmit={handleSubmit}
         >
           <div>
-            <label className="mb-1 block text-xs font-semibold text-gray-600">
+            <label
+              htmlFor="login-email"
+              className="mb-1 block text-xs font-semibold text-gray-600"
+            >
               E-mail
             </label>
 
@@ -99,9 +103,11 @@ export function Login() {
               />
 
               <input
+                id="login-email"
                 type="email"
                 required
                 autoFocus
+                autoComplete="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder="voce@exemplo.com"
@@ -112,7 +118,10 @@ export function Login() {
 
           <div>
             <div className="mb-1 flex items-center justify-between">
-              <label className="block text-xs font-semibold text-gray-600">
+              <label
+                htmlFor="login-senha"
+                className="block text-xs font-semibold text-gray-600"
+              >
                 Senha
               </label>
 
@@ -131,18 +140,37 @@ export function Login() {
               />
 
               <input
-                type="password"
+                id="login-senha"
+                type={mostrarSenha ? "text" : "password"}
                 required
+                autoComplete="current-password"
                 value={senha}
                 onChange={(event) => setSenha(event.target.value)}
                 placeholder="********"
                 className="w-full text-sm outline-none"
               />
+
+              <button
+                type="button"
+                onClick={() => setMostrarSenha((valor) => !valor)}
+                aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
+                aria-pressed={mostrarSenha}
+                className="shrink-0 rounded text-gray-500 hover:text-gray-700"
+              >
+                {mostrarSenha ? (
+                  <EyeOff size={16} aria-hidden="true" />
+                ) : (
+                  <Eye size={16} aria-hidden="true" />
+                )}
+              </button>
             </div>
           </div>
 
           {erro && (
-            <div className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
+            <div
+              role="alert"
+              className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600"
+            >
               <p>{erro}</p>
 
               {precisaConfirmarEmail && !reenviado && (
@@ -168,7 +196,7 @@ export function Login() {
             {enviando ? "Entrando..." : "Entrar"}
           </button>
 
-          <div className="flex items-center gap-3 text-xs text-gray-400">
+          <div className="flex items-center gap-3 text-xs text-gray-500">
             <span className="h-px flex-1 bg-gray-200" />
             ou entre com
             <span className="h-px flex-1 bg-gray-200" />
@@ -204,7 +232,7 @@ export function Login() {
             </Link>
           </p>
 
-          <p className="text-center text-xs text-gray-400">
+          <p className="text-center text-xs text-gray-500">
             <Link to="/termos" className="hover:text-gray-600">
               Termos de Serviço
             </Link>

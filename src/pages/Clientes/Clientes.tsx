@@ -4,7 +4,6 @@ import { useCarregarLista } from "../../hooks/useCarregarLista";
 import {
   ChevronLeft,
   ChevronRight,
-  MoreHorizontal,
   Pencil,
   Plus,
   Search,
@@ -214,7 +213,7 @@ export function Clientes() {
             <h3 className="text-sm font-semibold text-gray-900">
               Clientes cadastrados
             </h3>
-            <p className="mt-1 text-[11px] text-gray-400">
+            <p className="mt-1 text-xs text-gray-500">
               {carregando
                 ? "Carregando..."
                 : `${totalRegistros} cliente(s) encontrado(s)`}
@@ -257,19 +256,19 @@ export function Clientes() {
           <table className="w-full tabela-cartoes">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Cliente
                 </th>
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   CPF
                 </th>
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Telefone
                 </th>
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Veículos
                 </th>
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Status
                 </th>
                 <th className="w-28 px-5 py-3" />
@@ -290,7 +289,7 @@ export function Clientes() {
                         <p className="truncate text-xs font-semibold text-gray-900">
                           {cliente.nome}
                         </p>
-                        <p className="mt-1 text-[10px] text-gray-400">
+                        <p className="mt-1 text-xs text-gray-500">
                           Cadastro {formatarData(cliente.dataCadastro)}
                         </p>
                       </div>
@@ -303,7 +302,7 @@ export function Clientes() {
                     {cliente.telefone}
                   </td>
                   <td data-label="Veículos" className="px-5 py-4">
-                    <span className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-2.5 py-1.5 text-[10px] font-semibold text-gray-600">
+                    <span className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-2.5 py-1.5 text-xs font-semibold text-gray-600">
                       <Car size={13} />
                       {cliente.quantidadeVeiculos}
                     </span>
@@ -317,6 +316,7 @@ export function Clientes() {
                         onClick={() => abrirEdicao(cliente)}
                         className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-blue-50 hover:text-blue-600"
                         title="Editar"
+                        aria-label="Editar"
                       >
                         <Pencil size={15} />
                       </button>
@@ -324,14 +324,9 @@ export function Clientes() {
                         onClick={() => void excluirCliente(cliente.id)}
                         className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-red-50 hover:text-red-600"
                         title="Excluir"
+                        aria-label="Excluir"
                       >
                         <Trash2 size={15} />
-                      </button>
-                      <button
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
-                        title="Mais opções"
-                      >
-                        <MoreHorizontal size={16} />
                       </button>
                     </div>
                   </td>
@@ -342,7 +337,7 @@ export function Clientes() {
                 <tr>
                   <td
                     colSpan={6}
-                    className="px-5 py-12 text-center text-xs text-gray-400"
+                    className="px-5 py-12 text-center text-xs text-gray-500"
                   >
                     Nenhum cliente encontrado.
                   </td>
@@ -353,7 +348,7 @@ export function Clientes() {
         </div>
 
         <div className="flex items-center justify-between border-t border-gray-200 px-5 py-3">
-          <p className="text-[11px] text-gray-400">
+          <p className="text-xs text-gray-500">
             Página {pagina} de {totalPaginas}
           </p>
 
@@ -362,7 +357,7 @@ export function Clientes() {
               type="button"
               onClick={() => setPagina((atual) => Math.max(1, atual - 1))}
               disabled={pagina <= 1 || carregando}
-              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-xs font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <ChevronLeft size={14} />
               Anterior
@@ -374,7 +369,7 @@ export function Clientes() {
                 setPagina((atual) => Math.min(totalPaginas, atual + 1))
               }
               disabled={pagina >= totalPaginas || carregando}
-              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-xs font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Próxima
               <ChevronRight size={14} />
