@@ -221,11 +221,11 @@ export function CartaoVeiculo({
         )}
 
         <div className="flex items-end justify-between gap-3">
-          <div>
+          <div className="valor-fluido-pai flex-1">
             <p className="text-[10px] font-medium tracking-wide text-gray-500 uppercase">
               Valor na FIPE
             </p>
-            <p className="font-display text-[30px] leading-none font-bold text-gray-900">
+            <p className="font-display valor-fluido leading-none font-bold text-gray-900">
               {veiculo.fipeValor !== null ? formatarMoeda(veiculo.fipeValor) : "—"}
             </p>
           </div>

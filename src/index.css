@@ -343,6 +343,20 @@ th {
   letter-spacing: 0;
 }
 
+/* Número grande dentro de um cartão: a fonte encolhe conforme a largura do
+   cartão (valores como R$ 1.250.000,00 passavam da borda no celular e
+   alargavam a página). O tamanho máximo vem de --valor-max; se ainda assim não
+   couber, quebra a linha em vez de vazar. */
+.valor-fluido-pai {
+  container-type: inline-size;
+  min-width: 0;
+}
+
+.valor-fluido {
+  font-size: clamp(0.875rem, 11.5cqw, var(--valor-max, 1.875rem));
+  overflow-wrap: anywhere;
+}
+
 header h1 {
   font-weight: 700;
   letter-spacing: -0.01em;

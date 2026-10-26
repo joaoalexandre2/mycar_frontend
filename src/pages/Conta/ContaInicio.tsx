@@ -134,22 +134,22 @@ export function ContaInicio() {
           )}
 
           <div className="mt-4 grid grid-cols-2 gap-3 border-t border-white/10 pt-4">
-            <div>
+            <div className="valor-fluido-pai">
               <p className="text-[10px] tracking-[0.1em] text-[#9AA3AE] uppercase">Gasto no mês</p>
-              <p className="font-display text-[26px] leading-tight font-semibold">
+              <p className="font-display valor-fluido leading-tight font-semibold [--valor-max:1.625rem]">
                 {resumo ? formatarMoeda(resumo.gastoMes.total) : "—"}
               </p>
             </div>
-            <div>
+            <div className="valor-fluido-pai">
               <p className="text-[10px] tracking-[0.1em] text-[#9AA3AE] uppercase">Preço do litro</p>
-              <p className="font-display text-[26px] leading-tight font-semibold">
+              <p className="font-display valor-fluido leading-tight font-semibold [--valor-max:1.625rem]">
                 {resumo?.consumo.precoMedioLitro != null ? formatarMoeda(resumo.consumo.precoMedioLitro) : "—"}
               </p>
             </div>
           </div>
         </section>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2">
           <Quadro
             titulo={ehFrota ? "Veículos da frota" : "Veículos"}
             valor={resumo ? String(resumo.totalVeiculos) : "—"}
