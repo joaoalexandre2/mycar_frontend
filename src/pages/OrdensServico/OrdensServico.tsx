@@ -5,7 +5,6 @@ import {
   ChevronLeft,
   ChevronRight,
   ClipboardList,
-  MoreHorizontal,
   Pencil,
   Plus,
   Search,
@@ -223,7 +222,7 @@ export function OrdensServico() {
             <h3 className="text-sm font-semibold text-gray-900">
               Ordens cadastradas
             </h3>
-            <p className="mt-1 text-[11px] text-gray-400">
+            <p className="mt-1 text-xs text-gray-500">
               {carregando
                 ? "Carregando..."
                 : `${totalRegistros} ordem(ns) encontrada(s)`}
@@ -265,13 +264,13 @@ export function OrdensServico() {
           <table className="w-full tabela-cartoes">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">OS</th>
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">Veículo</th>
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">Cliente</th>
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">Descrição</th>
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">Data</th>
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">Valor</th>
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">Status</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">OS</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Veículo</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Cliente</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Descrição</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Data</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Valor</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Status</th>
                 <th className="w-28 px-5 py-3" />
               </tr>
             </thead>
@@ -297,7 +296,7 @@ export function OrdensServico() {
                         <span className="text-xs font-semibold text-gray-900">
                           {veiculo?.marca} {veiculo?.modelo}
                         </span>
-                        <span className="text-[10px] text-gray-400">
+                        <span className="text-xs text-gray-500">
                           {veiculo?.placa}
                         </span>
                       </div>
@@ -328,6 +327,7 @@ export function OrdensServico() {
                           }}
                           className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-blue-50 hover:text-blue-600"
                           title="Editar"
+                          aria-label="Editar"
                         >
                           <Pencil size={15} />
                         </button>
@@ -335,11 +335,9 @@ export function OrdensServico() {
                           onClick={() => void excluirOrdem(ordem.id)}
                           className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600"
                           title="Excluir"
+                          aria-label="Excluir"
                         >
                           <Trash2 size={15} />
-                        </button>
-                        <button className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100">
-                          <MoreHorizontal size={16} />
                         </button>
                       </div>
                     </td>
@@ -351,7 +349,7 @@ export function OrdensServico() {
                 <tr>
                   <td
                     colSpan={8}
-                    className="px-5 py-12 text-center text-xs text-gray-400"
+                    className="px-5 py-12 text-center text-xs text-gray-500"
                   >
                     Nenhuma ordem de serviço encontrada.
                   </td>
@@ -362,7 +360,7 @@ export function OrdensServico() {
         </div>
 
         <div className="flex items-center justify-between border-t border-gray-200 px-5 py-3">
-          <p className="text-[11px] text-gray-400">
+          <p className="text-xs text-gray-500">
             Página {pagina} de {totalPaginas}
           </p>
 
@@ -371,7 +369,7 @@ export function OrdensServico() {
               type="button"
               onClick={() => setPagina((atual) => Math.max(1, atual - 1))}
               disabled={pagina <= 1 || carregando}
-              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-xs font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <ChevronLeft size={14} />
               Anterior
@@ -383,7 +381,7 @@ export function OrdensServico() {
                 setPagina((atual) => Math.min(totalPaginas, atual + 1))
               }
               disabled={pagina >= totalPaginas || carregando}
-              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-xs font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Próxima
               <ChevronRight size={14} />

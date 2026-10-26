@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { useComportamentoDeModal } from "../../hooks/useComportamentoDeModal";
 import type { OpcoesConfirmacao } from "../../contexts/notificacoesDefinition";
 
@@ -11,6 +11,8 @@ export function DialogoConfirmacao({
   aoResponder: (confirmado: boolean) => void;
 }) {
   const cancelar = useRef<HTMLButtonElement>(null);
+  const idTitulo = useId();
+  const idMensagem = useId();
 
   // Esc cancela, o foco fica preso no diálogo e volta para quem o abriu.
   const conteiner = useComportamentoDeModal(() => aoResponder(false));
@@ -37,19 +39,19 @@ export function DialogoConfirmacao({
         tabIndex={-1}
         role="alertdialog"
         aria-modal="true"
-        aria-labelledby="confirmacao-titulo"
-        aria-describedby="confirmacao-mensagem"
+        aria-labelledby={idTitulo}
+        aria-describedby={idMensagem}
         className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl outline-none"
       >
         <h2
-          id="confirmacao-titulo"
+          id={idTitulo}
           className="text-base font-semibold text-gray-900"
         >
           {opcoes.titulo ?? "Confirmar"}
         </h2>
 
         <p
-          id="confirmacao-mensagem"
+          id={idMensagem}
           className="mt-2 whitespace-pre-line text-sm text-gray-600"
         >
           {opcoes.mensagem}

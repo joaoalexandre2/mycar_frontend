@@ -6,7 +6,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
-  MoreHorizontal,
   Pencil,
   Plus,
   RefreshCw,
@@ -222,7 +221,7 @@ export function Veiculos() {
             <h3 className="text-sm font-semibold text-gray-900">
               Veículos cadastrados
             </h3>
-            <p className="mt-1 text-[11px] text-gray-400">
+            <p className="mt-1 text-xs text-gray-500">
               {carregando
                 ? "Carregando..."
                 : `${totalRegistros} veículo(s) encontrado(s)`}
@@ -247,22 +246,22 @@ export function Veiculos() {
           <table className="w-full tabela-cartoes">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Veículo
                 </th>
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Placa
                 </th>
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Cliente
                 </th>
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Ano modelo
                 </th>
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Valor FIPE
                 </th>
-                <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                   IPVA / Licenciamento
                 </th>
                 <th className="w-32 px-5 py-3" />
@@ -283,7 +282,7 @@ export function Veiculos() {
                         <p className="text-xs font-semibold text-gray-900">
                           {veiculo.marca} {veiculo.modelo}
                         </p>
-                        <p className="mt-1 text-[10px] text-gray-400">
+                        <p className="mt-1 text-xs text-gray-500">
                           ID #{veiculo.id}
                           {veiculo.tipoVeiculo !== "carro" && ` · ${ROTULO_TIPO[veiculo.tipoVeiculo]}`}
                         </p>
@@ -293,7 +292,7 @@ export function Veiculos() {
                   <td data-label="Placa" className="px-5 py-4">
                     <Placa placa={veiculo.placa} uf={veiculo.uf} />
                     {!placaValida(veiculo.placa) && (
-                      <p className="mt-1 text-[10px] font-semibold text-red-600">
+                      <p className="mt-1 text-xs font-semibold text-red-600">
                         Placa fora do padrão: corrija em editar.
                       </p>
                     )}
@@ -310,17 +309,17 @@ export function Veiculos() {
                         <p className="text-xs font-semibold text-gray-900">
                           {formatarMoeda(veiculo.fipeValor)}
                         </p>
-                        <p className="mt-1 text-[10px] text-gray-400">
+                        <p className="mt-1 text-xs text-gray-500">
                           em {formatarData(veiculo.fipeConsultadoEm)}
                         </p>
                       </>
                     ) : (
-                      <span className="text-xs text-gray-400">—</span>
+                      <span className="text-xs text-gray-500">—</span>
                     )}
                   </td>
-                  <td data-label="IPVA / Lic." className="px-5 py-4">
+                  <td data-label="IPVA / Licenciamento" className="px-5 py-4">
                     {veiculo.uf || veiculo.isentoIpva ? (
-                      <div className="space-y-1 text-[11px] text-gray-600">
+                      <div className="space-y-1 text-xs text-gray-600">
                         <p>
                           IPVA{" "}
                           <span
@@ -335,13 +334,13 @@ export function Veiculos() {
                                 : "—"}
                           </span>
                           {veiculo.ipvaAliquotaMedia && veiculo.ipvaEstimado !== null && (
-                            <span className="ml-1 text-[10px] text-amber-600">
+                            <span className="ml-1 text-xs text-amber-600">
                               (alíquota média)
                             </span>
                           )}
                         </p>
                         {veiculo.possivelIsencaoIpva && (
-                          <p className="text-[10px] text-amber-600">
+                          <p className="text-xs text-amber-600">
                             Carro com 15 a 20 anos: alguns estados isentam o IPVA. Confira na Sefaz.
                           </p>
                         )}
@@ -368,7 +367,7 @@ export function Veiculos() {
                         )}
                       </div>
                     ) : (
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-gray-500">
                         Informe o estado
                       </span>
                     )}
@@ -383,6 +382,7 @@ export function Veiculos() {
                             disabled={consultandoId === veiculo.id}
                             className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-50"
                             title="Consultar valor na FIPE"
+                            aria-label="Consultar valor na FIPE"
                           >
                             <RefreshCw
                               size={15}
@@ -398,6 +398,7 @@ export function Veiculos() {
                         onClick={() => setVeiculoHistoricoId(veiculo.id)}
                         className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-indigo-50 hover:text-indigo-600"
                         title="Ver histórico"
+                        aria-label="Ver histórico"
                       >
                         <Clock size={15} />
                       </button>
@@ -408,6 +409,7 @@ export function Veiculos() {
                         }}
                         className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-blue-50 hover:text-blue-600"
                         title="Editar"
+                        aria-label="Editar"
                       >
                         <Pencil size={15} />
                       </button>
@@ -415,14 +417,9 @@ export function Veiculos() {
                         onClick={() => void excluirVeiculo(veiculo.id)}
                         className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-red-50 hover:text-red-600"
                         title="Excluir"
+                        aria-label="Excluir"
                       >
                         <Trash2 size={15} />
-                      </button>
-                      <button
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
-                        title="Mais opções"
-                      >
-                        <MoreHorizontal size={16} />
                       </button>
                     </div>
                   </td>
@@ -433,7 +430,7 @@ export function Veiculos() {
                 <tr>
                   <td
                     colSpan={7}
-                    className="px-5 py-12 text-center text-xs text-gray-400"
+                    className="px-5 py-12 text-center text-xs text-gray-500"
                   >
                     Nenhum veículo encontrado.
                   </td>
@@ -444,7 +441,7 @@ export function Veiculos() {
         </div>
 
         <div className="flex items-center justify-between border-t border-gray-200 px-5 py-3">
-          <p className="text-[11px] text-gray-400">
+          <p className="text-xs text-gray-500">
             Página {pagina} de {totalPaginas}
           </p>
 
@@ -453,7 +450,7 @@ export function Veiculos() {
               type="button"
               onClick={() => setPagina((atual) => Math.max(1, atual - 1))}
               disabled={pagina <= 1 || carregando}
-              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-xs font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <ChevronLeft size={14} />
               Anterior
@@ -465,7 +462,7 @@ export function Veiculos() {
                 setPagina((atual) => Math.min(totalPaginas, atual + 1))
               }
               disabled={pagina >= totalPaginas || carregando}
-              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-xs font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Próxima
               <ChevronRight size={14} />

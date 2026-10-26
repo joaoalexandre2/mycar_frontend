@@ -51,7 +51,7 @@ export function Modal({
         aria-modal="true"
         aria-labelledby={idTitulo}
         tabIndex={-1}
-        className={`max-h-[92vh] w-full ${larguraMax} overflow-y-auto rounded-xl bg-white shadow-xl outline-none`}
+        className={`max-h-[92dvh] w-full ${larguraMax} overflow-y-auto rounded-xl bg-white shadow-xl outline-none`}
       >
         <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
           <div>
@@ -63,7 +63,7 @@ export function Modal({
               {titulo}
             </h3>
             {subtitulo && (
-              <p className="mt-1 text-[11px] text-gray-400">{subtitulo}</p>
+              <p className="mt-1 text-xs text-gray-500">{subtitulo}</p>
             )}
           </div>
 
