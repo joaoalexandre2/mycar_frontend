@@ -1,7 +1,8 @@
 import { useId, useState } from "react";
 import { Modal } from "../../components/ui/Modal";
-import { useToast } from "../../hooks/useNotificacoes";
 import { useEnvio } from "../../hooks/useEnvio";
+import { useErrosDeCampo } from "../../hooks/useErrosDeCampo";
+import { ErroDoCampo } from "../../components/ui/ErroDoCampo";
 
 import type { Cliente } from "../../types/cliente";
 import { formatarCpf, soDigitos } from "../../utils/formatters";
@@ -21,8 +22,8 @@ export function ClienteModal({
     ativo: boolean;
   }) => void | Promise<void>;
 }) {
-  const toast = useToast();
   const { enviando, enviar } = useEnvio();
+  const { erros, mostrar, limpar, atributos } = useErrosDeCampo();
   const idNome = useId();
   const idCpf = useId();
   const idTelefone = useId();
@@ -40,8 +41,14 @@ export function ClienteModal({
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!nome.trim() || soDigitos(cpf).length !== 11 || !telefone.trim()) {
-      toast.aviso("Preencha nome, CPF com 11 dígitos e telefone.");
+    const novos: Record<string, string> = {};
+
+    if (!nome.trim()) novos[idNome] = "Informe o nome do cliente.";
+    if (soDigitos(cpf).length !== 11) novos[idCpf] = "O CPF precisa ter 11 dígitos.";
+    if (!telefone.trim()) novos[idTelefone] = "Informe o telefone.";
+
+    if (Object.keys(novos).length > 0) {
+      mostrar(novos, [idNome, idCpf, idTelefone]);
       return;
     }
 
@@ -76,12 +83,17 @@ export function ClienteModal({
               id={idNome}
               type="text"
               autoComplete="name"
+              {...atributos(idNome)}
               value={nome}
-              onChange={(event) => setNome(event.target.value)}
+              onChange={(event) => {
+                setNome(event.target.value);
+                limpar(idNome);
+              }}
               placeholder="Ex.: João da Silva"
-              className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none transition placeholder:text-gray-500 focus:border-blue-500"
+              className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none transition placeholder:text-gray-500 focus:border-blue-500 aria-invalid:border-red-500"
               required
             />
+            <ErroDoCampo campo={idNome} mensagem={erros[idNome]} />
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -96,14 +108,17 @@ export function ClienteModal({
                 id={idCpf}
                 type="text"
                 inputMode="numeric"
+                {...atributos(idCpf)}
                 value={cpf}
-                onChange={(event) =>
-                  setCpf(formatarCpf(event.target.value))
-                }
+                onChange={(event) => {
+                  setCpf(formatarCpf(event.target.value));
+                  limpar(idCpf);
+                }}
                 placeholder="000.000.000-00"
-                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none transition placeholder:text-gray-500 focus:border-blue-500"
+                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none transition placeholder:text-gray-500 focus:border-blue-500 aria-invalid:border-red-500"
                 required
               />
+              <ErroDoCampo campo={idCpf} mensagem={erros[idCpf]} />
             </div>
             <div>
               <label
@@ -117,12 +132,17 @@ export function ClienteModal({
                 type="text"
                 inputMode="tel"
                 autoComplete="tel"
+                {...atributos(idTelefone)}
                 value={telefone}
-                onChange={(event) => setTelefone(event.target.value)}
+                onChange={(event) => {
+                  setTelefone(event.target.value);
+                  limpar(idTelefone);
+                }}
                 placeholder="(00) 00000-0000"
-                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none transition placeholder:text-gray-500 focus:border-blue-500"
+                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none transition placeholder:text-gray-500 focus:border-blue-500 aria-invalid:border-red-500"
                 required
               />
+              <ErroDoCampo campo={idTelefone} mensagem={erros[idTelefone]} />
             </div>
           </div>
 
@@ -141,7 +161,7 @@ export function ClienteModal({
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               placeholder="cliente@exemplo.com"
-              className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none transition placeholder:text-gray-500 focus:border-blue-500"
+              className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none transition placeholder:text-gray-500 focus:border-blue-500 aria-invalid:border-red-500"
             />
             <p id={idAjudaEmail} className="mt-1 text-xs text-gray-500">
               Opcional. Usado para avisar sobre manutenções próximas ou atrasadas.
@@ -161,7 +181,7 @@ export function ClienteModal({
               onChange={(event) =>
                 setAtivo(event.target.value === "ativo")
               }
-              className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+              className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500 aria-invalid:border-red-500"
             >
               <option value="ativo">Ativo</option>
               <option value="inativo">Inativo</option>

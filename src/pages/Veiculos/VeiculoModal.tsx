@@ -1,7 +1,8 @@
 import { useId, useState } from "react";
 import { Modal } from "../../components/ui/Modal";
-import { useToast } from "../../hooks/useNotificacoes";
 import { useEnvio } from "../../hooks/useEnvio";
+import { useErrosDeCampo } from "../../hooks/useErrosDeCampo";
+import { ErroDoCampo } from "../../components/ui/ErroDoCampo";
 
 import { clientesService } from "../../services/clientes";
 import { SelectComBusca } from "../../components/ui/SelectComBusca";
@@ -40,8 +41,9 @@ export function VeiculoModal({
   onClose: () => void;
   onSave: (veiculo: DadosVeiculoForm) => void | Promise<void>;
 }) {
-  const toast = useToast();
   const { enviando, enviar } = useEnvio();
+  const { erros, mostrar, limpar, atributos } = useErrosDeCampo();
+  const idCliente = useId();
   const idMarca = useId();
   const idModelo = useId();
   const idPlaca = useId();
@@ -72,22 +74,25 @@ export function VeiculoModal({
     const anoNumerico = Number(ano);
     const anoMaximo = new Date().getFullYear() + 1; // ano modelo pode ser o do ano seguinte
 
-    if (!placaValida(placa)) {
-      toast.aviso("Placa inválida. Use o padrão antigo (ABC1234) ou o Mercosul (ABC1D23).");
-      return;
+    const novos: Record<string, string> = {};
+
+    if (!clienteId) novos[idCliente] = "Escolha o cliente.";
+    if (!marca.trim()) novos[idMarca] = "Informe a marca.";
+    if (!modelo.trim()) novos[idModelo] = "Informe o modelo.";
+
+    if (!placa.trim()) {
+      novos[idPlaca] = "Informe a placa.";
+    } else if (!placaValida(placa)) {
+      novos[idPlaca] =
+        "Placa inválida. Use o padrão antigo (ABC1234) ou o Mercosul (ABC1D23).";
     }
 
     if (
-      !clienteId ||
-      !placa.trim() ||
-      !marca.trim() ||
-      !modelo.trim() ||
       Number.isNaN(anoNumerico) ||
       anoNumerico < 1900 ||
       anoNumerico > anoMaximo
     ) {
-      toast.aviso(`Informe os dados do veículo com ano modelo entre 1900 e ${anoMaximo}.`);
-      return;
+      novos[idAno] = `Informe o ano modelo, entre 1900 e ${anoMaximo}.`;
     }
 
     const anoFabNumerico = anoFab.trim() === "" ? null : Number(anoFab);
@@ -98,7 +103,19 @@ export function VeiculoModal({
         anoNumerico - anoFabNumerico < 0 ||
         anoNumerico - anoFabNumerico > 1)
     ) {
-      toast.aviso("O ano de fabricação deve ser igual ao ano modelo ou um ano antes dele (ex.: 2018/2019).");
+      novos[idAnoFab] =
+        "O ano de fabricação deve ser igual ao ano modelo ou um ano antes dele (ex.: 2018/2019).";
+    }
+
+    if (Object.keys(novos).length > 0) {
+      mostrar(novos, [
+        idCliente,
+        idMarca,
+        idModelo,
+        idPlaca,
+        idAno,
+        idAnoFab,
+      ]);
       return;
     }
 
@@ -131,6 +148,9 @@ export function VeiculoModal({
               Cliente
             </span>
             <SelectComBusca
+              id={idCliente}
+              invalido={Boolean(erros[idCliente])}
+              descritoPor={atributos(idCliente)["aria-describedby"]}
               rotulo="Cliente"
               valor={clienteId}
               rotuloInicial={veiculo?.cliente?.nome ?? ""}
@@ -141,8 +161,12 @@ export function VeiculoModal({
                   rotulo: cliente.nome,
                 }))
               }
-              onChange={setClienteId}
+              onChange={(novo) => {
+                setClienteId(novo);
+                limpar(idCliente);
+              }}
             />
+            <ErroDoCampo campo={idCliente} mensagem={erros[idCliente]} />
           </div>
 
           <SeletorDeTipo
@@ -160,9 +184,18 @@ export function VeiculoModal({
             valor={fipe}
             onChange={(selecao, nomes) => {
               setFipe(selecao);
-              if (nomes.marca !== undefined) setMarca(nomes.marca);
-              if (nomes.modelo !== undefined) setModelo(nomes.modelo);
-              if (nomes.ano !== undefined) setAno(String(nomes.ano));
+              if (nomes.marca !== undefined) {
+  setMarca(nomes.marca);
+  limpar(idMarca);
+}
+              if (nomes.modelo !== undefined) {
+  setModelo(nomes.modelo);
+  limpar(idModelo);
+}
+              if (nomes.ano !== undefined) {
+  setAno(String(nomes.ano));
+  limpar(idAno);
+}
             }}
           />
 
@@ -176,12 +209,17 @@ export function VeiculoModal({
               </label>
               <input
                 id={idMarca}
+                {...atributos(idMarca)}
                 type="text"
                 value={marca}
-                onChange={(event) => setMarca(event.target.value)}
-                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+                onChange={(event) => {
+                  setMarca(event.target.value);
+                  limpar(idMarca);
+                }}
+                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500 aria-invalid:border-red-500"
                 required
               />
+              <ErroDoCampo campo={idMarca} mensagem={erros[idMarca]} />
             </div>
             <div>
               <label
@@ -192,12 +230,17 @@ export function VeiculoModal({
               </label>
               <input
                 id={idModelo}
+                {...atributos(idModelo)}
                 type="text"
                 value={modelo}
-                onChange={(event) => setModelo(event.target.value)}
-                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+                onChange={(event) => {
+                  setModelo(event.target.value);
+                  limpar(idModelo);
+                }}
+                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500 aria-invalid:border-red-500"
                 required
               />
+              <ErroDoCampo campo={idModelo} mensagem={erros[idModelo]} />
             </div>
           </div>
 
@@ -210,16 +253,20 @@ export function VeiculoModal({
             </label>
             <input
               id={idPlaca}
+              {...atributos(idPlaca, placa ? idAjudaPlaca : undefined)}
               type="text"
-              aria-describedby={placa ? idAjudaPlaca : undefined}
               value={placa}
-              onChange={(event) => setPlaca(limparPlaca(event.target.value))}
+              onChange={(event) => {
+                setPlaca(limparPlaca(event.target.value));
+                limpar(idPlaca);
+              }}
               maxLength={8}
               placeholder="ABC1D23 ou ABC1234"
               autoCapitalize="characters"
-              className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs font-semibold tracking-wider uppercase outline-none focus:border-blue-500"
+              className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs font-semibold tracking-wider uppercase outline-none focus:border-blue-500 aria-invalid:border-red-500"
               required
             />
+            <ErroDoCampo campo={idPlaca} mensagem={erros[idPlaca]} />
             {placa && (
               <p
                 id={idAjudaPlaca}
@@ -245,7 +292,7 @@ export function VeiculoModal({
               id={idUf}
               value={uf}
               onChange={(event) => setUf(event.target.value)}
-              className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none transition focus:border-blue-500"
+              className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none transition focus:border-blue-500 aria-invalid:border-red-500"
             >
               <option value="">Selecione (para calcular IPVA e licenciamento)</option>
               {ESTADOS.map((sigla) => (
@@ -265,14 +312,19 @@ export function VeiculoModal({
             </label>
             <input
               id={idAno}
+              {...atributos(idAno)}
               type="number"
               min="1900"
               max={new Date().getFullYear() + 1}
               value={ano}
-              onChange={(event) => setAno(event.target.value)}
-              className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+              onChange={(event) => {
+                setAno(event.target.value);
+                limpar(idAno);
+              }}
+              className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500 aria-invalid:border-red-500"
               required
             />
+            <ErroDoCampo campo={idAno} mensagem={erros[idAno]} />
           </div>
 
           <div>
@@ -284,15 +336,19 @@ export function VeiculoModal({
             </label>
             <input
               id={idAnoFab}
-              aria-describedby={idAjudaAnoFab}
+              {...atributos(idAnoFab, idAjudaAnoFab)}
               type="number"
               min="1900"
               max={new Date().getFullYear()}
               value={anoFab}
               placeholder="Ex.: 2018"
-              onChange={(event) => setAnoFab(event.target.value)}
-              className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+              onChange={(event) => {
+                setAnoFab(event.target.value);
+                limpar(idAnoFab);
+              }}
+              className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500 aria-invalid:border-red-500"
             />
+            <ErroDoCampo campo={idAnoFab} mensagem={erros[idAnoFab]} />
             <p id={idAjudaAnoFab} className="mt-1 text-xs text-gray-500">
               Se for diferente do ano modelo, informe (como no documento: 2018/2019).
             </p>

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { ErroDeLista } from "../../components/ui/ErroDeLista";
 import {
   Building2,
   Car,
@@ -58,6 +59,9 @@ export function Admin() {
   const [resumo, setResumo] = useState<ResumoPlataforma | null>(null);
   const [contas, setContas] = useState<ContaAdmin[]>([]);
   const [carregando, setCarregando] = useState(true);
+  const [erroContas, setErroContas] = useState<string | null>(null);
+  // Soma 1 para buscar a lista de novo ("Tentar de novo").
+  const [tentativa, setTentativa] = useState(0);
   const [busca, setBusca] = useState("");
   const [buscaDebounced, setBuscaDebounced] = useState("");
   const [pagina, setPagina] = useState(1);
@@ -136,13 +140,14 @@ export function Admin() {
           return;
         }
 
+        setErroContas(null);
         setContas(resultado.dados);
         setTotalPaginas(resultado.totalPaginas);
         setTotalRegistros(resultado.totalRegistros);
       })
       .catch((erro) => {
         if (!cancelado) {
-          setAviso({ tipo: "erro", texto: mensagemErro(erro) });
+          setErroContas(mensagemErro(erro));
         }
       })
       .finally(() => {
@@ -154,7 +159,7 @@ export function Admin() {
     return () => {
       cancelado = true;
     };
-  }, [pagina, buscaDebounced]);
+  }, [pagina, buscaDebounced, tentativa]);
 
   function irParaPagina(proxima: number) {
     setCarregando(true);
@@ -277,7 +282,9 @@ export function Admin() {
             <p className="mt-1 text-xs text-gray-500">
               {carregando
                 ? "Carregando..."
-                : `${totalRegistros} conta(s) encontrada(s)`}
+                : erroContas
+                  ? "Falha ao carregar."
+                  : `${totalRegistros} conta(s) encontrada(s)`}
             </p>
           </div>
 
@@ -295,6 +302,17 @@ export function Admin() {
             />
           </div>
         </div>
+
+        {erroContas && (
+          <ErroDeLista
+            mensagem={erroContas}
+            aoTentarDeNovo={() => {
+              setCarregando(true);
+              setErroContas(null);
+              setTentativa((atual) => atual + 1);
+            }}
+          />
+        )}
 
         <div className="overflow-x-auto">
           <table className="w-full tabela-cartoes">
@@ -420,7 +438,7 @@ export function Admin() {
                 </tr>
               ))}
 
-              {!carregando && contas.length === 0 && (
+              {!carregando && !erroContas && contas.length === 0 && (
                 <tr>
                   <td
                     colSpan={7}

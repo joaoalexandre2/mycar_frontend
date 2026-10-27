@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useToast, useConfirmar } from "../../hooks/useNotificacoes";
 import { useCarregarLista } from "../../hooks/useCarregarLista";
+import { ErroDeLista } from "../../components/ui/ErroDeLista";
 import {
   AlertTriangle,
   CalendarDays,
@@ -77,7 +78,7 @@ export function Manutencoes() {
     return () => clearTimeout(timer);
   }, [busca]);
 
-  const { carregando, recarregar } = useCarregarLista(
+  const { carregando, erro: erroDaLista, recarregar } = useCarregarLista(
     `${pagina}|${buscaDebounced}|${filtroStatus}`,
     async (ativo) => {
       try {
@@ -106,8 +107,9 @@ export function Manutencoes() {
         setTotalRegistros(resultado.totalRegistros);
         setResumo(resultado.resumo);
       } catch (error) {
+        // O hook guarda a falha e a tela mostra o erro com "Tentar de novo".
         if (ativo()) {
-          toast.erro(mensagemErro(error));
+          throw error;
         }
       }
     },
@@ -252,7 +254,9 @@ export function Manutencoes() {
             <p className="mt-1 text-xs text-gray-500">
               {carregando
                 ? "Carregando..."
-                : `${totalRegistros} manutenção(ões) encontrada(s)`}
+                : erroDaLista
+                  ? "Falha ao carregar."
+                  : `${totalRegistros} manutenção(ões) encontrada(s)`}
             </p>
           </div>
 
@@ -297,6 +301,19 @@ export function Manutencoes() {
         </div>
 
         {/* Tabela */}
+        {erroDaLista && (
+
+          <ErroDeLista
+
+            mensagem={erroDaLista}
+
+            aoTentarDeNovo={recarregar}
+
+          />
+
+        )}
+
+
         <div className="overflow-x-auto">
           <table className="w-full tabela-cartoes">
             <thead>
@@ -472,7 +489,7 @@ export function Manutencoes() {
                 );
               })}
 
-              {!carregando && manutencoes.length === 0 && (
+              {!carregando && !erroDaLista && manutencoes.length === 0 && (
                 <tr>
                   <td
                     colSpan={8}

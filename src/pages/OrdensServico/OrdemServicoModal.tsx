@@ -1,7 +1,8 @@
 import { useId, useState } from "react";
 import { Modal } from "../../components/ui/Modal";
-import { useToast } from "../../hooks/useNotificacoes";
 import { useEnvio } from "../../hooks/useEnvio";
+import { useErrosDeCampo } from "../../hooks/useErrosDeCampo";
+import { ErroDoCampo } from "../../components/ui/ErroDoCampo";
 
 import type {
   OrdemServico,
@@ -27,8 +28,9 @@ export function OrdemServicoModal({
     dataAbertura: string;
   }) => void | Promise<void>;
 }) {
-  const toast = useToast();
   const { enviando, enviar } = useEnvio();
+  const { erros, mostrar, limpar, atributos } = useErrosDeCampo();
+  const idVeiculo = useId();
   const idDescricao = useId();
   const idValor = useId();
   const idData = useId();
@@ -49,8 +51,16 @@ export function OrdemServicoModal({
     event.preventDefault();
     const valorNumerico = Number(valor);
 
-    if (!veiculoId || !descricao.trim() || Number.isNaN(valorNumerico)) {
-      toast.aviso("Preencha veículo, descrição e valor.");
+    const novos: Record<string, string> = {};
+
+    if (!veiculoId) novos[idVeiculo] = "Escolha o veículo da ordem.";
+    if (!descricao.trim()) novos[idDescricao] = "Descreva o problema ou o serviço.";
+    if (Number.isNaN(valorNumerico) || valorNumerico < 0) {
+      novos[idValor] = "Informe um valor igual ou maior que zero.";
+    }
+
+    if (Object.keys(novos).length > 0) {
+      mostrar(novos, [idVeiculo, idDescricao, idValor]);
       return;
     }
 
@@ -79,7 +89,10 @@ export function OrdemServicoModal({
               Veículo
             </span>
             <SelectComBusca
+              id={idVeiculo}
               rotulo="Veículo"
+              invalido={Boolean(erros[idVeiculo])}
+              descritoPor={atributos(idVeiculo)["aria-describedby"]}
               valor={veiculoId}
               rotuloInicial={ordem?.veiculo ? rotuloVeiculo(ordem.veiculo) : ""}
               placeholder="Busque por placa, modelo ou cliente"
@@ -89,8 +102,12 @@ export function OrdemServicoModal({
                   rotulo: rotuloVeiculo(veiculo),
                 }))
               }
-              onChange={setVeiculoId}
+              onChange={(novo) => {
+                setVeiculoId(novo);
+                limpar(idVeiculo);
+              }}
             />
+            <ErroDoCampo campo={idVeiculo} mensagem={erros[idVeiculo]} />
           </div>
 
           <div>
@@ -102,12 +119,17 @@ export function OrdemServicoModal({
             </label>
             <textarea
               id={idDescricao}
+              {...atributos(idDescricao)}
               value={descricao}
-              onChange={(event) => setDescricao(event.target.value)}
+              onChange={(event) => {
+                setDescricao(event.target.value);
+                limpar(idDescricao);
+              }}
               rows={4}
-              className="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-xs outline-none focus:border-blue-500"
+              className="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-xs outline-none focus:border-blue-500 aria-invalid:border-red-500"
               required
             />
+            <ErroDoCampo campo={idDescricao} mensagem={erros[idDescricao]} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -123,11 +145,16 @@ export function OrdemServicoModal({
                 type="number"
                 min="0"
                 step="0.01"
+                {...atributos(idValor)}
                 value={valor}
-                onChange={(event) => setValor(event.target.value)}
-                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs outline-none focus:border-blue-500"
+                onChange={(event) => {
+                  setValor(event.target.value);
+                  limpar(idValor);
+                }}
+                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs outline-none focus:border-blue-500 aria-invalid:border-red-500"
                 required
               />
+              <ErroDoCampo campo={idValor} mensagem={erros[idValor]} />
             </div>
             <div>
               <label
@@ -141,7 +168,7 @@ export function OrdemServicoModal({
                 type="date"
                 value={dataAbertura}
                 onChange={(event) => setDataAbertura(event.target.value)}
-                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs outline-none focus:border-blue-500"
+                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs outline-none focus:border-blue-500 aria-invalid:border-red-500"
                 required
               />
             </div>
@@ -161,7 +188,7 @@ export function OrdemServicoModal({
                 onChange={(event) =>
                   setStatus(event.target.value as StatusOrdemServico)
                 }
-                className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs outline-none focus:border-blue-500"
+                className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs outline-none focus:border-blue-500 aria-invalid:border-red-500"
               >
                 <option value="aberta">Aberta</option>
                 <option value="em_andamento">Em andamento</option>

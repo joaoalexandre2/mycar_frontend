@@ -190,7 +190,7 @@ export function ContaInicio() {
         </div>
 
         {!resumo ? (
-          <p className="p-5 text-xs text-gray-500">Carregando...</p>
+          erro ? null : <p className="p-5 text-xs text-gray-500">Carregando...</p>
         ) : resumo.totalVeiculos === 0 ? (
           <div className="p-8 text-center">
             <p className="text-xs text-gray-500">

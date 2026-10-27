@@ -1,7 +1,10 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useToast, useConfirmar } from "../../hooks/useNotificacoes";
 import { useEnvio } from "../../hooks/useEnvio";
+import { useErrosDeCampo } from "../../hooks/useErrosDeCampo";
+import { ErroDoCampo } from "../../components/ui/ErroDoCampo";
 import { useCarregarLista } from "../../hooks/useCarregarLista";
+import { ErroDeLista } from "../../components/ui/ErroDeLista";
 import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 import {
   FipeSeletor,
@@ -88,7 +91,7 @@ export function MeusVeiculos() {
     return () => clearTimeout(timer);
   }, [busca]);
 
-  const { carregando, recarregar } = useCarregarLista(
+  const { carregando, erro: erroDaLista, recarregar } = useCarregarLista(
     `${pagina}|${buscaDebounced}`,
     async (ativo) => {
       try {
@@ -115,7 +118,8 @@ export function MeusVeiculos() {
         setTotalRegistros(resultado.totalRegistros);
         setValorTotalFipe(resultado.valorTotalFipe);
       } catch (erro) {
-        if (ativo()) toast.erro(mensagemErro(erro));
+        // O hook guarda a falha e a tela mostra o erro com "Tentar de novo".
+        if (ativo()) throw erro;
       }
     },
   );
@@ -250,7 +254,9 @@ export function MeusVeiculos() {
             <p className="mt-1 text-xs text-gray-500">
               {carregando
                 ? "Carregando..."
-                : `${totalRegistros} veículo(s) encontrado(s)`}
+                : erroDaLista
+                  ? "Falha ao carregar."
+                  : `${totalRegistros} veículo(s) encontrado(s)`}
             </p>
           </div>
 
@@ -269,7 +275,26 @@ export function MeusVeiculos() {
           </div>
         </div>
 
-        {!carregando && veiculos.length === 0 ? (
+        {erroDaLista && (
+
+
+          <ErroDeLista
+
+
+            mensagem={erroDaLista}
+
+
+            aoTentarDeNovo={recarregar}
+
+
+          />
+
+
+        )}
+
+
+
+        {!carregando && !erroDaLista && veiculos.length === 0 ? (
           <p className="px-5 py-12 text-center text-xs text-gray-500">
             {buscaDebounced
               ? "Nenhum veículo encontrado."
@@ -405,8 +430,8 @@ export function VeiculoContaModal({
   onClose: () => void;
   onSave: (dados: DadosForm) => void | Promise<void>;
 }) {
-  const toast = useToast();
   const { enviando, enviar } = useEnvio();
+  const { erros, mostrar, limpar, atributos } = useErrosDeCampo();
   const idApelido = useId();
   const idMarca = useId();
   const idModelo = useId();
@@ -441,23 +466,25 @@ export function VeiculoContaModal({
     const anoNumerico = Number(ano);
     const anoMaximo = new Date().getFullYear() + 1; // ano modelo pode ser o do ano seguinte
 
-    if (!placaValida(placa)) {
-      toast.aviso("Placa inválida. Use o padrão antigo (ABC1234) ou o Mercosul (ABC1D23).");
-      return;
+    const novos: Record<string, string> = {};
+
+    if (!marca.trim()) novos[idMarca] = "Informe a marca.";
+    if (!modelo.trim()) novos[idModelo] = "Informe o modelo.";
+
+    if (!placa.trim()) {
+      novos[idPlaca] = "Informe a placa.";
+    } else if (!placaValida(placa)) {
+      novos[idPlaca] =
+        "Placa inválida. Use o padrão antigo (ABC1234) ou o Mercosul (ABC1D23).";
     }
 
     if (
-      !placa.trim() ||
-      !marca.trim() ||
-      !modelo.trim() ||
       Number.isNaN(anoNumerico) ||
       anoNumerico < 1900 ||
       anoNumerico > anoMaximo
     ) {
-      toast.aviso(`Informe os dados do veículo, com ano modelo entre 1900 e ${anoMaximo}.`);
-      return;
+      novos[idAno] = `Informe o ano modelo, entre 1900 e ${anoMaximo}.`;
     }
-
 
     const anoFabNumerico = anoFab.trim() === "" ? null : Number(anoFab);
 
@@ -467,7 +494,18 @@ export function VeiculoContaModal({
         anoNumerico - anoFabNumerico < 0 ||
         anoNumerico - anoFabNumerico > 1)
     ) {
-      toast.aviso("O ano de fabricação deve ser igual ao ano modelo ou um ano antes dele (ex.: 2018/2019).");
+      novos[idAnoFab] =
+        "O ano de fabricação deve ser igual ao ano modelo ou um ano antes dele (ex.: 2018/2019).";
+    }
+
+    if (Object.keys(novos).length > 0) {
+      mostrar(novos, [
+        idMarca,
+        idModelo,
+        idPlaca,
+        idAno,
+        idAnoFab,
+      ]);
       return;
     }
 
@@ -489,7 +527,7 @@ export function VeiculoContaModal({
   }
 
   const classeCampo =
-    "h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
+    "h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500 aria-invalid:border-red-500";
 
   return (
     <Modal
@@ -533,9 +571,18 @@ export function VeiculoContaModal({
             valor={fipe}
             onChange={(selecao, nomes) => {
               setFipe(selecao);
-              if (nomes.marca !== undefined) setMarca(nomes.marca);
-              if (nomes.modelo !== undefined) setModelo(nomes.modelo);
-              if (nomes.ano !== undefined) setAno(String(nomes.ano));
+              if (nomes.marca !== undefined) {
+  setMarca(nomes.marca);
+  limpar(idMarca);
+}
+              if (nomes.modelo !== undefined) {
+  setModelo(nomes.modelo);
+  limpar(idModelo);
+}
+              if (nomes.ano !== undefined) {
+  setAno(String(nomes.ano));
+  limpar(idAno);
+}
             }}
           />
 
@@ -549,12 +596,17 @@ export function VeiculoContaModal({
               </label>
               <input
                 id={idMarca}
+                {...atributos(idMarca)}
                 type="text"
                 value={marca}
-                onChange={(event) => setMarca(event.target.value)}
+                onChange={(event) => {
+                  setMarca(event.target.value);
+                  limpar(idMarca);
+                }}
                 className={classeCampo}
                 required
               />
+              <ErroDoCampo campo={idMarca} mensagem={erros[idMarca]} />
             </div>
             <div>
               <label
@@ -565,12 +617,17 @@ export function VeiculoContaModal({
               </label>
               <input
                 id={idModelo}
+                {...atributos(idModelo)}
                 type="text"
                 value={modelo}
-                onChange={(event) => setModelo(event.target.value)}
+                onChange={(event) => {
+                  setModelo(event.target.value);
+                  limpar(idModelo);
+                }}
                 className={classeCampo}
                 required
               />
+              <ErroDoCampo campo={idModelo} mensagem={erros[idModelo]} />
             </div>
           </div>
 
@@ -584,16 +641,20 @@ export function VeiculoContaModal({
               </label>
               <input
                 id={idPlaca}
+                {...atributos(idPlaca, placa ? idAjudaPlaca : undefined)}
                 type="text"
-                aria-describedby={placa ? idAjudaPlaca : undefined}
                 value={placa}
-                onChange={(event) => setPlaca(limparPlaca(event.target.value))}
+                onChange={(event) => {
+                  setPlaca(limparPlaca(event.target.value));
+                  limpar(idPlaca);
+                }}
                 maxLength={8}
                 placeholder="ABC1D23 ou ABC1234"
                 autoCapitalize="characters"
                 className={`${classeCampo} font-semibold uppercase tracking-wider`}
                 required
               />
+              <ErroDoCampo campo={idPlaca} mensagem={erros[idPlaca]} />
               {placa && (
                 <p
                   id={idAjudaPlaca}
@@ -616,15 +677,19 @@ export function VeiculoContaModal({
               </label>
               <input
                 id={idAno}
-                aria-describedby={idAjudaAno}
+                {...atributos(idAno, idAjudaAno)}
                 type="number"
                 min="1900"
                 max={new Date().getFullYear() + 1}
                 value={ano}
-                onChange={(event) => setAno(event.target.value)}
+                onChange={(event) => {
+                  setAno(event.target.value);
+                  limpar(idAno);
+                }}
                 className={classeCampo}
                 required
               />
+              <ErroDoCampo campo={idAno} mensagem={erros[idAno]} />
               <p id={idAjudaAno} className="mt-1 text-xs text-gray-500">
                 Ano do modelo (o mesmo da tabela FIPE). Pode ser o ano seguinte ao de fabricação.
               </p>
@@ -640,15 +705,19 @@ export function VeiculoContaModal({
             </label>
             <input
               id={idAnoFab}
-              aria-describedby={idAjudaAnoFab}
+              {...atributos(idAnoFab, idAjudaAnoFab)}
               type="number"
               min="1900"
               max={new Date().getFullYear()}
               value={anoFab}
               placeholder="Ex.: 2018"
-              onChange={(event) => setAnoFab(event.target.value)}
+              onChange={(event) => {
+                setAnoFab(event.target.value);
+                limpar(idAnoFab);
+              }}
               className={classeCampo}
             />
+            <ErroDoCampo campo={idAnoFab} mensagem={erros[idAnoFab]} />
             <p id={idAjudaAnoFab} className="mt-1 text-xs text-gray-500">
               Se for diferente do ano modelo, informe (como no documento: 2018/2019). Só pode ser igual ao ano modelo ou um ano antes.
             </p>
@@ -665,7 +734,7 @@ export function VeiculoContaModal({
               id={idUf}
               value={uf}
               onChange={(event) => setUf(event.target.value)}
-              className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none transition focus:border-blue-500"
+              className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none transition focus:border-blue-500 aria-invalid:border-red-500"
             >
               <option value="">Selecione (para calcular IPVA e licenciamento)</option>
               {ESTADOS.map((sigla) => (

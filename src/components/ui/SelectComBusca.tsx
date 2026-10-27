@@ -24,6 +24,11 @@ interface Props<T> {
   opcaoVazia?: string;
   /** Nome acessível do campo (quando não há um <label> ao redor). */
   rotulo?: string;
+  /** `id` do campo: para o foco ir até ele quando a validação falha. */
+  id?: string;
+  /** Marca o campo como inválido e liga a mensagem de erro (`aria-describedby`). */
+  invalido?: boolean;
+  descritoPor?: string;
 }
 
 const ESPERA_DIGITACAO_MS = 300;
@@ -46,6 +51,9 @@ export function SelectComBusca<T = unknown>({
   onChange,
   opcaoVazia,
   rotulo,
+  id,
+  invalido,
+  descritoPor,
 }: Props<T>) {
   const idLista = useId();
   const [texto, setTexto] = useState(
@@ -186,9 +194,12 @@ export function SelectComBusca<T = unknown>({
   return (
     <div className="relative">
       <input
+        id={id}
         type="text"
         role="combobox"
         aria-label={rotulo}
+        aria-invalid={invalido ? true : undefined}
+        aria-describedby={descritoPor}
         aria-expanded={aberto}
         aria-controls={idLista}
         aria-autocomplete="list"

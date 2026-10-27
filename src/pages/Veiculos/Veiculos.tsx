@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useToast, useConfirmar } from "../../hooks/useNotificacoes";
 import { useCarregarLista } from "../../hooks/useCarregarLista";
+import { ErroDeLista } from "../../components/ui/ErroDeLista";
 import {
   Car,
   ChevronLeft,
@@ -64,7 +65,7 @@ export function Veiculos() {
     return () => clearTimeout(timer);
   }, [busca]);
 
-  const { carregando, recarregar } = useCarregarLista(
+  const { carregando, erro: erroDaLista, recarregar } = useCarregarLista(
     `${pagina}|${buscaDebounced}`,
     async (ativo) => {
       try {
@@ -92,8 +93,9 @@ export function Veiculos() {
         setTotalRegistros(resultado.totalRegistros);
         setResumo(resultado.resumo);
       } catch (error) {
+        // O hook guarda a falha e a tela mostra o erro com "Tentar de novo".
         if (ativo()) {
-          toast.erro(mensagemErro(error));
+          throw error;
         }
       }
     },
@@ -226,7 +228,9 @@ export function Veiculos() {
             <p className="mt-1 text-xs text-gray-500">
               {carregando
                 ? "Carregando..."
-                : `${totalRegistros} veículo(s) encontrado(s)`}
+                : erroDaLista
+                  ? "Falha ao carregar."
+                  : `${totalRegistros} veículo(s) encontrado(s)`}
             </p>
           </div>
           <div className="relative w-full sm:w-72">
@@ -243,6 +247,19 @@ export function Veiculos() {
             />
           </div>
         </div>
+
+        {erroDaLista && (
+
+          <ErroDeLista
+
+            mensagem={erroDaLista}
+
+            aoTentarDeNovo={recarregar}
+
+          />
+
+        )}
+
 
         <div className="overflow-x-auto">
           <table className="w-full tabela-cartoes">
@@ -428,7 +445,7 @@ export function Veiculos() {
                 </tr>
               ))}
 
-              {!carregando && veiculos.length === 0 && (
+              {!carregando && !erroDaLista && veiculos.length === 0 && (
                 <tr>
                   <td
                     colSpan={7}

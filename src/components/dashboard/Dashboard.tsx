@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useCarregarLista } from "../../hooks/useCarregarLista";
-import { useToast } from "../../hooks/useNotificacoes";
+import { ErroDeLista } from "../ui/ErroDeLista";
 import {
   ArrowUpRight,
   Car,
@@ -20,7 +20,6 @@ import {
   type ResumoOrdensServico,
 } from "../../services/ordensServico";
 import { manutencoesService } from "../../services/manutencoes";
-import { mensagemErro } from "../../services/api";
 import { formatarData, formatarMoeda } from "../../utils/formatters";
 
 /** Quantas ordens aparecem em "Ordens de serviço" e quantas manutenções em destaque. */
@@ -28,7 +27,6 @@ const ORDENS_RECENTES = 5;
 const MANUTENCOES_EM_DESTAQUE = 3;
 
 export function Dashboard() {
-  const toast = useToast();
   const [totalClientes, setTotalClientes] = useState(0);
   const [totalVeiculos, setTotalVeiculos] = useState(0);
   const [resumoOrdens, setResumoOrdens] = useState<ResumoOrdensServico | null>(
@@ -41,7 +39,7 @@ export function Dashboard() {
 
   // Só os totais e as poucas linhas que a tela mostra: nada de baixar a base
   // inteira (o servidor já devolve os totais em "resumo").
-  const { carregando } = useCarregarLista("dashboard", async (ativo) => {
+  const { carregando, erro: erroDaLista, recarregar } = useCarregarLista("dashboard", async (ativo) => {
     try {
       const [clientes, veiculos, ordens, atrasadas, proximas] =
         await Promise.all([
@@ -75,8 +73,9 @@ export function Dashboard() {
           .slice(0, MANUTENCOES_EM_DESTAQUE),
       );
     } catch (error) {
+      // O hook guarda a falha e a tela mostra o erro com "Tentar de novo".
       if (ativo()) {
-        toast.erro(mensagemErro(error));
+        throw error;
       }
     }
   });
@@ -117,6 +116,15 @@ export function Dashboard() {
       </div>
 
       {/* Cards principais */}
+      {erroDaLista && (
+        <div className="mb-5 overflow-hidden rounded-xl border border-red-200">
+          <ErroDeLista
+            mensagem={erroDaLista}
+            aoTentarDeNovo={recarregar}
+          />
+        </div>
+      )}
+
       <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <DashboardCard
           title="Clientes"
@@ -249,7 +257,7 @@ export function Dashboard() {
                   </tr>
                 ))}
 
-                {!carregando && ordensRecentes.length === 0 && (
+                {!carregando && !erroDaLista && ordensRecentes.length === 0 && (
                   <tr>
                     <td
                       colSpan={6}
@@ -382,7 +390,7 @@ export function Dashboard() {
             );
           })}
 
-          {!carregando && proximasManutencoes.length === 0 && (
+          {!carregando && !erroDaLista && proximasManutencoes.length === 0 && (
             <div className="col-span-full p-10 text-center text-xs text-gray-500">
               Nenhuma manutenção programada no momento.
             </div>
