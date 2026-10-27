@@ -70,10 +70,12 @@ export function DialogoConfirmacao({
           <button
             type="button"
             onClick={() => aoResponder(true)}
-            className={`rounded-lg px-4 py-2 text-sm font-medium text-white ${
+            // No tema escuro a escala de cinzas se inverte: o texto também
+            // (gray-50), senão ficaria branco sobre um fundo quase branco.
+            className={`rounded-lg px-4 py-2 text-sm font-medium ${
               perigo
-                ? "bg-red-600 hover:bg-red-700"
-                : "bg-gray-900 hover:bg-gray-800"
+                ? "bg-red-600 text-white hover:bg-red-700"
+                : "bg-gray-900 text-gray-50 hover:bg-gray-800"
             }`}
           >
             {opcoes.confirmarTexto ?? "Confirmar"}

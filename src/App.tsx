@@ -8,6 +8,7 @@ import {
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { useAuth } from "./hooks/useAuth";
+import { useTelaGrande } from "./hooks/useTelaGrande";
 
 import { Header } from "./components/layout/Header";
 import { Sidebar } from "./components/layout/Sidebar";
@@ -55,6 +56,7 @@ const RedefinirSenha = lazy(() =>
 function AppLayout() {
   const [menuAberto, setMenuAberto] = useState(false);
   const { usuario } = useAuth();
+  const telaGrande = useTelaGrande();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -63,8 +65,15 @@ function AppLayout() {
         aoFechar={() => setMenuAberto(false)}
       />
 
-      <main className="min-h-screen md:ml-[250px] print:ml-0">
-        <Header aoAbrirMenu={() => setMenuAberto(true)} />
+      {/* Com o menu aberto no celular, o que está atrás dele não recebe foco. */}
+      <main
+        inert={menuAberto && !telaGrande}
+        className="min-h-screen md:ml-[250px] print:ml-0"
+      >
+        <Header
+          aoAbrirMenu={() => setMenuAberto(true)}
+          menuAberto={menuAberto}
+        />
 
         {/* Menu e cabeçalho ficam na tela enquanto o pacote do perfil chega. */}
         <ErroDeTela>

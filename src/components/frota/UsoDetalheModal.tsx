@@ -121,7 +121,7 @@ export function UsoDetalheModal({
   }
 
   async function cancelar() {
-    if (!(await pedirConfirmacao({ mensagem: "Cancelar esta reserva? O horário volta a ficar livre." }))) return;
+    if (!(await pedirConfirmacao({ mensagem: "Cancelar esta reserva? O horário volta a ficar livre.", confirmarTexto: "Cancelar reserva", cancelarTexto: "Manter reserva", perigo: true }))) return;
 
     try {
       onAtualizado(await usosService.cancelar(uso.id));
@@ -131,7 +131,7 @@ export function UsoDetalheModal({
   }
 
   async function excluir() {
-    if (!(await pedirConfirmacao({ mensagem: "Excluir este uso e as fotos do hodômetro? Não dá para desfazer." }))) return;
+    if (!(await pedirConfirmacao({ mensagem: "Excluir este uso e as fotos do hodômetro? Não dá para desfazer.", confirmarTexto: "Excluir", perigo: true }))) return;
 
     try {
       await usosService.remover(uso.id);

@@ -44,7 +44,10 @@ export function EsqueciSenha() {
 
         {enviado ? (
           <div className="text-center">
-            <p className="rounded-lg bg-green-50 px-3 py-3 text-sm text-green-700">
+            <p
+              role="status"
+              className="rounded-lg bg-green-50 px-3 py-3 text-sm text-green-700"
+            >
               Se o e-mail existir, enviamos um link para redefinir a senha. Confira sua caixa de
               entrada.
             </p>
@@ -62,7 +65,12 @@ export function EsqueciSenha() {
             onSubmit={handleSubmit}
           >
             <div>
-              <label className="mb-1 block text-xs font-semibold text-gray-600">E-mail</label>
+              <label
+                htmlFor="esqueci-email"
+                className="mb-1 block text-xs font-semibold text-gray-600"
+              >
+                E-mail
+              </label>
 
               <div className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 focus-within:border-blue-500">
                 <Mail
@@ -71,7 +79,9 @@ export function EsqueciSenha() {
                 />
 
                 <input
+                  id="esqueci-email"
                   type="email"
+                  autoComplete="email"
                   required
                   autoFocus
                   value={email}
@@ -83,7 +93,12 @@ export function EsqueciSenha() {
             </div>
 
             {erro && (
-              <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{erro}</p>
+              <p
+                role="alert"
+                className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700"
+              >
+                {erro}
+              </p>
             )}
 
             <button

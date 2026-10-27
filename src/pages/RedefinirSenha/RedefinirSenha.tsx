@@ -74,7 +74,10 @@ export function RedefinirSenha() {
             </Link>
           </div>
         ) : redefinido ? (
-          <p className="rounded-lg bg-green-50 px-3 py-3 text-center text-sm text-green-700">
+          <p
+            role="status"
+            className="rounded-lg bg-green-50 px-3 py-3 text-center text-sm text-green-700"
+          >
             Senha redefinida! Levando você para o login...
           </p>
         ) : (
@@ -83,7 +86,12 @@ export function RedefinirSenha() {
             onSubmit={handleSubmit}
           >
             <div>
-              <label className="mb-1 block text-xs font-semibold text-gray-600">Nova senha</label>
+              <label
+                htmlFor="redefinir-senha"
+                className="mb-1 block text-xs font-semibold text-gray-600"
+              >
+                Nova senha
+              </label>
 
               <div className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 focus-within:border-blue-500">
                 <Lock
@@ -92,7 +100,9 @@ export function RedefinirSenha() {
                 />
 
                 <input
+                  id="redefinir-senha"
                   type="password"
+                  autoComplete="new-password"
                   required
                   minLength={8}
                   autoFocus
@@ -105,7 +115,10 @@ export function RedefinirSenha() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-semibold text-gray-600">
+              <label
+                htmlFor="redefinir-confirmacao"
+                className="mb-1 block text-xs font-semibold text-gray-600"
+              >
                 Confirmar nova senha
               </label>
 
@@ -116,7 +129,9 @@ export function RedefinirSenha() {
                 />
 
                 <input
+                  id="redefinir-confirmacao"
                   type="password"
+                  autoComplete="new-password"
                   required
                   minLength={8}
                   value={confirmacao}
@@ -128,7 +143,10 @@ export function RedefinirSenha() {
             </div>
 
             {erro && (
-              <p className="whitespace-pre-line rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
+              <p
+                role="alert"
+                className="whitespace-pre-line rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700"
+              >
                 {erro}
               </p>
             )}

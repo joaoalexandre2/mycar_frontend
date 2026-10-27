@@ -101,7 +101,7 @@ describe("Agenda", () => {
     agenda();
 
     expect(await screen.findByRole("button", { name: /09:00 · AAA1B25 · Maria Silva/ })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent(/\d{4}/);
+    expect(screen.getByRole("heading", { level: 3, name: /\d{4}/ })).toBeInTheDocument();
   });
 
   it("clicar no uso abre o detalhe com as ações da saída", async () => {
@@ -404,7 +404,7 @@ describe("Cadastros: motoristas", () => {
     await waitFor(() => expect(atualizar).toHaveBeenCalledWith(2, { nome: "Maria Silva", ativo: false }));
 
     await userEvent.click(screen.getByRole("button", { name: "Remover Maria Silva" }));
-    await userEvent.click(await screen.findByRole("button", { name: "Confirmar" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Remover" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Desative-o em vez de apagar");
   });
@@ -444,7 +444,7 @@ describe("Cadastros: centros de custo", () => {
 
     await userEvent.click(screen.getByRole("tab", { name: /Centros de custo/ }));
     await userEvent.click(await screen.findByRole("button", { name: "Remover Entregas" }));
-    await userEvent.click(await screen.findByRole("button", { name: "Confirmar" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Remover" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Desative-o em vez de apagar");
   });

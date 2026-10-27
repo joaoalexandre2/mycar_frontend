@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NotificacoesProvider } from "../../contexts/NotificacoesProvider";
 import { CapturaHodometro } from "./CapturaHodometro";
@@ -233,7 +233,9 @@ describe("UsoDetalheModal", () => {
     expect(cancelar).not.toHaveBeenCalled();
     expect(dialogo).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole("button", { name: "Confirmar" }));
+    await userEvent.click(
+      within(screen.getByRole("alertdialog")).getByRole("button", { name: "Cancelar reserva" }),
+    );
 
     await waitFor(() => expect(cancelar).toHaveBeenCalledWith(7));
     expect(props.onAtualizado).toHaveBeenCalledWith(expect.objectContaining({ status: "cancelado" }));

@@ -106,6 +106,16 @@ th {
   outline-offset: 2px;
 }
 
+/* Em telas de toque, campos com menos de 16px fazem o iOS dar zoom na página ao
+   focar. Só quem usa toque é afetado; no mouse os campos seguem em 12px. */
+@media (pointer: coarse) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

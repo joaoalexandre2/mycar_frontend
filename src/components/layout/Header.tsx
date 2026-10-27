@@ -1,5 +1,5 @@
 import { useState } from "react";
-  import { CircleDollarSign, Menu, CircleUserRound } from "lucide-react";
+  import { CircleDollarSign, Menu } from "lucide-react";
   import { DespesasModal } from "./DespesasModal";
   import { BuscaGlobal } from "./BuscaGlobal";
   import { Atualizacoes } from "./Atualizacoes";
@@ -23,6 +23,8 @@ import { useState } from "react";
   const TITULOS_CONTA: Record<string, { titulo: string; subtitulo: string }> = {
     "/": { titulo: "Início", subtitulo: "Seu carro e o que vence em breve." },
     "/veiculos": { titulo: "Veículos", subtitulo: "Valor, IPVA e licenciamento estimados." },
+    "/agenda": { titulo: "Agenda de veículos", subtitulo: "Quem vai usar cada veículo e quando." },
+    "/frota/cadastros": { titulo: "Motoristas e centros de custo", subtitulo: "Quem dirige a frota e a que área cada gasto pertence." },
     "/servicos": { titulo: "Serviços", subtitulo: "Troca de óleo, bateria e avisos da próxima vez." },
     "/pecas": { titulo: "Peças", subtitulo: "Catálogo de peças do seu carro." },
     "/ficha-tecnica": { titulo: "Ficha técnica", subtitulo: "Dados do seu carro e manutenção." },
@@ -34,9 +36,11 @@ import { useState } from "react";
 
   interface HeaderProps {
     aoAbrirMenu: () => void;
+    /** Para o botão do menu dizer se ele está aberto (leitor de tela). */
+    menuAberto?: boolean;
   }
 
-  export function Header({ aoAbrirMenu }: HeaderProps) {
+  export function Header({ aoAbrirMenu, menuAberto = false }: HeaderProps) {
     const { usuario } = useAuth();
     const { pathname } = useLocation();
     const [despesasAbertas, setDespesasAbertas] = useState(false);
@@ -51,6 +55,8 @@ import { useState } from "react";
             onClick={aoAbrirMenu}
             title="Abrir menu"
             aria-label="Abrir menu"
+            aria-expanded={menuAberto}
+            aria-controls="menu-lateral"
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:bg-gray-50 md:hidden"
           >
             <Menu size={19} />
@@ -86,8 +92,6 @@ import { useState } from "react";
   
           <div className="ml-1 flex items-center gap-2 text-gray-500">
             <AvatarMenu />
-
-            <CircleUserRound size={18} />
           </div>
         </div>
         {despesasAbertas && (
