@@ -391,7 +391,7 @@ export function Sugestoes() {
         </div>
 
         {!lista ? (
-          <p className="p-5 text-xs text-gray-500">Carregando...</p>
+          erro ? null : <p className="p-5 text-xs text-gray-500">Carregando...</p>
         ) : lista.length === 0 ? (
           <p className="p-5 text-xs text-gray-500">
             {visao === "todas"

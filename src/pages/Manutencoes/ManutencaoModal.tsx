@@ -1,7 +1,8 @@
 import { useEffect, useId, useState } from "react";
 import { Modal } from "../../components/ui/Modal";
-import { useToast } from "../../hooks/useNotificacoes";
 import { useEnvio } from "../../hooks/useEnvio";
+import { useErrosDeCampo } from "../../hooks/useErrosDeCampo";
+import { ErroDoCampo } from "../../components/ui/ErroDoCampo";
 import { Plus, Trash2 } from "lucide-react";
 import type { Manutencao, PecaManutencao } from "../../types/manutencao";
 import { veiculosService } from "../../services/veiculos";
@@ -36,8 +37,10 @@ export function ManutencaoModal({
     pecas: PecaManutencao[];
   }) => void | Promise<void>;
 }) {
-  const toast = useToast();
   const { enviando, enviar } = useEnvio();
+  const { erros, mostrar, limpar, atributos } = useErrosDeCampo();
+  const idVeiculo = useId();
+  const idPecas = useId();
   const idTipo = useId();
   const idDescricao = useId();
   const idValor = useId();
@@ -138,13 +141,12 @@ export function ManutencaoModal({
   ) {
     event.preventDefault();
 
-    if (!veiculoId || !tipo.trim() || !descricao.trim() || !dataManutencao) {
-      toast.aviso(
-        "Preencha veículo, tipo, descrição e data da manutenção.",
-      );
+    const novos: Record<string, string> = {};
 
-      return;
-    }
+    if (!veiculoId) novos[idVeiculo] = "Escolha o veículo.";
+    if (!tipo.trim()) novos[idTipo] = "Informe o tipo da manutenção.";
+    if (!descricao.trim()) novos[idDescricao] = "Descreva a manutenção.";
+    if (!dataManutencao) novos[idData] = "Informe a data da manutenção.";
 
     const quilometragemNumerica =
       quilometragem === "" ? null : Number(quilometragem);
@@ -154,18 +156,19 @@ export function ManutencaoModal({
 
     const valorNumerico = valor === "" ? null : Number(valor);
 
-    if (
-      (quilometragemNumerica !== null &&
-        (Number.isNaN(quilometragemNumerica) || quilometragemNumerica < 0)) ||
-      (proximaQuilometragemNumerica !== null &&
-        (Number.isNaN(proximaQuilometragemNumerica) ||
-          proximaQuilometragemNumerica < 0)) ||
-      (valorNumerico !== null &&
-        (Number.isNaN(valorNumerico) || valorNumerico < 0))
-    ) {
-      toast.aviso("Informe valores numéricos válidos.");
+    const invalido = (numero: number | null) =>
+      numero !== null && (Number.isNaN(numero) || numero < 0);
 
-      return;
+    if (invalido(valorNumerico)) {
+      novos[idValor] = "Informe um valor igual ou maior que zero.";
+    }
+
+    if (invalido(quilometragemNumerica)) {
+      novos[idKm] = "Informe uma quilometragem igual ou maior que zero.";
+    }
+
+    if (invalido(proximaQuilometragemNumerica)) {
+      novos[idProximaKm] = "Informe uma quilometragem igual ou maior que zero.";
     }
 
     // Linhas totalmente vazias são ignoradas; as parciais pedem correção.
@@ -178,9 +181,21 @@ export function ManutencaoModal({
         (peca) => !peca.tipo || !peca.especificacao.trim(),
       )
     ) {
-      toast.aviso(
-        "Em cada peça, escolha o tipo e informe o código ou a especificação (ou remova a linha).",
-      );
+      novos[idPecas] =
+        "Em cada peça, escolha o tipo e informe o código ou a especificação (ou remova a linha).";
+    }
+
+    if (Object.keys(novos).length > 0) {
+      mostrar(novos, [
+        idVeiculo,
+        idTipo,
+        idDescricao,
+        idValor,
+        idData,
+        idKm,
+        idProximaKm,
+        idPecas,
+      ]);
 
       return;
     }
@@ -221,6 +236,9 @@ export function ManutencaoModal({
             </span>
 
             <SelectComBusca
+              id={idVeiculo}
+              invalido={Boolean(erros[idVeiculo])}
+              descritoPor={atributos(idVeiculo)["aria-describedby"]}
               rotulo="Veículo"
               valor={veiculoId}
               rotuloInicial={
@@ -233,8 +251,12 @@ export function ManutencaoModal({
                   rotulo: rotuloVeiculo(veiculo),
                 }))
               }
-              onChange={setVeiculoId}
+              onChange={(novo) => {
+                setVeiculoId(novo);
+                limpar(idVeiculo);
+              }}
             />
+            <ErroDoCampo campo={idVeiculo} mensagem={erros[idVeiculo]} />
           </div>
 
           {/* Tipo */}
@@ -248,15 +270,18 @@ export function ManutencaoModal({
 
             <input
               id={idTipo}
+              {...atributos(idTipo)}
               type="text"
               value={tipo}
-              onChange={(event) =>
-                setTipo(event.target.value)
-              }
+              onChange={(event) => {
+                setTipo(event.target.value);
+                limpar(idTipo);
+              }}
               placeholder="Ex.: Troca de óleo"
-              className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+              className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500 aria-invalid:border-red-500"
               required
             />
+            <ErroDoCampo campo={idTipo} mensagem={erros[idTipo]} />
           </div>
 
           {/* Descrição */}
@@ -270,15 +295,18 @@ export function ManutencaoModal({
 
             <textarea
               id={idDescricao}
+              {...atributos(idDescricao)}
               value={descricao}
-              onChange={(event) =>
-                setDescricao(event.target.value)
-              }
+              onChange={(event) => {
+                setDescricao(event.target.value);
+                limpar(idDescricao);
+              }}
               placeholder="Descreva a manutenção..."
               rows={3}
-              className="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-700 outline-none focus:border-blue-500"
+              className="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-700 outline-none focus:border-blue-500 aria-invalid:border-red-500"
               required
             />
+            <ErroDoCampo campo={idDescricao} mensagem={erros[idDescricao]} />
           </div>
 
           {/* Valor */}
@@ -292,14 +320,19 @@ export function ManutencaoModal({
 
             <input
               id={idValor}
+              {...atributos(idValor)}
               type="number"
               min="0"
               step="0.01"
               value={valor}
-              onChange={(event) => setValor(event.target.value)}
+              onChange={(event) => {
+                setValor(event.target.value);
+                limpar(idValor);
+              }}
               placeholder="Ex.: 250.00"
-              className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+              className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500 aria-invalid:border-red-500"
             />
+            <ErroDoCampo campo={idValor} mensagem={erros[idValor]} />
           </div>
 
           {/* Datas */}
@@ -314,14 +347,17 @@ export function ManutencaoModal({
 
               <input
                 id={idData}
+                {...atributos(idData)}
                 type="date"
                 value={dataManutencao}
-                onChange={(event) =>
-                  setDataManutencao(event.target.value)
-                }
-                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+                onChange={(event) => {
+                  setDataManutencao(event.target.value);
+                  limpar(idData);
+                }}
+                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500 aria-invalid:border-red-500"
                 required
               />
+              <ErroDoCampo campo={idData} mensagem={erros[idData]} />
             </div>
 
             <div>
@@ -339,7 +375,7 @@ export function ManutencaoModal({
                 onChange={(event) =>
                   setProximaData(event.target.value)
                 }
-                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500 aria-invalid:border-red-500"
               />
             </div>
           </div>
@@ -356,15 +392,18 @@ export function ManutencaoModal({
 
               <input
                 id={idKm}
+                {...atributos(idKm)}
                 type="number"
                 min="0"
                 value={quilometragem}
-                onChange={(event) =>
-                  setQuilometragem(event.target.value)
-                }
+                onChange={(event) => {
+                  setQuilometragem(event.target.value);
+                  limpar(idKm);
+                }}
                 placeholder="Ex.: 50000"
-                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500 aria-invalid:border-red-500"
               />
+              <ErroDoCampo campo={idKm} mensagem={erros[idKm]} />
             </div>
 
             <div>
@@ -377,15 +416,18 @@ export function ManutencaoModal({
 
               <input
                 id={idProximaKm}
+                {...atributos(idProximaKm)}
                 type="number"
                 min="0"
                 value={proximaQuilometragem}
-                onChange={(event) =>
-                  setProximaQuilometragem(event.target.value)
-                }
+                onChange={(event) => {
+                  setProximaQuilometragem(event.target.value);
+                  limpar(idProximaKm);
+                }}
                 placeholder="Ex.: 60000"
-                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+                className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500 aria-invalid:border-red-500"
               />
+              <ErroDoCampo campo={idProximaKm} mensagem={erros[idProximaKm]} />
             </div>
           </div>
 
@@ -393,7 +435,11 @@ export function ManutencaoModal({
           <div className="rounded-lg border border-gray-200 p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-medium text-gray-700">
+                <p
+                  id={idPecas}
+                  tabIndex={-1}
+                  className="text-xs font-medium text-gray-700 outline-none"
+                >
                   Peças usadas (opcional)
                 </p>
 
@@ -422,6 +468,8 @@ export function ManutencaoModal({
               </button>
             </div>
 
+            <ErroDoCampo campo={idPecas} mensagem={erros[idPecas]} />
+
             {!veiculoId && pecas.length === 0 && (
               <p className="mt-3 text-xs text-gray-500">
                 Selecione o veículo para registrar as peças.
@@ -447,7 +495,7 @@ export function ManutencaoModal({
                             alterarPeca(indice, { tipo: event.target.value })
                           }
                           aria-label="Tipo da peça"
-                          className="h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+                          className="h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500 aria-invalid:border-red-500"
                         >
                           <option value="">Tipo da peça</option>
 
@@ -489,7 +537,7 @@ export function ManutencaoModal({
                           maxLength={120}
                           placeholder="Código ou especificação"
                           aria-label="Código ou especificação da peça"
-                          className="h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+                          className="h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500 aria-invalid:border-red-500"
                         />
 
                         <input
@@ -501,7 +549,7 @@ export function ManutencaoModal({
                           maxLength={60}
                           placeholder="Marca (opcional)"
                           aria-label="Marca da peça"
-                          className="h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+                          className="h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500 aria-invalid:border-red-500"
                         />
                       </div>
 

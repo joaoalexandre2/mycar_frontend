@@ -213,7 +213,7 @@ export function DocumentosModal({
         </form>
 
         {!dados ? (
-          <p className="text-xs text-gray-500">Carregando...</p>
+          erro ? null : <p className="text-xs text-gray-500">Carregando...</p>
         ) : dados.documentos.length === 0 ? (
           <p className="text-xs text-gray-500">
             Nenhum documento cadastrado ainda.

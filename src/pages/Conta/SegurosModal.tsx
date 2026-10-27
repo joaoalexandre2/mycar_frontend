@@ -175,7 +175,7 @@ export function SegurosModal({
         <div className="rounded-lg border border-gray-200 p-4">
           <p className="text-xs font-medium text-gray-700">Este veículo já tem seguro?</p>
 
-          {possui === null && (
+          {dados && possui === null && (
             <>
               <p className="mt-1 text-xs text-gray-500">
                 Se tem, informe o vencimento: avisamos por e-mail antes de vencer.
@@ -374,7 +374,7 @@ export function SegurosModal({
         </form>
 
         {!dados ? (
-          <p className="text-xs text-gray-500">Carregando...</p>
+          erro ? null : <p className="text-xs text-gray-500">Carregando...</p>
         ) : dados.seguros.length === 0 ? (
           <p className="text-xs text-gray-500">
             Nada cadastrado ainda. Adicione o seu seguro atual e as propostas

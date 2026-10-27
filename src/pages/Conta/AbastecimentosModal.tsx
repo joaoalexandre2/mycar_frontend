@@ -292,7 +292,7 @@ export function AbastecimentosModal({
         </form>
 
         {!dados ? (
-          <p className="text-xs text-gray-500">Carregando...</p>
+          erro ? null : <p className="text-xs text-gray-500">Carregando...</p>
         ) : dados.abastecimentos.length === 0 ? (
           <p className="text-xs text-gray-500">
             Nenhum abastecimento registrado ainda.

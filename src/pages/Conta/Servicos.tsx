@@ -226,7 +226,7 @@ export function Servicos() {
         </div>
 
         {!dados || !veiculosDaConta.carregado ? (
-          <p className="p-5 text-xs text-gray-500">Carregando...</p>
+          erro ? null : <p className="p-5 text-xs text-gray-500">Carregando...</p>
         ) : veiculosDaConta.total === 0 ? (
           <div className="p-8 text-center">
             <p className="text-xs text-gray-500">
