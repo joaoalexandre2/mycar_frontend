@@ -234,6 +234,7 @@ export function Clientes() {
               />
               <input
                 type="text"
+                aria-label="Buscar cliente"
                 placeholder="Buscar cliente..."
                 value={busca}
                 onChange={(event) => setBusca(event.target.value)}
@@ -242,6 +243,7 @@ export function Clientes() {
             </div>
 
             <select
+              aria-label="Filtrar clientes por status"
               value={filtroStatus}
               onChange={(event) => {
                 setFiltroStatus(
@@ -339,17 +341,17 @@ export function Clientes() {
                     <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={() => abrirEdicao(cliente)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-blue-50 hover:text-blue-600"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition hover:bg-blue-50 hover:text-blue-600"
                         title="Editar"
-                        aria-label="Editar"
+                        aria-label={`Editar ${cliente.nome}`}
                       >
                         <Pencil size={15} />
                       </button>
                       <button
                         onClick={() => void excluirCliente(cliente.id)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-red-50 hover:text-red-600"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition hover:bg-red-50 hover:text-red-600"
                         title="Excluir"
-                        aria-label="Excluir"
+                        aria-label={`Excluir ${cliente.nome}`}
                       >
                         <Trash2 size={15} />
                       </button>

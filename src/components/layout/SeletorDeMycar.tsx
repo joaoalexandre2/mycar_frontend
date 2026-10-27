@@ -62,7 +62,7 @@ export function SeletorDeMycar({
         aria-haspopup="listbox"
         aria-expanded={aberto}
         title="Trocar de MyCar"
-        className="-ml-1 flex items-center gap-1 rounded px-1 text-xs text-gray-400 transition hover:bg-gray-800 hover:text-white"
+        className="-my-2.5 -ml-1 flex items-center gap-1 rounded px-1 py-2.5 text-xs text-gray-400 transition hover:bg-gray-800 hover:text-white"
       >
         {NOME_CURTO_PERFIL[perfil]}
         <ChevronsUpDown size={11} aria-hidden />

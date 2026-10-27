@@ -521,8 +521,9 @@ export function ManutencaoModal({
                               atuais.filter((_, i) => i !== indice),
                             );
                           }}
+                          aria-label={`Remover peça ${indice + 1}`}
                           title="Remover peça"
-                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-red-600"
+                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-red-600"
                         >
                           <Trash2 size={15} />
                         </button>

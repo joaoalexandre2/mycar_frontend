@@ -71,7 +71,7 @@ function Toast({
         type="button"
         onClick={() => aoFechar(item.id)}
         aria-label="Fechar aviso"
-        className="shrink-0 rounded p-0.5 opacity-70 hover:opacity-100"
+        className="-m-2 shrink-0 rounded p-2.5 opacity-70 hover:opacity-100"
       >
         <X
           className="h-4 w-4"

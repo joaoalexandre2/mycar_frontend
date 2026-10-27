@@ -50,7 +50,7 @@ function Botao({
       disabled={desabilitado}
       title={titulo}
       aria-label={titulo}
-      className={`flex h-9 w-9 items-center justify-center rounded-xl text-gray-400 transition disabled:opacity-50 ${
+      className={`flex h-9 w-9 items-center justify-center rounded-xl text-gray-500 transition disabled:opacity-50 ${
         perigo
           ? "hover:bg-red-50 hover:text-red-600"
           : "hover:bg-blue-50 hover:text-blue-600"
@@ -300,7 +300,7 @@ export function CartaoVeiculo({
           </p>
         )}
 
-        <div className="mt-auto flex items-center justify-between border-t border-gray-100 pt-3">
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-y-1 border-t border-gray-100 pt-3">
           <div className="flex items-center">
             <Botao titulo="Abastecimentos e consumo" aoClicar={acoes.abastecimentos}>
               <Fuel size={16} />

@@ -291,7 +291,8 @@ export function PecasCard({ veiculoId }: { veiculoId: number }) {
                 </span>
                 <button
                   onClick={() => void remover(peca)}
-                  className="text-gray-400 hover:text-red-600"
+                  className="-m-3 p-3 text-gray-500 transition hover:text-red-600"
+                  aria-label={`Remover ${peca.especificacao}`}
                   title="Remover"
                 >
                   <Trash2 size={13} />

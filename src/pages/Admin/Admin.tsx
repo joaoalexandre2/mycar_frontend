@@ -295,6 +295,7 @@ export function Admin() {
             />
             <input
               type="text"
+              aria-label="Buscar conta"
               placeholder="Buscar por nome, e-mail ou oficina..."
               value={busca}
               onChange={(event) => setBusca(event.target.value)}

@@ -290,6 +290,7 @@ export function OrdensServico() {
               />
               <input
                 type="text"
+                aria-label="Buscar ordem de serviço"
                 placeholder="Buscar ordem..."
                 value={busca}
                 onChange={(event) => setBusca(event.target.value)}
@@ -297,6 +298,7 @@ export function OrdensServico() {
               />
             </div>
             <select
+              aria-label="Filtrar ordens por status"
               value={filtroStatus}
               onChange={(event) => {
                 setFiltroStatus(event.target.value);
@@ -398,17 +400,17 @@ export function OrdensServico() {
                             setOrdemEditando(ordem);
                             setModalAberto(true);
                           }}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-blue-50 hover:text-blue-600"
+                          className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-blue-50 hover:text-blue-600"
                           title="Editar"
-                          aria-label="Editar"
+                          aria-label={`Editar ordem de serviço OS-${String(ordem.id).padStart(4, "0")}`}
                         >
                           <Pencil size={15} />
                         </button>
                         <button
                           onClick={() => void excluirOrdem(ordem.id)}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600"
+                          className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-red-50 hover:text-red-600"
                           title="Excluir"
-                          aria-label="Excluir"
+                          aria-label={`Excluir ordem de serviço OS-${String(ordem.id).padStart(4, "0")}`}
                         >
                           <Trash2 size={15} />
                         </button>
