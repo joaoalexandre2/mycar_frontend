@@ -297,7 +297,7 @@ export function Sugestoes() {
                   type="button"
                   onClick={() => setImagens((atuais) => atuais.filter((_, i) => i !== indice))}
                   title="Remover imagem"
-                  className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-gray-800 text-white hover:bg-red-600"
+                  className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-gray-800 text-gray-50 hover:bg-red-600"
                 >
                   <X size={12} />
                 </button>

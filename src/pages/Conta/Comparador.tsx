@@ -119,7 +119,7 @@ export function Comparador() {
           role="alert"
           className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700"
         >
-          {erro}
+          {erro ?? veiculosDaConta.erro}
         </p>
       )}
 

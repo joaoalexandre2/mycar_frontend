@@ -21,7 +21,7 @@ export function Cadastros() {
   return (
     <div className="space-y-6 p-4 sm:p-8">
       <div>
-        <h1 className="text-xl font-bold text-gray-900">Motoristas e centros de custo</h1>
+        <h2 className="text-xl font-bold text-gray-900">Motoristas e centros de custo</h2>
         <p className="mt-1 text-sm text-gray-500">
           Quem dirige os veículos da frota e a que área cada gasto e cada viagem pertence.
         </p>
@@ -96,7 +96,7 @@ function Motoristas() {
   }
 
   async function remover(m: Motorista) {
-    if (!(await pedirConfirmacao({ mensagem: `Remover o motorista ${m.nome}?` }))) return;
+    if (!(await pedirConfirmacao({ mensagem: `Remover o motorista ${m.nome}?`, confirmarTexto: "Remover", perigo: true }))) return;
 
     try {
       await motoristasService.remover(m.id);
@@ -319,7 +319,7 @@ function Centros() {
   }
 
   async function remover(c: CentroCusto) {
-    if (!(await pedirConfirmacao({ mensagem: `Remover o centro de custo ${c.nome}?` }))) return;
+    if (!(await pedirConfirmacao({ mensagem: `Remover o centro de custo ${c.nome}?`, confirmarTexto: "Remover", perigo: true }))) return;
 
     try {
       await centrosCustoService.remover(c.id);

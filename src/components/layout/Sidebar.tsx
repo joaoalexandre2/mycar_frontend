@@ -14,8 +14,10 @@ import {
     LogOut,
     X,
   } from "lucide-react";
+  import { useEffect, useRef } from "react";
   import { NavLink, useNavigate } from "react-router-dom";
   import { useAuth } from "../../hooks/useAuth";
+  import { useTelaGrande } from "../../hooks/useTelaGrande";
   import { Avatar } from "./Avatar";
   import { SeletorDeMycar } from "./SeletorDeMycar";
   import { ehConta, perfilDe } from "../../utils/perfil";
@@ -36,6 +38,41 @@ import {
     const { usuario, sair } = useAuth();
     const navigate = useNavigate();
     const perfil = perfilDe(usuario);
+    const telaGrande = useTelaGrande();
+    const botaoFechar = useRef<HTMLButtonElement>(null);
+    const fecharRef = useRef(aoFechar);
+
+    // Fechado, o menu só está deslocado para fora da tela: sem `inert` o teclado
+    // ainda entraria nos links invisíveis.
+    const escondida = !aberta && !telaGrande;
+
+    useEffect(() => {
+      fecharRef.current = aoFechar;
+    });
+
+    // Menu aberto no celular: o foco vai para dentro, Esc fecha e o foco volta
+    // para o botão que abriu.
+    useEffect(() => {
+      if (!aberta || telaGrande) {
+        return;
+      }
+
+      const abridor = document.activeElement as HTMLElement | null;
+      botaoFechar.current?.focus();
+
+      function aoTeclar(evento: KeyboardEvent) {
+        if (evento.key === "Escape") {
+          fecharRef.current();
+        }
+      }
+
+      document.addEventListener("keydown", aoTeclar);
+
+      return () => {
+        document.removeEventListener("keydown", aoTeclar);
+        abridor?.focus();
+      };
+    }, [aberta, telaGrande]);
 
     async function handleLogout() {
       await sair();
@@ -53,6 +90,8 @@ import {
         )}
 
         <aside
+          id="menu-lateral"
+          inert={escondida}
           className={`print:hidden fixed inset-y-0 left-0 z-40 flex w-[250px] flex-col bg-gray-900 px-4 py-6 text-white transition-transform duration-200 md:translate-x-0 ${
             aberta ? "translate-x-0" : "-translate-x-full"
           }`}
@@ -77,6 +116,7 @@ import {
             </div>
 
             <button
+              ref={botaoFechar}
               type="button"
               onClick={aoFechar}
               title="Fechar menu"
@@ -89,7 +129,7 @@ import {
 
           {/* Menu */}
           <nav aria-label="Principal" className="flex flex-col gap-1">
-            <p className="mb-2 px-2 text-xs font-bold tracking-widest text-gray-500">
+            <p className="mb-2 px-2 text-xs font-bold tracking-widest text-gray-400">
               MENU
             </p>
 
@@ -194,7 +234,7 @@ import {
               </>
             )}
 
-            <p className="mb-2 mt-7 px-2 text-xs font-bold tracking-widest text-gray-500">
+            <p className="mb-2 mt-7 px-2 text-xs font-bold tracking-widest text-gray-400">
               SISTEMA
             </p>
 
@@ -232,7 +272,7 @@ import {
                   {usuario?.name ?? "Usuário"}
                 </strong>
 
-                <span className="truncate text-xs text-gray-500">
+                <span className="truncate text-xs text-gray-400">
                   {usuario?.email ?? ""}
                 </span>
               </div>

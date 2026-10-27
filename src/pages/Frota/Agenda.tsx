@@ -130,9 +130,9 @@ export function Agenda() {
     <div className="space-y-6 p-4 sm:p-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="flex items-center gap-2 text-xl font-bold text-gray-900">
+          <h2 className="flex items-center gap-2 text-xl font-bold text-gray-900">
             <CalendarDays size={22} /> Agenda de veículos
-          </h1>
+          </h2>
           <p className="mt-1 text-sm text-gray-500">Quem vai usar cada veículo e quando.</p>
         </div>
 
@@ -192,7 +192,7 @@ export function Agenda() {
           </button>
         </div>
 
-        <h2 className="min-w-40 text-base font-semibold text-gray-900 capitalize">{rotuloDoMes(ano, mes)}</h2>
+        <h3 className="min-w-40 text-base font-semibold text-gray-900 capitalize">{rotuloDoMes(ano, mes)}</h3>
 
         <div className="ml-auto flex flex-wrap gap-2">
           <select
