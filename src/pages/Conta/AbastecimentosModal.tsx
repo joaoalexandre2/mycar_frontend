@@ -153,14 +153,14 @@ export function AbastecimentosModal({
             ["Total gasto", resumo ? formatarMoeda(resumo.totalGasto) : "—"],
           ].map(([titulo, valorCartao]) => (
             <div key={titulo} className="rounded-lg border border-gray-200 p-3">
-              <p className="text-[10px] text-gray-400">{titulo}</p>
+              <p className="text-xs text-gray-500">{titulo}</p>
               <p className="mt-1 text-sm font-bold text-gray-900">{valorCartao}</p>
             </div>
           ))}
         </div>
 
         {resumo && resumo.consumoMedioKmL === null && (
-          <p className="rounded-lg bg-gray-50 px-3 py-2 text-[11px] text-gray-500">
+          <p className="rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-500">
             O consumo aparece a partir do segundo abastecimento com tanque
             cheio. O primeiro serve só como ponto de partida.
           </p>
@@ -170,7 +170,7 @@ export function AbastecimentosModal({
           <p className="text-xs font-medium text-gray-700">Novo abastecimento</p>
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <label className="block text-[11px] text-gray-500">
+            <label className="block text-xs text-gray-500">
               Data
               <input
                 type="date"
@@ -181,7 +181,7 @@ export function AbastecimentosModal({
                 required
               />
             </label>
-            <label className="block text-[11px] text-gray-500">
+            <label className="block text-xs text-gray-500">
               Km no hodômetro
               <input
                 type="number"
@@ -193,7 +193,7 @@ export function AbastecimentosModal({
                 required
               />
             </label>
-            <label className="block text-[11px] text-gray-500">
+            <label className="block text-xs text-gray-500">
               Litros
               <input
                 type="text"
@@ -207,7 +207,7 @@ export function AbastecimentosModal({
                 required
               />
             </label>
-            <label className="block text-[11px] text-gray-500">
+            <label className="block text-xs text-gray-500">
               Valor pago (R$)
               <input
                 type="text"
@@ -222,7 +222,7 @@ export function AbastecimentosModal({
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <label className="block text-[11px] text-gray-500">
+            <label className="block text-xs text-gray-500">
               Combustível (opcional)
               <select
                 value={combustivel}
@@ -237,7 +237,7 @@ export function AbastecimentosModal({
                 ))}
               </select>
             </label>
-            <label className="block text-[11px] text-gray-500">
+            <label className="block text-xs text-gray-500">
               Posto (opcional)
               <input
                 type="text"
@@ -260,14 +260,14 @@ export function AbastecimentosModal({
           </label>
 
           {litrosTravados && (
-            <p className="text-[11px] text-gray-500">
+            <p className="text-xs text-gray-500">
               Litros preenchidos com a capacidade do tanque na ficha técnica do modelo (
               {litrosDoTanque(tanqueLitros)} l). Desmarque para informar um valor diferente.
             </p>
           )}
 
           {cheio && dados && tanqueLitros === null && (
-            <p className="text-[11px] text-gray-500">
+            <p className="text-xs text-gray-500">
               {temEstimativas(tipoDe(veiculo.tipoVeiculo))
                 ? "A ficha deste modelo não traz a capacidade do tanque: digite os litros abastecidos."
                 : "Para motos e caminhões não temos a capacidade do tanque: digite os litros abastecidos."}
@@ -292,9 +292,9 @@ export function AbastecimentosModal({
         </form>
 
         {!dados ? (
-          <p className="text-xs text-gray-400">Carregando...</p>
+          <p className="text-xs text-gray-500">Carregando...</p>
         ) : dados.abastecimentos.length === 0 ? (
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-500">
             Nenhum abastecimento registrado ainda.
           </p>
         ) : (
@@ -308,7 +308,7 @@ export function AbastecimentosModal({
                   <p className="text-xs font-semibold text-gray-900">
                     {formatarData(item.data)} · {formatarKm(item.km)}
                   </p>
-                  <p className="mt-1 text-[11px] text-gray-500">
+                  <p className="mt-1 text-xs text-gray-500">
                     {numero(item.litros, 2, " l")} · {formatarMoeda(item.valorTotal)}
                     {item.precoLitro !== null && ` · ${formatarMoeda(item.precoLitro)}/l`}
                     {item.combustivel && ` · ${item.combustivel}`}
@@ -319,7 +319,7 @@ export function AbastecimentosModal({
 
                 <div className="flex shrink-0 items-center gap-3">
                   {item.consumoKmL !== null && (
-                    <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700">
+                    <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
                       {numero(item.consumoKmL, 2, " km/l")}
                     </span>
                   )}

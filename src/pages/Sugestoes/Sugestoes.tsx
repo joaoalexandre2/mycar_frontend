@@ -38,7 +38,7 @@ function Selo({ status }: { status: StatusSugestao }) {
   const item = STATUS.find((s) => s.chave === status) ?? STATUS[0];
 
   return (
-    <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${item.classe}`}>
+    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${item.classe}`}>
       {item.rotulo}
     </span>
   );
@@ -87,7 +87,7 @@ function RespostaDaEquipe({
           type="button"
           onClick={() => void salvar()}
           disabled={salvando}
-          className="h-8 rounded-lg bg-blue-600 px-3 text-[11px] font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+          className="h-8 rounded-lg bg-blue-600 px-3 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
         >
           {salvando ? "Salvando..." : "Salvar"}
         </button>
@@ -100,7 +100,7 @@ function RespostaDaEquipe({
         onChange={(e) => setResposta(e.target.value)}
         className={`${classeCampo} py-2`}
       />
-      {erro && <p className="text-[11px] text-red-600">{erro}</p>}
+      {erro && <p className="text-xs text-red-600">{erro}</p>}
     </div>
   );
 }
@@ -218,7 +218,7 @@ export function Sugestoes() {
         </p>
 
         <div>
-          <p id="tipo-sugestao" className="text-[11px] text-gray-500">
+          <p id="tipo-sugestao" className="text-xs text-gray-500">
             Tipo
           </p>
           {/* Botões em vez de <select>: o menu nativo do Chrome aparece fora do
@@ -251,7 +251,7 @@ export function Sugestoes() {
           </div>
         </div>
 
-        <label className="block text-[11px] text-gray-500">
+        <label className="block text-xs text-gray-500">
           Título
           <input
             type="text"
@@ -263,7 +263,7 @@ export function Sugestoes() {
           />
         </label>
 
-        <label className="block text-[11px] text-gray-500">
+        <label className="block text-xs text-gray-500">
           Conte a ideia
           <textarea
             value={descricao}
@@ -308,14 +308,14 @@ export function Sugestoes() {
               <button
                 type="button"
                 onClick={() => entradaImagem.current?.click()}
-                className="flex h-9 items-center gap-2 rounded-lg border border-gray-200 px-3 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50"
+                className="flex h-9 items-center gap-2 rounded-lg border border-gray-200 px-3 text-xs font-semibold text-gray-600 transition hover:bg-gray-50"
               >
                 <ImagePlus size={15} />
                 Anexar imagem
               </button>
             )}
           </div>
-          <p className="mt-1.5 text-[11px] text-gray-400">
+          <p className="mt-1.5 text-xs text-gray-500">
             Opcional: até {LIMITE_IMAGENS} imagens, como um print da tela. Só você e a equipe veem.
           </p>
         </div>
@@ -359,7 +359,7 @@ export function Sugestoes() {
                     setVisao(v);
                     setLista(null);
                   }}
-                  className={`h-8 rounded-full border px-3 text-[11px] font-semibold transition ${
+                  className={`h-8 rounded-full border px-3 text-xs font-semibold transition ${
                     visao === v
                       ? "border-blue-500 bg-blue-50 text-blue-600"
                       : "border-gray-200 text-gray-500 hover:bg-gray-50"
@@ -391,9 +391,9 @@ export function Sugestoes() {
         </div>
 
         {!lista ? (
-          <p className="p-5 text-xs text-gray-400">Carregando...</p>
+          <p className="p-5 text-xs text-gray-500">Carregando...</p>
         ) : lista.length === 0 ? (
-          <p className="p-5 text-xs text-gray-400">
+          <p className="p-5 text-xs text-gray-500">
             {visao === "todas"
               ? "Nenhuma sugestão por aqui."
               : "Você ainda não enviou nenhuma sugestão."}
@@ -405,7 +405,7 @@ export function Sugestoes() {
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-gray-900">{s.titulo}</p>
-                    <p className="mt-0.5 text-[10px] text-gray-400">
+                    <p className="mt-0.5 text-xs text-gray-500">
                       {rotuloCategoria(s.categoria)} · {formatarData(s.criadaEm)}
                       {s.autor &&
                         ` · ${s.autor.nome ?? "—"} (${s.autor.perfil ?? "—"}, ${s.autor.email ?? "—"})`}

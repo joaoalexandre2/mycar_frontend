@@ -10,19 +10,19 @@ export function Quadro({
   titulo: string;
   valor: ReactNode;
   detalhe?: string;
-  /** "alerta" pinta o número na cor principal; "perigo" em vermelho. */
+  /** "alerta" pinta o número em âmbar; "perigo" em vermelho. */
   tom?: "normal" | "alerta" | "perigo";
 }) {
   const cor =
     tom === "perigo"
       ? "text-red-600"
       : tom === "alerta"
-        ? "text-blue-600"
+        ? "text-amber-700"
         : "text-gray-900";
 
   return (
     <div className="min-w-0 overflow-hidden rounded-2xl border border-gray-200 bg-white p-4">
-      <p className="text-[11px] font-medium tracking-wide text-gray-500 uppercase">
+      <p className="text-xs font-medium tracking-wide text-gray-500 uppercase">
         {titulo}
       </p>
       <div className="valor-fluido-pai mt-1">
@@ -30,7 +30,7 @@ export function Quadro({
           {valor}
         </p>
       </div>
-      {detalhe && <p className="mt-1.5 text-[11px] text-gray-400">{detalhe}</p>}
+      {detalhe && <p className="mt-1.5 text-xs text-gray-500">{detalhe}</p>}
     </div>
   );
 }

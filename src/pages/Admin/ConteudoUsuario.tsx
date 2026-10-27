@@ -68,7 +68,7 @@ export function ConteudoUsuario({ usuarioId, aoFechar }: ConteudoUsuarioProps) {
       onClose={aoFechar}
     >
 
-      <p className="mx-5 mt-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-800">
+      <p className="mx-5 mt-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
         <ShieldAlert size={14} className="mt-0.5 shrink-0" />
         Somente leitura. Esta consulta foi registrada (quem viu, de quem e quando).
         Contém dados pessoais de terceiros: use apenas para suporte.
@@ -80,7 +80,7 @@ export function ConteudoUsuario({ usuarioId, aoFechar }: ConteudoUsuarioProps) {
         </p>
       )}
 
-      {!conteudo && !erro && <p className="p-5 text-xs text-gray-400">Carregando...</p>}
+      {!conteudo && !erro && <p className="p-5 text-xs text-gray-500">Carregando...</p>}
 
       {conteudo && (
         <>
@@ -92,7 +92,7 @@ export function ConteudoUsuario({ usuarioId, aoFechar }: ConteudoUsuarioProps) {
                 role="tab"
                 aria-selected={i === aba}
                 onClick={() => setAba(i)}
-                className={`shrink-0 rounded-lg px-3 py-1.5 text-[11px] font-semibold transition ${
+                className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
                   i === aba ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
@@ -103,13 +103,13 @@ export function ConteudoUsuario({ usuarioId, aoFechar }: ConteudoUsuarioProps) {
 
           <div className="p-5">
             {secao && secao.linhas.length === 0 && (
-              <p className="py-8 text-center text-xs text-gray-400">Nada cadastrado nesta seção.</p>
+              <p className="py-8 text-center text-xs text-gray-500">Nada cadastrado nesta seção.</p>
             )}
 
             {secao && secao.linhas.length > 0 && (
               <>
                 {secao.total > secao.linhas.length && (
-                  <p className="mb-2 text-[11px] text-gray-400">
+                  <p className="mb-2 text-xs text-gray-500">
                     Mostrando as {secao.linhas.length} mais recentes de {secao.total}.
                   </p>
                 )}
@@ -120,7 +120,7 @@ export function ConteudoUsuario({ usuarioId, aoFechar }: ConteudoUsuarioProps) {
                         {colunas.map((c) => (
                           <th
                             key={c}
-                            className="whitespace-nowrap px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-gray-500"
+                            className="whitespace-nowrap px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500"
                           >
                             {rotuloDaColuna(c)}
                           </th>
@@ -131,7 +131,7 @@ export function ConteudoUsuario({ usuarioId, aoFechar }: ConteudoUsuarioProps) {
                       {secao.linhas.map((linha, i) => (
                         <tr key={i} className="border-b border-gray-100 last:border-0">
                           {colunas.map((c) => (
-                            <td key={c} className="max-w-[260px] truncate px-3 py-2 text-[11px] text-gray-700 select-text">
+                            <td key={c} className="max-w-[260px] truncate px-3 py-2 text-xs text-gray-700 select-text">
                               <span title={formatarValor(linha[c])}>{formatarValor(linha[c])}</span>
                             </td>
                           ))}

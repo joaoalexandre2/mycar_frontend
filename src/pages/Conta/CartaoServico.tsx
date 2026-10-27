@@ -9,10 +9,10 @@ import type { Servico, SituacaoServico } from "../../types/conta";
 
 const SITUACAO: Record<SituacaoServico, { texto: string; pilula: string; barra: string }> = {
   em_dia: { texto: "Em dia", pilula: "bg-gray-100 text-gray-600", barra: "bg-gray-800" },
-  vence_em_breve: { texto: "Trocar em breve", pilula: "bg-blue-100 text-blue-700", barra: "bg-blue-600" },
+  vence_em_breve: { texto: "Trocar em breve", pilula: "bg-amber-100 text-amber-800", barra: "bg-amber-500" },
   vencido: { texto: "Vencido", pilula: "bg-red-100 text-red-700", barra: "bg-red-600" },
   sem_aviso: { texto: "Sem aviso", pilula: "bg-gray-100 text-gray-500", barra: "bg-gray-300" },
-  anterior: { texto: "Anterior", pilula: "bg-gray-100 text-gray-400", barra: "bg-gray-300" },
+  anterior: { texto: "Anterior", pilula: "bg-gray-100 text-gray-500", barra: "bg-gray-300" },
 };
 
 function numero(n: number) {
@@ -35,12 +35,12 @@ function Barra({
   return (
     <div>
       <div className="flex items-baseline justify-between gap-2">
-        <span className="text-[10px] font-medium tracking-wide text-gray-400 uppercase">
+        <span className="text-xs font-medium tracking-wide text-gray-500 uppercase">
           {rotulo}
         </span>
         <span className="font-display text-xl leading-none font-semibold text-gray-900">
           {numero(barra.usado)}
-          <span className="text-sm font-medium text-gray-400">
+          <span className="text-sm font-medium text-gray-500">
             {" / "}
             {numero(barra.total)} {unidade}
           </span>
@@ -102,13 +102,13 @@ export function CartaoServico({ servico }: { servico: Servico }) {
           <h4 className="truncate text-[13px] font-semibold text-gray-900">
             {servico.rotulo}
           </h4>
-          <p className="mt-0.5 truncate text-[11px] text-gray-500">
+          <p className="mt-0.5 truncate text-xs text-gray-500">
             {servico.veiculo} · {servico.placa}
           </p>
         </div>
 
         <span
-          className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold ${situacao.pilula}`}
+          className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${situacao.pilula}`}
         >
           {situacao.texto}
         </span>
@@ -119,7 +119,7 @@ export function CartaoServico({ servico }: { servico: Servico }) {
         {prazo && <Barra rotulo="Prazo" barra={prazo} unidade="dias" cor={situacao.barra} />}
 
         {!km && !prazo && (
-          <p className="rounded-xl bg-gray-50 px-3 py-2.5 text-[11px] leading-relaxed text-gray-500">
+          <p className="rounded-xl bg-gray-50 px-3 py-2.5 text-xs leading-relaxed text-gray-500">
             {servico.situacao === "sem_aviso"
               ? "Sem aviso da próxima troca. Ao registrar de novo, escolha um prazo ou uma quilometragem."
               : "Informe o km do veículo no dia do serviço para acompanhar a quilometragem."}
@@ -127,11 +127,11 @@ export function CartaoServico({ servico }: { servico: Servico }) {
         )}
       </div>
 
-      <footer className="mt-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-gray-100 pt-3 text-[11px]">
+      <footer className="mt-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-gray-100 pt-3 text-xs">
         <span className={servico.situacao === "vencido" ? "font-semibold text-red-600" : "text-gray-600"}>
           {restante || "—"}
         </span>
-        <span className="text-gray-400">
+        <span className="text-gray-500">
           Feito em {formatarData(servico.realizadoEm)}
           {servico.km !== null && ` · ${formatarKm(servico.km)}`}
           {servico.valor !== null && ` · ${formatarMoeda(servico.valor)}`}

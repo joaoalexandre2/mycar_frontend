@@ -85,7 +85,7 @@ function Imposto({
 
   return (
     <div className="rounded-xl bg-gray-50 px-3 py-2.5">
-      <p className="text-[10px] font-medium tracking-wide text-gray-500 uppercase">
+      <p className="text-xs font-medium tracking-wide text-gray-500 uppercase">
         {rotulo}
       </p>
       {isento ? (
@@ -93,7 +93,7 @@ function Imposto({
           <p className="font-display text-xl leading-tight font-semibold text-emerald-700">
             Isento
           </p>
-          <p className="text-[10px] text-gray-400">mais de 20 anos de fabricação</p>
+          <p className="text-xs text-gray-500">mais de 20 anos de fabricação</p>
         </>
       ) : (
         <p className="font-display text-xl leading-tight font-semibold text-gray-900">
@@ -101,12 +101,12 @@ function Imposto({
         </p>
       )}
       {aliquotaMedia && valor !== null && !isento && (
-        <p className="text-[10px] text-amber-600">alíquota média do país</p>
+        <p className="text-xs text-amber-600">alíquota média do país</p>
       )}
       {vencimento && !isento && (
         <p
-          className={`mt-0.5 text-[10px] ${
-            perto ? "font-semibold text-blue-600" : "text-gray-400"
+          className={`mt-0.5 text-xs ${
+            perto ? "font-semibold text-blue-600" : "text-gray-500"
           }`}
         >
           vence (est.) {formatarData(vencimento)}
@@ -170,7 +170,7 @@ export function CartaoVeiculo({
           <h3 className="font-display truncate text-2xl leading-none font-bold tracking-wide text-white uppercase">
             {nome}
           </h3>
-          <p className="mt-1 truncate text-[11px] text-white/75">
+          <p className="mt-1 truncate text-xs text-white/75">
             {veiculo.marca} {veiculo.modelo} · {veiculo.anoCompleto}
             {!temEstimativas(tipoDe(veiculo.tipoVeiculo)) && ` · ${ROTULO_TIPO[tipoDe(veiculo.tipoVeiculo)]}`}
           </p>
@@ -178,7 +178,7 @@ export function CartaoVeiculo({
       </div>
 
       {!veiculo.fotoCapaUrl && veiculo.fotoModelo && (
-        <p className="truncate border-b border-gray-100 px-4 py-1 text-[9px] text-gray-400">
+        <p className="truncate border-b border-gray-100 px-4 py-1 text-xs text-gray-500">
           Foto ilustrativa do modelo ·{" "}
           {veiculo.fotoModelo.autor ? `${veiculo.fotoModelo.autor} · ` : ""}
           {veiculo.fotoModelo.licencaUrl ? (
@@ -213,7 +213,7 @@ export function CartaoVeiculo({
         {!placaValida(veiculo.placa) && (
           <p
             role="alert"
-            className="rounded-xl bg-red-50 px-3 py-2 text-[11px] font-semibold text-red-600"
+            className="rounded-xl bg-red-50 px-3 py-2 text-xs font-semibold text-red-600"
           >
             A placa "{veiculo.placa}" está fora do padrão. Toque em editar e
             corrija a placa (ABC1234 ou ABC1D23).
@@ -222,7 +222,7 @@ export function CartaoVeiculo({
 
         <div className="flex items-end justify-between gap-3">
           <div className="valor-fluido-pai flex-1">
-            <p className="text-[10px] font-medium tracking-wide text-gray-500 uppercase">
+            <p className="text-xs font-medium tracking-wide text-gray-500 uppercase">
               Valor na FIPE
             </p>
             <p className="font-display valor-fluido leading-none font-bold text-gray-900">
@@ -230,7 +230,7 @@ export function CartaoVeiculo({
             </p>
           </div>
           {veiculo.fipeValor !== null && veiculo.fipeConsultadoEm && (
-            <p className="text-[10px] text-gray-400">
+            <p className="text-xs text-gray-500">
               em {formatarData(veiculo.fipeConsultadoEm)}
             </p>
           )}
@@ -253,7 +253,7 @@ export function CartaoVeiculo({
             />
           </div>
         ) : (
-          <p className="rounded-xl bg-gray-50 px-3 py-2.5 text-[11px] text-gray-500">
+          <p className="rounded-xl bg-gray-50 px-3 py-2.5 text-xs text-gray-500">
             {temEstimativas(tipoDe(veiculo.tipoVeiculo))
               ? "Informe o estado de emplacamento (editar) para ver o IPVA e o licenciamento estimados."
               : "Informe o estado de emplacamento (editar) para ver o IPVA estimado e as datas de vencimento."}
@@ -261,7 +261,7 @@ export function CartaoVeiculo({
         )}
 
         {!temEstimativas(tipoDe(veiculo.tipoVeiculo)) && (veiculo.uf || veiculo.isentoIpva) && (
-          <p className="text-[10px] text-gray-400">
+          <p className="text-xs text-gray-500">
             O valor do licenciamento é estimado só para carros; as datas seguem o final da placa.
             {tipoDe(veiculo.tipoVeiculo) === "moto" &&
               " Motos de baixa cilindrada podem ser isentas de IPVA em alguns estados."}
@@ -269,7 +269,7 @@ export function CartaoVeiculo({
         )}
 
         {(veiculo.kmAtual !== null || acoes.corrigirKm) && (
-          <p className="text-[11px] text-gray-600">
+          <p className="text-xs text-gray-600">
             Km atual{" "}
             <span className="font-semibold text-gray-900">{formatarKm(veiculo.kmAtual)}</span>
             {veiculo.kmAtualizadoEm && ` · em ${formatarData(veiculo.kmAtualizadoEm)}`}
@@ -286,13 +286,13 @@ export function CartaoVeiculo({
         )}
 
         {veiculo.possivelIsencaoIpva && (
-          <p className="text-[10px] text-amber-600">
+          <p className="text-xs text-amber-600">
             Carro com 15 a 20 anos: alguns estados isentam o IPVA. Confira na Sefaz.
           </p>
         )}
 
         {veiculo.revisaoPrevistaEm && (
-          <p className="text-[11px] text-gray-600">
+          <p className="text-xs text-gray-600">
             Revisão em{" "}
             <span className="font-semibold text-gray-900">
               {formatarData(veiculo.revisaoPrevistaEm)}

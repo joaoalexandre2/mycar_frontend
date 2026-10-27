@@ -177,7 +177,7 @@ export function SegurosModal({
 
           {possui === null && (
             <>
-              <p className="mt-1 text-[11px] text-gray-500">
+              <p className="mt-1 text-xs text-gray-500">
                 Se tem, informe o vencimento: avisamos por e-mail antes de vencer.
               </p>
               <div className="mt-3 flex gap-2">
@@ -200,7 +200,7 @@ export function SegurosModal({
           )}
 
           {possui === true && (
-            <p className="mt-2 text-[11px] text-gray-600">
+            <p className="mt-2 text-xs text-gray-600">
               {apolice?.vigenciaFim ? (
                 <>
                   Sim. O seguro de <strong>{apolice.seguradora}</strong> vence em{" "}
@@ -222,7 +222,7 @@ export function SegurosModal({
           )}
 
           {possui === false && (
-            <p className="mt-2 text-[11px] text-gray-600">
+            <p className="mt-2 text-xs text-gray-600">
               Sem seguro neste veículo. Cadastre as propostas que receber para compará-las.
               <button
                 type="button"
@@ -243,21 +243,21 @@ export function SegurosModal({
               <p className="mt-2 text-sm font-bold text-gray-900">
                 {formatarMoeda(referencia.baixo)} a {formatarMoeda(referencia.alto)} por ano
               </p>
-              <p className="mt-1 text-[11px] text-gray-500">
+              <p className="mt-1 text-xs text-gray-500">
                 Tipicamente cerca de {formatarMoeda(referencia.medio)} por ano (
                 {formatarMoeda(referencia.medio / 12)} por mês), pelo valor FIPE do
                 veículo.
               </p>
             </>
           ) : (
-            <p className="mt-2 text-[11px] text-gray-500">
+            <p className="mt-2 text-xs text-gray-500">
               {tipoDe(veiculo.tipoVeiculo) === "caminhao"
                 ? "Não há referência de mercado para caminhões. Cadastre as propostas que receber e compare uma com a outra."
                 : "Para ver a referência, cadastre o veículo com a tabela FIPE: ela parte do valor do veículo."}
             </p>
           )}
 
-          <p className="mt-2 text-[11px] text-gray-400">
+          <p className="mt-2 text-xs text-gray-500">
             {dados?.aviso ??
               "É só uma referência, não uma cotação: o preço real depende do CEP, do condutor, do bônus e das coberturas."}
           </p>
@@ -270,7 +270,7 @@ export function SegurosModal({
           <p className="text-xs font-medium text-gray-700">Adicionar</p>
 
           {possui === false ? (
-            <p className="text-[11px] text-gray-500">Proposta que recebi</p>
+            <p className="text-xs text-gray-500">Proposta que recebi</p>
           ) : (
             <div className="flex flex-wrap gap-4 text-xs text-gray-600">
               <label className="flex items-center gap-2">
@@ -293,7 +293,7 @@ export function SegurosModal({
           )}
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <label className="block text-[11px] text-gray-500">
+            <label className="block text-xs text-gray-500">
               Seguradora
               <input
                 type="text"
@@ -304,7 +304,7 @@ export function SegurosModal({
                 required
               />
             </label>
-            <label className="block text-[11px] text-gray-500">
+            <label className="block text-xs text-gray-500">
               Valor por ano (R$)
               <input
                 type="text"
@@ -316,7 +316,7 @@ export function SegurosModal({
                 required
               />
             </label>
-            <label className="block text-[11px] text-gray-500">
+            <label className="block text-xs text-gray-500">
               Franquia (R$, opcional)
               <input
                 type="text"
@@ -329,7 +329,7 @@ export function SegurosModal({
           </div>
 
           {tipo === "apolice" && (
-            <label className="block text-[11px] text-gray-500">
+            <label className="block text-xs text-gray-500">
               Vencimento do seguro (fim da vigência)
               <input
                 type="date"
@@ -338,13 +338,13 @@ export function SegurosModal({
                 className={`mt-1 ${classeCampo}`}
                 required
               />
-              <span className="mt-1 block text-[11px] text-gray-400">
+              <span className="mt-1 block text-xs text-gray-500">
                 Avisamos por e-mail 45 dias antes, a hora de cotar de novo.
               </span>
             </label>
           )}
 
-          <label className="block text-[11px] text-gray-500">
+          <label className="block text-xs text-gray-500">
             Coberturas ou observações (opcional)
             <input
               type="text"
@@ -374,9 +374,9 @@ export function SegurosModal({
         </form>
 
         {!dados ? (
-          <p className="text-xs text-gray-400">Carregando...</p>
+          <p className="text-xs text-gray-500">Carregando...</p>
         ) : dados.seguros.length === 0 ? (
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-500">
             Nada cadastrado ainda. Adicione o seu seguro atual e as propostas
             que receber para compará-las aqui.
           </p>
@@ -396,38 +396,38 @@ export function SegurosModal({
                     <p className="flex flex-wrap items-center gap-2 text-xs font-semibold text-gray-900">
                       {item.seguradora}
                       {ehAtual && (
-                        <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[9px] font-bold uppercase text-blue-700">
+                        <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-bold uppercase text-blue-700">
                           Seguro atual
                         </span>
                       )}
                       {ehMelhor && dados.seguros.filter((s) => s.tipo === "proposta").length > 1 && (
-                        <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold uppercase text-emerald-700">
+                        <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-bold uppercase text-emerald-700">
                           Mais barata
                         </span>
                       )}
                     </p>
-                    <p className="mt-1 text-[11px] text-gray-500">
+                    <p className="mt-1 text-xs text-gray-500">
                       {formatarMoeda(item.valorAnual)} por ano ·{" "}
                       {formatarMoeda(item.valorMensal)} por mês
                       {item.franquia !== null && ` · franquia ${formatarMoeda(item.franquia)}`}
                     </p>
                     {item.vigenciaFim && (
-                      <p className="mt-0.5 text-[11px] text-gray-500">
+                      <p className="mt-0.5 text-xs text-gray-500">
                         Vai até {formatarData(item.vigenciaFim)}
                       </p>
                     )}
                     {item.observacoes && (
-                      <p className="mt-0.5 text-[11px] text-gray-400">{item.observacoes}</p>
+                      <p className="mt-0.5 text-xs text-gray-500">{item.observacoes}</p>
                     )}
                     {referenciaTexto && (
-                      <p className="mt-0.5 text-[11px] text-gray-400">{referenciaTexto}</p>
+                      <p className="mt-0.5 text-xs text-gray-500">{referenciaTexto}</p>
                     )}
                   </div>
 
                   <div className="flex shrink-0 items-center gap-3">
                     {item.economiaVsApolice !== null && (
                       <span
-                        className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${
+                        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
                           item.economiaVsApolice > 0
                             ? "bg-emerald-50 text-emerald-700"
                             : "bg-amber-50 text-amber-700"

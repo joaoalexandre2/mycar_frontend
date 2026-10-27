@@ -255,7 +255,7 @@ export function OrdensServico() {
         </button>
       </div>
 
-      <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <InfoCard label="Ordens abertas" value={resumo.abertas} icon={<ClipboardList size={19} />} />
         <InfoCard label="Em andamento" value={resumo.emAndamento} icon={<ClipboardList size={19} />} />
         <InfoCard label="Finalizadas" value={resumo.finalizadas} icon={<ClipboardList size={19} />} />
@@ -289,7 +289,7 @@ export function OrdensServico() {
                 placeholder="Buscar ordem..."
                 value={busca}
                 onChange={(event) => setBusca(event.target.value)}
-                className="h-9 w-full rounded-lg border border-gray-200 bg-gray-50 pl-9 pr-3 text-xs text-gray-700 outline-none placeholder:text-gray-400 focus:border-blue-500 focus:bg-white"
+                className="h-9 w-full rounded-lg border border-gray-200 bg-gray-50 pl-9 pr-3 text-xs text-gray-700 outline-none placeholder:text-gray-500 focus:border-blue-500 focus:bg-white"
               />
             </div>
             <select

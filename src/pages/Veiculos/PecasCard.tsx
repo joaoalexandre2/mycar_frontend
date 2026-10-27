@@ -101,7 +101,7 @@ export function PecasCard({ veiculoId }: { veiculoId: number }) {
       <div className="flex items-center justify-between gap-3 border-b border-gray-100 px-5 py-4">
         <div>
           <h3 className="text-sm font-semibold text-gray-900">Peças</h3>
-          <p className="mt-1 text-[11px] text-gray-400">
+          <p className="mt-1 text-xs text-gray-500">
             Anote a peça instalada em cada serviço e as referências do veículo.
             Dados informados por vocês: confirme com o manual ou o catálogo.
           </p>
@@ -109,7 +109,7 @@ export function PecasCard({ veiculoId }: { veiculoId: number }) {
         {!aberto && (
           <button
             onClick={() => setAberto(true)}
-            className="flex h-8 shrink-0 items-center gap-2 rounded-lg border border-gray-200 px-3 text-[11px] font-medium text-gray-600 hover:bg-gray-50 print:hidden"
+            className="flex h-8 shrink-0 items-center gap-2 rounded-lg border border-gray-200 px-3 text-xs font-medium text-gray-600 hover:bg-gray-50 print:hidden"
           >
             <Plus size={13} />
             Registrar peça
@@ -120,7 +120,7 @@ export function PecasCard({ veiculoId }: { veiculoId: number }) {
       {aberto && (
         <div className="space-y-3 border-b border-gray-100 p-5 print:hidden">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <label className="block text-[11px] text-gray-500">
+            <label className="block text-xs text-gray-500">
               Tipo
               <select
                 value={form.tipo}
@@ -135,7 +135,7 @@ export function PecasCard({ veiculoId }: { veiculoId: number }) {
                 ))}
               </select>
             </label>
-            <label className="block text-[11px] text-gray-500">
+            <label className="block text-xs text-gray-500">
               Código ou especificação
               <input
                 value={form.especificacao}
@@ -143,7 +143,7 @@ export function PecasCard({ veiculoId }: { veiculoId: number }) {
                 className="mt-1 h-9 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
               />
             </label>
-            <label className="block text-[11px] text-gray-500">
+            <label className="block text-xs text-gray-500">
               Marca (opcional)
               <input
                 value={form.marca}
@@ -151,7 +151,7 @@ export function PecasCard({ veiculoId }: { veiculoId: number }) {
                 className="mt-1 h-9 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
               />
             </label>
-            <label className="block text-[11px] text-gray-500">
+            <label className="block text-xs text-gray-500">
               Data da instalação (opcional)
               <input
                 type="date"
@@ -202,7 +202,7 @@ export function PecasCard({ veiculoId }: { veiculoId: number }) {
       )}
 
       {tiposComPeca.length === 0 ? (
-        <p className="p-5 text-xs text-gray-400">
+        <p className="p-5 text-xs text-gray-500">
           Nenhuma peça registrada para este veículo ainda.
         </p>
       ) : (
@@ -215,7 +215,7 @@ export function PecasCard({ veiculoId }: { veiculoId: number }) {
               <div key={tipo} className="px-5 py-3">
                 <p className="text-xs font-semibold text-gray-800">{tipos[tipo]}</p>
                 {servico && (
-                  <p className="mt-1 text-[11px] text-gray-600">
+                  <p className="mt-1 text-xs text-gray-600">
                     Da última vez usamos:{" "}
                     <strong className="font-semibold text-gray-800">
                       {servico.especificacao}
@@ -225,7 +225,7 @@ export function PecasCard({ veiculoId }: { veiculoId: number }) {
                   </p>
                 )}
                 {ficha && (
-                  <p className="mt-0.5 text-[11px] text-gray-500">
+                  <p className="mt-0.5 text-xs text-gray-500">
                     Referência: {ficha.especificacao}
                     {ficha.marca ? ` (${ficha.marca})` : ""}
                   </p>
@@ -238,14 +238,14 @@ export function PecasCard({ veiculoId }: { veiculoId: number }) {
 
       {pecas.length > 0 && (
         <details className="border-t border-gray-100 px-5 py-3 print:hidden">
-          <summary className="cursor-pointer text-[11px] font-medium text-gray-500">
+          <summary className="cursor-pointer text-xs font-medium text-gray-500">
             Todos os registros ({pecas.length})
           </summary>
           <ul className="mt-2 space-y-1.5">
             {pecas.map((peca) => (
               <li
                 key={peca.id}
-                className="flex items-center justify-between gap-3 text-[11px] text-gray-600"
+                className="flex items-center justify-between gap-3 text-xs text-gray-600"
               >
                 <span>
                   {tipos[peca.tipo] ?? peca.tipo}: {peca.especificacao}

@@ -74,7 +74,7 @@ export function CorrigirKmModal({
             className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
             autoFocus
           />
-          <p className="mt-1.5 text-[11px] text-gray-500">
+          <p className="mt-1.5 text-xs text-gray-500">
             O km sobe sozinho a cada saída ou chegada registrada. Use isto só para corrigir um número errado ou para
             informar o km de um veículo novo.
           </p>
@@ -93,7 +93,7 @@ export function CorrigirKmModal({
             placeholder="Ex.: hodômetro digitado errado na saída"
             className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
           />
-          <p className="mt-1.5 text-[11px] text-gray-500">Fica registrado no histórico, com seu nome e a data.</p>
+          <p className="mt-1.5 text-xs text-gray-500">Fica registrado no histórico, com seu nome e a data.</p>
         </div>
 
         {erro && (

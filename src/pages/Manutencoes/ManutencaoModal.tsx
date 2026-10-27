@@ -397,7 +397,7 @@ export function ManutencaoModal({
                   Peças usadas (opcional)
                 </p>
 
-                <p className="mt-1 text-[11px] text-gray-400">
+                <p className="mt-1 text-xs text-gray-500">
                   Ficam registradas no veículo, sem precisar cadastrar de
                   novo.
                 </p>
@@ -415,7 +415,7 @@ export function ManutencaoModal({
                 title={
                   veiculoId ? undefined : "Selecione o veículo primeiro"
                 }
-                className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 px-3 text-[11px] font-medium text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 px-3 text-xs font-medium text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Plus size={13} />
                 Adicionar
@@ -423,7 +423,7 @@ export function ManutencaoModal({
             </div>
 
             {!veiculoId && pecas.length === 0 && (
-              <p className="mt-3 text-[11px] text-gray-400">
+              <p className="mt-3 text-xs text-gray-500">
                 Selecione o veículo para registrar as peças.
               </p>
             )}
@@ -506,7 +506,7 @@ export function ManutencaoModal({
                       </div>
 
                       {sugestao && (
-                        <p className="flex flex-wrap items-center gap-x-2 text-[11px] text-gray-500">
+                        <p className="flex flex-wrap items-center gap-x-2 text-xs text-gray-500">
                           <span>
                             {sugestao.fonte === "servico"
                               ? "Da última vez usamos"

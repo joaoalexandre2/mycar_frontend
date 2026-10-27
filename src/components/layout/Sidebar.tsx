@@ -89,7 +89,7 @@ import {
 
           {/* Menu */}
           <nav aria-label="Principal" className="flex flex-col gap-1">
-            <p className="mb-2 px-2 text-xs font-bold tracking-widest text-gray-400">
+            <p className="mb-2 px-2 text-xs font-bold tracking-widest text-gray-500">
               MENU
             </p>
 
@@ -194,7 +194,7 @@ import {
               </>
             )}
 
-            <p className="mb-2 mt-7 px-2 text-xs font-bold tracking-widest text-gray-400">
+            <p className="mb-2 mt-7 px-2 text-xs font-bold tracking-widest text-gray-500">
               SISTEMA
             </p>
 
@@ -232,7 +232,7 @@ import {
                   {usuario?.name ?? "Usuário"}
                 </strong>
 
-                <span className="truncate text-xs text-gray-400">
+                <span className="truncate text-xs text-gray-500">
                   {usuario?.email ?? ""}
                 </span>
               </div>

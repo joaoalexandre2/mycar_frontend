@@ -2,7 +2,9 @@ import type { StatusOrdemServico } from "../../types/ordemServico";
 import { STATUS_LABEL } from "./statusOrdemServico";
 
 const ESTILO: Record<StatusOrdemServico, string> = {
-  aberta: "bg-blue-100 text-blue-700",
+  // Não usa a escala "blue" (é a cor da marca, quase igual ao vermelho de
+  // "Cancelada").
+  aberta: "bg-sky-100 text-sky-800",
   em_andamento: "bg-yellow-100 text-yellow-700",
   aguardando_peca: "bg-orange-100 text-orange-700",
   finalizada: "bg-green-100 text-green-700",

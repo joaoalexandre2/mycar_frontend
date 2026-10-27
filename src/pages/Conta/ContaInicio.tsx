@@ -50,7 +50,9 @@ function prazoDoVencimento(item: Vencimento) {
 
 const CLASSE_DO_TOM = {
   atrasado: "text-red-600",
-  breve: "text-blue-600",
+  // Âmbar, não "blue": a escala blue é a cor da marca (vermelha) e ficaria
+  // igual ao "atrasado".
+  breve: "text-amber-700",
   normal: "text-gray-900",
 } as const;
 
@@ -116,7 +118,7 @@ export function ContaInicio() {
 
       <div className="mb-5 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         <section className="rounded-3xl bg-[#101419] p-5 text-white">
-          <p className="text-[11px] font-medium tracking-[0.12em] text-[#9AA3AE] uppercase">
+          <p className="text-xs font-medium tracking-[0.12em] text-[#9AA3AE] uppercase">
             Consumo médio
           </p>
 
@@ -125,7 +127,7 @@ export function ContaInicio() {
           </div>
 
           {resumo && kmPorLitro === null && (
-            <p className="mt-3 rounded-xl bg-white/5 px-3 py-2.5 text-center text-[11px] leading-relaxed text-[#C9D0D8]">
+            <p className="mt-3 rounded-xl bg-white/5 px-3 py-2.5 text-center text-xs leading-relaxed text-[#C9D0D8]">
               Registre 2 abastecimentos com tanque cheio para ver o seu consumo.{" "}
               <Link to="/veiculos" className="font-semibold text-white underline underline-offset-2">
                 Abrir meus veículos
@@ -135,13 +137,13 @@ export function ContaInicio() {
 
           <div className="mt-4 grid grid-cols-2 gap-3 border-t border-white/10 pt-4">
             <div className="valor-fluido-pai">
-              <p className="text-[10px] tracking-[0.1em] text-[#9AA3AE] uppercase">Gasto no mês</p>
+              <p className="text-xs tracking-[0.1em] text-[#9AA3AE] uppercase">Gasto no mês</p>
               <p className="font-display valor-fluido leading-tight font-semibold [--valor-max:1.625rem]">
                 {resumo ? formatarMoeda(resumo.gastoMes.total) : "—"}
               </p>
             </div>
             <div className="valor-fluido-pai">
-              <p className="text-[10px] tracking-[0.1em] text-[#9AA3AE] uppercase">Preço do litro</p>
+              <p className="text-xs tracking-[0.1em] text-[#9AA3AE] uppercase">Preço do litro</p>
               <p className="font-display valor-fluido leading-tight font-semibold [--valor-max:1.625rem]">
                 {resumo?.consumo.precoMedioLitro != null ? formatarMoeda(resumo.consumo.precoMedioLitro) : "—"}
               </p>
@@ -177,9 +179,9 @@ export function ContaInicio() {
         <div className="border-b border-gray-200 p-5">
           <h3 className="font-display text-xl leading-none font-bold tracking-wide text-gray-900 uppercase">
             O que vence em breve
-            {resumo && <span className="ml-2 text-base text-gray-400">{vencimentos.length}</span>}
+            {resumo && <span className="ml-2 text-base text-gray-500">{vencimentos.length}</span>}
           </h3>
-          <p className="mt-2 text-[11px] text-gray-400">
+          <p className="mt-2 text-xs text-gray-500">
             O IPVA vence em <strong>janeiro</strong> e o licenciamento segue o
             final da placa. Datas e valores são <strong>estimativas</strong> e
             variam por estado: confirme no site do Detran/Sefaz. Cadastre o CRLV
@@ -188,7 +190,7 @@ export function ContaInicio() {
         </div>
 
         {!resumo ? (
-          <p className="p-5 text-xs text-gray-400">Carregando...</p>
+          <p className="p-5 text-xs text-gray-500">Carregando...</p>
         ) : resumo.totalVeiculos === 0 ? (
           <div className="p-8 text-center">
             <p className="text-xs text-gray-500">
@@ -202,7 +204,7 @@ export function ContaInicio() {
             </Link>
           </div>
         ) : vencimentos.length === 0 ? (
-          <p className="p-5 text-xs text-gray-400">
+          <p className="p-5 text-xs text-gray-500">
             Nada vence nos próximos {resumo.diasAFrente} dias. Para ver as
             datas, informe o estado de emplacamento de cada veículo.
           </p>
@@ -224,7 +226,7 @@ export function ContaInicio() {
                     <p className="truncate text-[13px] font-semibold text-gray-900">
                       {item.rotulo ?? ROTULO_TIPO[item.tipo]}
                     </p>
-                    <p className="mt-0.5 truncate text-[11px] text-gray-500">
+                    <p className="mt-0.5 truncate text-xs text-gray-500">
                       {item.veiculo} · {item.placa}
                       {item.valorEstimado !== null &&
                         ` · estimado ${formatarMoeda(item.valorEstimado)}`}
@@ -238,7 +240,7 @@ export function ContaInicio() {
                       {prazo.numero}
                     </p>
                     {prazo.detalhe && (
-                      <p className="mt-1 text-[10px] text-gray-400">{prazo.detalhe}</p>
+                      <p className="mt-1 text-xs text-gray-500">{prazo.detalhe}</p>
                     )}
                   </div>
                 </li>

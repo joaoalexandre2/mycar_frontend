@@ -64,7 +64,7 @@ function Cartao({
       <div className="flex items-start justify-between gap-3 border-b border-gray-100 px-5 py-4">
         <div>
           <h3 className="font-display text-xl leading-none font-bold tracking-wide text-gray-900 uppercase">{titulo}</h3>
-          {descricao && <p className="mt-1 text-[11px] text-gray-400">{descricao}</p>}
+          {descricao && <p className="mt-1 text-xs text-gray-500">{descricao}</p>}
         </div>
         {acao}
       </div>
@@ -78,7 +78,7 @@ function Lista({ campos }: { campos: CampoFicha[] }) {
     <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
       {campos.map((campo) => (
         <div key={campo.chave}>
-          <dt className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">
+          <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">
             {campo.rotulo}
           </dt>
           <dd className="mt-0.5 text-xs text-gray-800">{campo.valor}</dd>
@@ -93,7 +93,7 @@ function ListaDoGrupo({ campos }: { campos: { rotulo: string; valor: string }[] 
     <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
       {campos.map((campo, i) => (
         <div key={`${campo.rotulo}-${i}`}>
-          <dt className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">
+          <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">
             {campo.rotulo}
           </dt>
           <dd className="mt-0.5 text-xs text-gray-800">{campo.valor}</dd>
@@ -259,7 +259,7 @@ export function FichaTecnica() {
         </div>
       )}
 
-      {veiculoId && !ficha && !erro && <p className="text-xs text-gray-400">Carregando...</p>}
+      {veiculoId && !ficha && !erro && <p className="text-xs text-gray-500">Carregando...</p>}
 
       {ficha && (
         <div className="space-y-4">
@@ -334,7 +334,7 @@ export function FichaTecnica() {
                 {avisoDeAno && (
                   <p
                     role="status"
-                    className={`mb-4 flex items-start gap-2 rounded-lg border px-3 py-2 text-[11px] ${
+                    className={`mb-4 flex items-start gap-2 rounded-lg border px-3 py-2 text-xs ${
                       avisoDeAno.nivel === "forte"
                         ? "border-amber-200 bg-amber-50 text-amber-800"
                         : "border-gray-200 bg-gray-50 text-gray-600"
@@ -354,7 +354,7 @@ export function FichaTecnica() {
                     </section>
                   ))}
                 </div>
-                <p className="mt-4 flex items-start gap-2 text-[11px] text-gray-400">
+                <p className="mt-4 flex items-start gap-2 text-xs text-gray-500">
                   <Info size={14} className="mt-0.5 shrink-0" />
                   <span>
                     É a ficha da versão mais recente do modelo e pode diferir da
@@ -387,7 +387,7 @@ export function FichaTecnica() {
                 <button
                   type="button"
                   onClick={iniciarEdicao}
-                  className="flex h-8 items-center gap-1.5 rounded-lg border border-gray-200 px-3 text-[11px] font-semibold text-gray-600 hover:bg-gray-50"
+                  className="flex h-8 items-center gap-1.5 rounded-lg border border-gray-200 px-3 text-xs font-semibold text-gray-600 hover:bg-gray-50"
                 >
                   <Pencil size={13} />
                   {manutencaoPreenchida.length > 0 ? "Editar" : "Preencher"}
@@ -402,7 +402,7 @@ export function FichaTecnica() {
                     <p className="mb-2 text-xs font-medium text-gray-700">{grupo.titulo}</p>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                       {grupo.campos.map((campo) => (
-                        <label key={campo.chave} className="block text-[11px] text-gray-500">
+                        <label key={campo.chave} className="block text-xs text-gray-500">
                           {campo.rotulo}
                           <input
                             type="text"
@@ -417,7 +417,7 @@ export function FichaTecnica() {
                   </div>
                 ))}
 
-                <label className="block text-[11px] text-gray-500">
+                <label className="block text-xs text-gray-500">
                   Observações
                   <textarea
                     value={form.observacoes ?? ""}

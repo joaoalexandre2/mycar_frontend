@@ -159,7 +159,7 @@ function Perfil() {
                 disabled
                 className={`${ESTILO_CAMPO} cursor-not-allowed opacity-60`}
               />
-              <p className="mt-1 text-[11px] text-gray-400">
+              <p className="mt-1 text-xs text-gray-500">
                 O e-mail é o seu login e não pode ser alterado aqui.
               </p>
             </Campo>
@@ -302,7 +302,7 @@ function Oficina() {
             <span className="block text-xs font-medium text-gray-700">
               Receber o resumo semanal por e-mail
             </span>
-            <span className="mt-1 block text-[11px] leading-relaxed text-gray-400">
+            <span className="mt-1 block text-xs leading-relaxed text-gray-500">
               Toda segunda-feira, às 8h, enviamos o que está atrasado ou vence nos
               próximos 30 dias (manutenções, IPVA e licenciamento) e quais clientes
               não têm e-mail cadastrado. Vai para os usuários da oficina com e-mail
@@ -378,7 +378,7 @@ function Lembretes() {
             <span className="block text-xs font-medium text-gray-700">
               Receber lembretes por e-mail
             </span>
-            <span className="mt-1 block text-[11px] leading-relaxed text-gray-400">
+            <span className="mt-1 block text-xs leading-relaxed text-gray-500">
               Enviamos um e-mail quando faltar até 30 dias para o IPVA, o
               licenciamento (datas estimadas pelo final da placa) ou a revisão
               que você informou no veículo. Cada vencimento é avisado uma vez.
@@ -421,7 +421,7 @@ function Sistema() {
             ))}
           </select>
         </Campo>
-        <p className="mt-2 text-[11px] text-gray-400">
+        <p className="mt-2 text-xs text-gray-500">
           Salvo automaticamente neste navegador.
         </p>
       </div>
@@ -498,7 +498,7 @@ function Aparencia() {
                   </span>
                   {tema === chave && <Check size={16} className="text-blue-600" />}
                 </div>
-                <p className="mt-1 text-[11px] text-gray-400">{descricao}</p>
+                <p className="mt-1 text-xs text-gray-500">{descricao}</p>
               </button>
             ))}
           </div>
@@ -538,7 +538,7 @@ function Aparencia() {
 type Aviso = { tipo: "ok" | "erro"; texto: string };
 
 const ESTILO_CAMPO =
-  "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-gray-50";
+  "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none transition placeholder:text-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-gray-50";
 
 function Secao({
   titulo,
@@ -555,7 +555,7 @@ function Secao({
     <div className={separada ? "border-t border-gray-200" : ""}>
       <div className="border-b border-gray-200 px-4 py-5 sm:px-6">
         <h3 className="text-sm font-semibold text-gray-900">{titulo}</h3>
-        <p className="mt-1 text-[11px] text-gray-400">{descricao}</p>
+        <p className="mt-1 text-xs text-gray-500">{descricao}</p>
       </div>
       <div className="px-4 py-6 sm:px-6">{children}</div>
     </div>

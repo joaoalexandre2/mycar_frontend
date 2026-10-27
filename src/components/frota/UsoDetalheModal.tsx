@@ -43,14 +43,14 @@ function FotoDoMomento({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-3 text-[11px]">
+    <div className="flex flex-wrap items-center gap-3 text-xs">
       <span className="text-gray-500">{titulo}:</span>
       {url ? (
         <a href={url} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-600 hover:text-blue-700">
           Ver foto
         </a>
       ) : (
-        <span className="text-gray-400">sem foto</span>
+        <span className="text-gray-500">sem foto</span>
       )}
       <input ref={entrada} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => void escolher(e)} aria-label={`Anexar foto do hodômetro (${titulo.toLowerCase()})`} />
       <button
@@ -158,11 +158,11 @@ export function UsoDetalheModal({
     >
       <div className="space-y-5 px-6 py-5">
         <div className="flex flex-wrap items-center gap-2">
-          <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase ${COR_DO_STATUS[uso.status]}`}>
+          <span className={`rounded-full border px-2.5 py-0.5 text-xs font-bold uppercase ${COR_DO_STATUS[uso.status]}`}>
             {ROTULO_STATUS_USO[uso.status]}
           </span>
           {uso.origem === "planilha" && (
-            <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-semibold text-gray-500">
+            <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-500">
               Importado da planilha
             </span>
           )}
@@ -170,20 +170,20 @@ export function UsoDetalheModal({
 
         <dl className="grid grid-cols-1 gap-x-6 gap-y-3 text-xs sm:grid-cols-2">
           <div>
-            <dt className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Motorista</dt>
+            <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">Motorista</dt>
             <dd className="mt-0.5 text-gray-800">{uso.motorista ?? "—"}</dd>
           </div>
           <div>
-            <dt className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Centro de custo</dt>
+            <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">Centro de custo</dt>
             <dd className="mt-0.5 text-gray-800">{uso.centroCusto ?? "—"}</dd>
           </div>
           <div className="sm:col-span-2">
-            <dt className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Finalidade</dt>
+            <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">Finalidade</dt>
             <dd className="mt-0.5 text-gray-800">{uso.finalidade ?? "—"}</dd>
           </div>
           {uso.observacoes && (
             <div className="sm:col-span-2">
-              <dt className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Observações</dt>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">Observações</dt>
               <dd className="mt-0.5 whitespace-pre-line text-gray-800">{uso.observacoes}</dd>
             </div>
           )}
@@ -193,15 +193,15 @@ export function UsoDetalheModal({
           <div className="space-y-2 rounded-lg bg-gray-50 px-4 py-3 text-xs">
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Saída</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Saída</p>
                 <p className="font-semibold text-gray-900">{formatarKm(uso.kmSaida)}</p>
               </div>
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Chegada</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Chegada</p>
                 <p className="font-semibold text-gray-900">{formatarKm(uso.kmChegada)}</p>
               </div>
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Rodados</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rodados</p>
                 <p className="font-semibold text-gray-900">{formatarKm(uso.kmRodados)}</p>
               </div>
             </div>

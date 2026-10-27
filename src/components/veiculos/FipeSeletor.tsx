@@ -154,7 +154,7 @@ export function FipeSeletor({
     <div className="space-y-3 rounded-lg border border-blue-100 bg-blue-50/40 p-4">
       <div>
         <p className="text-xs font-semibold text-gray-800">Tabela FIPE</p>
-        <p className="mt-0.5 text-[11px] text-gray-500">
+        <p className="mt-0.5 text-xs text-gray-500">
           Opcional. Busque a marca, o modelo, a versão e o ano para preencher os campos e
           consultar o valor de mercado.
         </p>
@@ -214,7 +214,7 @@ export function FipeSeletor({
         />
       </div>
 
-      {erro && <p className="text-[11px] text-red-600">{erro}</p>}
+      {erro && <p className="text-xs text-red-600">{erro}</p>}
     </div>
   );
 }

@@ -156,7 +156,7 @@ function PainelDeBusca({ aoFechar }: { aoFechar: () => void }) {
             onChange={(evento) => setTexto(evento.target.value)}
             aria-label="O que você procura?"
             placeholder="Digite pelo menos 2 letras..."
-            className="h-10 w-full rounded-lg border border-gray-200 bg-gray-50 pl-9 pr-3 text-xs text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:bg-white"
+            className="h-10 w-full rounded-lg border border-gray-200 bg-gray-50 pl-9 pr-3 text-xs text-gray-700 outline-none transition placeholder:text-gray-500 focus:border-blue-500 focus:bg-white"
           />
         </div>
 
@@ -165,11 +165,11 @@ function PainelDeBusca({ aoFechar }: { aoFechar: () => void }) {
           aria-live="polite"
         >
           {curto ? (
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-500">
               Comece a digitar para ver os resultados.
             </p>
           ) : buscando ? (
-            <p className="text-xs text-gray-400">Buscando...</p>
+            <p className="text-xs text-gray-500">Buscando...</p>
           ) : atual?.erro ? (
             <p
               role="alert"
@@ -208,12 +208,12 @@ function PainelDeBusca({ aoFechar }: { aoFechar: () => void }) {
                       <span className="block truncate text-xs font-semibold text-gray-900">
                         {item.titulo}
                       </span>
-                      <span className="mt-0.5 block truncate text-[11px] text-gray-500">
+                      <span className="mt-0.5 block truncate text-xs text-gray-500">
                         {item.detalhe}
                       </span>
                     </span>
 
-                    <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-gray-400">
+                    <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-gray-500">
                       {item.tipo === "cliente" ? "Cliente" : "Veículo"}
                     </span>
                   </Link>

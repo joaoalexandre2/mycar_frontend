@@ -161,14 +161,14 @@ export function Dashboard() {
                 Ordens de serviço
               </h3>
 
-              <p className="mt-1 text-[11px] text-gray-400">
+              <p className="mt-1 text-xs text-gray-500">
                 Últimas ordens cadastradas
               </p>
             </div>
 
             <a
               href="/ordens-servico"
-              className="flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:text-blue-700"
+              className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700"
             >
               Ver todas
               <ArrowUpRight size={14} />
@@ -179,27 +179,27 @@ export function Dashboard() {
             <table className="w-full tabela-cartoes">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                     OS
                   </th>
 
-                  <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                     Veículo
                   </th>
 
-                  <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                     Cliente
                   </th>
 
-                  <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                     Serviço
                   </th>
 
-                  <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                     Valor
                   </th>
 
-                  <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                     Status
                   </th>
                 </tr>
@@ -223,7 +223,7 @@ export function Dashboard() {
                           {nomeVeiculo(ordem)}
                         </p>
 
-                        <p className="mt-1 text-[10px] text-gray-400">
+                        <p className="mt-1 text-xs text-gray-500">
                           {placaVeiculo(ordem)}
                         </p>
                       </div>
@@ -253,7 +253,7 @@ export function Dashboard() {
                   <tr>
                     <td
                       colSpan={6}
-                      className="px-5 py-10 text-center text-xs text-gray-400"
+                      className="px-5 py-10 text-center text-xs text-gray-500"
                     >
                       Nenhuma ordem de serviço cadastrada.
                     </td>
@@ -271,7 +271,7 @@ export function Dashboard() {
               Status das ordens
             </h3>
 
-            <p className="mt-1 text-[11px] text-gray-400">
+            <p className="mt-1 text-xs text-gray-500">
               Situação atual das OS
             </p>
           </div>
@@ -321,7 +321,7 @@ export function Dashboard() {
               Próximas manutenções
             </h3>
 
-            <p className="mt-1 text-[11px] text-gray-400">
+            <p className="mt-1 text-xs text-gray-500">
               Veículos com manutenção programada
             </p>
           </div>
@@ -347,7 +347,7 @@ export function Dashboard() {
                   </div>
 
                   <span
-                    className={`rounded-full px-2 py-1 text-[10px] font-semibold ${
+                    className={`rounded-full px-2 py-1 text-xs font-semibold ${
                       item.status === "atrasada"
                         ? "bg-red-50 text-red-700"
                         : "bg-yellow-50 text-yellow-700"
@@ -366,16 +366,16 @@ export function Dashboard() {
                 </p>
 
                 <div className="mt-1 flex items-center justify-between">
-                  <span className="text-[10px] text-gray-400">
+                  <span className="text-xs text-gray-500">
                     {veiculo?.placa ?? "—"}
                   </span>
 
-                  <span className="text-[10px] font-semibold text-gray-600">
+                  <span className="text-xs font-semibold text-gray-600">
                     {formatarData(item.proximaData)}
                   </span>
                 </div>
 
-                <p className="mt-3 text-[10px] text-gray-400">
+                <p className="mt-3 text-xs text-gray-500">
                   Cliente: {veiculo?.cliente?.nome ?? "—"}
                 </p>
               </div>
@@ -383,7 +383,7 @@ export function Dashboard() {
           })}
 
           {!carregando && proximasManutencoes.length === 0 && (
-            <div className="col-span-full p-10 text-center text-xs text-gray-400">
+            <div className="col-span-full p-10 text-center text-xs text-gray-500">
               Nenhuma manutenção programada no momento.
             </div>
           )}
@@ -428,7 +428,7 @@ function DashboardCard({
         {value}
       </p>
 
-      <p className="mt-2 text-[10px] text-gray-400">
+      <p className="mt-2 text-xs text-gray-500">
         {description}
       </p>
     </div>
@@ -443,7 +443,7 @@ function Status({
   const config: Record<StatusOrdemServico, { label: string; className: string }> = {
     aberta: {
       label: "Aberta",
-      className: "bg-blue-100 text-blue-700",
+      className: "bg-sky-100 text-sky-800",
     },
 
     em_andamento: {
@@ -475,7 +475,7 @@ function Status({
 
   return (
     <span
-      className={`inline-flex rounded-full px-2 py-1 text-[10px] font-semibold ${item.className}`}
+      className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${item.className}`}
     >
       {item.label}
     </span>
@@ -520,7 +520,7 @@ function StatusResumo({
         />
       </div>
 
-      <p className="mt-1 text-right text-[10px] text-gray-400">
+      <p className="mt-1 text-right text-xs text-gray-500">
         {percentual}%
       </p>
     </div>

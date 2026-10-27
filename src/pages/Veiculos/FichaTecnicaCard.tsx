@@ -110,7 +110,7 @@ export function FichaTecnicaCard({ veiculoId }: { veiculoId: number }) {
       <div className="flex items-center justify-between gap-3 border-b border-gray-100 px-5 py-4">
         <div>
           <h3 className="text-sm font-semibold text-gray-900">Ficha técnica</h3>
-          <p className="mt-1 text-[11px] text-gray-400">
+          <p className="mt-1 text-xs text-gray-500">
             Óleo, filtros e pneus deste veículo. Dados preenchidos manualmente:
             confirme com o manual do fabricante.
           </p>
@@ -118,7 +118,7 @@ export function FichaTecnicaCard({ veiculoId }: { veiculoId: number }) {
         {!editando && (
           <button
             onClick={iniciarEdicao}
-            className="flex h-8 shrink-0 items-center gap-2 rounded-lg border border-gray-200 px-3 text-[11px] font-medium text-gray-600 hover:bg-gray-50 print:hidden"
+            className="flex h-8 shrink-0 items-center gap-2 rounded-lg border border-gray-200 px-3 text-xs font-medium text-gray-600 hover:bg-gray-50 print:hidden"
           >
             <Pencil size={13} />
             {dados ? "Editar" : "Preencher"}
@@ -137,7 +137,7 @@ export function FichaTecnicaCard({ veiculoId }: { veiculoId: number }) {
                 {grupo.campos.map((campo) => (
                   <label
                     key={campo.chave}
-                    className="block text-[11px] text-gray-500"
+                    className="block text-xs text-gray-500"
                   >
                     {campo.rotulo}
                     <input
@@ -154,7 +154,7 @@ export function FichaTecnicaCard({ veiculoId }: { veiculoId: number }) {
               </div>
             </div>
           ))}
-          <label className="block text-[11px] text-gray-500">
+          <label className="block text-xs text-gray-500">
             Observações
             <textarea
               value={form.observacoes ?? ""}
@@ -190,9 +190,9 @@ export function FichaTecnicaCard({ veiculoId }: { veiculoId: number }) {
                 {grupo.campos.map((campo) => (
                   <div
                     key={campo.chave}
-                    className="flex justify-between gap-3 text-[11px]"
+                    className="flex justify-between gap-3 text-xs"
                   >
-                    <dt className="text-gray-400">
+                    <dt className="text-gray-500">
                       {campo.rotulo.replace(/ \(.*\)/, "")}
                     </dt>
                     <dd className="font-medium text-gray-700">
@@ -204,13 +204,13 @@ export function FichaTecnicaCard({ veiculoId }: { veiculoId: number }) {
             </div>
           ))}
           {dados.observacoes && (
-            <p className="text-[11px] text-gray-500 md:col-span-3">
+            <p className="text-xs text-gray-500 md:col-span-3">
               {dados.observacoes}
             </p>
           )}
         </div>
       ) : (
-        <p className="p-5 text-xs text-gray-400">
+        <p className="p-5 text-xs text-gray-500">
           Nenhuma ficha técnica cadastrada para este veículo ainda.
         </p>
       )}

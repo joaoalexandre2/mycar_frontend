@@ -19,7 +19,7 @@ export function Placa({ placa, uf, tamanho = "sm" }: PlacaProps) {
 
   if (padrao === null) {
     return (
-      <span className="inline-block whitespace-nowrap rounded-md bg-white px-2 py-0.5 text-[11px] font-bold tracking-[0.18em] text-gray-900">
+      <span className="inline-block whitespace-nowrap rounded-md bg-white px-2 py-0.5 text-xs font-bold tracking-[0.18em] text-gray-900">
         {placa}
       </span>
     );
