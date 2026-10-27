@@ -118,7 +118,7 @@ export function DocumentosModal({
       onClose={onClose}
     >
       <div className="space-y-5 px-6 py-5">
-        <div className="rounded-lg border border-gray-200 p-4 text-[11px] text-gray-500">
+        <div className="rounded-lg border border-gray-200 p-4 text-xs text-gray-500">
           {dados?.crlvVencimento ? (
             <p>
               Os avisos de licenciamento usam a <strong>data real do CRLV</strong>:{" "}
@@ -145,7 +145,7 @@ export function DocumentosModal({
           <p className="text-xs font-medium text-gray-700">Adicionar</p>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <label className="block text-[11px] text-gray-500">
+            <label className="block text-xs text-gray-500">
               Documento
               <select
                 value={tipo}
@@ -159,7 +159,7 @@ export function DocumentosModal({
             </label>
 
             {tipo === "outro" && (
-              <label className="block text-[11px] text-gray-500">
+              <label className="block text-xs text-gray-500">
                 Nome
                 <input
                   type="text"
@@ -173,7 +173,7 @@ export function DocumentosModal({
               </label>
             )}
 
-            <label className="block text-[11px] text-gray-500">
+            <label className="block text-xs text-gray-500">
               Vence em
               <input
                 type="date"
@@ -184,7 +184,7 @@ export function DocumentosModal({
             </label>
           </div>
 
-          <label className="block text-[11px] text-gray-500">
+          <label className="block text-xs text-gray-500">
             Observações (opcional)
             <input
               type="text"
@@ -213,9 +213,9 @@ export function DocumentosModal({
         </form>
 
         {!dados ? (
-          <p className="text-xs text-gray-400">Carregando...</p>
+          <p className="text-xs text-gray-500">Carregando...</p>
         ) : dados.documentos.length === 0 ? (
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-500">
             Nenhum documento cadastrado ainda.
           </p>
         ) : (
@@ -231,19 +231,19 @@ export function DocumentosModal({
                 >
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-gray-900">{item.rotulo}</p>
-                    <p className="mt-1 text-[11px] text-gray-500">
+                    <p className="mt-1 text-xs text-gray-500">
                       {item.vencimento
                         ? `Vence em ${formatarData(item.vencimento)}${dias ? ` (${dias})` : ""}`
                         : "Sem data de vencimento"}
                     </p>
                     {item.observacoes && (
-                      <p className="mt-0.5 text-[11px] text-gray-400">{item.observacoes}</p>
+                      <p className="mt-0.5 text-xs text-gray-500">{item.observacoes}</p>
                     )}
                   </div>
 
                   <div className="flex shrink-0 items-center gap-3">
                     <span
-                      className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${situacao.classe}`}
+                      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${situacao.classe}`}
                     >
                       {situacao.texto}
                     </span>

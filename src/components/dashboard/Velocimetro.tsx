@@ -71,7 +71,7 @@ export function Velocimetro({
         <p className="font-display text-5xl leading-none font-bold text-white">
           {valor === null ? "—" : valor.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
         </p>
-        <p className="mt-1 text-[10px] tracking-[0.12em] text-[#9AA3AE] uppercase">
+        <p className="mt-1 text-xs tracking-[0.12em] text-[#9AA3AE] uppercase">
           {unidade}
         </p>
       </div>

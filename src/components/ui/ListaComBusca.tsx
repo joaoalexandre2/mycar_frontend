@@ -134,7 +134,7 @@ export function ListaComBusca({ valor, opcoes, placeholder, rotulo, desabilitado
           ))}
 
           {filtradas.length > visiveis.length && (
-            <li className="px-3 py-2 text-[11px] text-gray-500">
+            <li className="px-3 py-2 text-xs text-gray-500">
               Mostrando {visiveis.length} de {filtradas.length}. Digite para afinar a busca.
             </li>
           )}

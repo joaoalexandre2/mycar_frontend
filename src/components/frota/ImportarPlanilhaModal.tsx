@@ -125,7 +125,7 @@ export function ImportarPlanilhaModal({
           />
           <span>
             Cadastrar automaticamente os motoristas e centros de custo que ainda não existirem.
-            <span className="block text-[11px] text-gray-500">
+            <span className="block text-xs text-gray-500">
               Sem isso, nome desconhecido é apontado como erro (evita duplicar por erro de digitação).
             </span>
           </span>

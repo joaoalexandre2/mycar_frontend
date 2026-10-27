@@ -214,7 +214,7 @@ export function Manutencoes() {
       </div>
 
       {/* Indicadores */}
-      <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <InfoCard
           label="Manutenções em dia"
           value={resumo.emDia}
@@ -271,7 +271,7 @@ export function Manutencoes() {
                 onChange={(event) =>
                   setBusca(event.target.value)
                 }
-                className="h-9 w-full rounded-lg border border-gray-200 bg-gray-50 pl-9 pr-3 text-xs text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:bg-white"
+                className="h-9 w-full rounded-lg border border-gray-200 bg-gray-50 pl-9 pr-3 text-xs text-gray-700 outline-none transition placeholder:text-gray-500 focus:border-blue-500 focus:bg-white"
               />
             </div>
 

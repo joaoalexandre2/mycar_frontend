@@ -62,7 +62,7 @@ export function SeletorDeMycar({
         aria-haspopup="listbox"
         aria-expanded={aberto}
         title="Trocar de MyCar"
-        className="-ml-1 flex items-center gap-1 rounded px-1 text-[10px] text-gray-400 transition hover:bg-gray-800 hover:text-white"
+        className="-ml-1 flex items-center gap-1 rounded px-1 text-xs text-gray-500 transition hover:bg-gray-800 hover:text-white"
       >
         {NOME_CURTO_PERFIL[perfil]}
         <ChevronsUpDown size={11} aria-hidden />
@@ -77,7 +77,7 @@ export function SeletorDeMycar({
             aria-label="Seus MyCar"
             className="absolute top-6 left-0 z-50 w-56 rounded-lg border border-gray-700 bg-gray-800 p-1 shadow-xl"
           >
-            {!lista && !erro && <p className="px-3 py-2 text-[11px] text-gray-400">Carregando...</p>}
+            {!lista && !erro && <p className="px-3 py-2 text-xs text-gray-500">Carregando...</p>}
 
             {lista?.mycars.map((mycar) => (
               <button
@@ -91,7 +91,7 @@ export function SeletorDeMycar({
               >
                 <span className="min-w-0 flex-1">
                   <span className="block font-semibold">{NOME_CURTO_PERFIL[mycar.perfil]}</span>
-                  <span className="block truncate text-[11px] text-gray-400">{mycar.nome}</span>
+                  <span className="block truncate text-xs text-gray-500">{mycar.nome}</span>
                 </span>
                 {mycar.atual && <Check size={14} className="shrink-0 text-blue-400" aria-label="Aberto agora" />}
               </button>
@@ -111,7 +111,7 @@ export function SeletorDeMycar({
             )}
 
             {erro && (
-              <p role="alert" className="px-3 py-2 text-[11px] text-red-300">
+              <p role="alert" className="px-3 py-2 text-xs text-red-300">
                 {erro}
               </p>
             )}

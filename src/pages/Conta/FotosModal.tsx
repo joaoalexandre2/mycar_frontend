@@ -149,7 +149,7 @@ export function FotosModal({
               ? `Enviando ${progresso.atual} de ${progresso.total}...`
               : "Adicionar fotos"}
           </button>
-          <p className="text-[11px] text-gray-400">
+          <p className="text-xs text-gray-500">
             No celular, você pode tirar a foto na hora ou escolher da galeria.
             As fotos são reduzidas antes de subir e ficam só na sua conta.
           </p>
@@ -162,7 +162,7 @@ export function FotosModal({
         )}
 
         {!album ? (
-          !erro && <p className="text-xs text-gray-400">Carregando...</p>
+          !erro && <p className="text-xs text-gray-500">Carregando...</p>
         ) : album.fotos.length === 0 ? (
           <div className="rounded-xl border border-dashed border-gray-200 p-10 text-center">
             <Camera size={28} className="mx-auto text-gray-300" />
@@ -194,7 +194,7 @@ export function FotosModal({
                     disabled={foto.capa}
                     title={foto.capa ? "Capa do veículo" : "Usar como capa"}
                     aria-label={foto.capa ? "Capa do veículo" : "Usar como capa"}
-                    className={`absolute left-1.5 top-1.5 flex h-7 items-center gap-1 rounded-full px-2 text-[10px] font-semibold shadow ${
+                    className={`absolute left-1.5 top-1.5 flex h-7 items-center gap-1 rounded-full px-2 text-xs font-semibold shadow ${
                       foto.capa
                         ? "bg-amber-400 text-amber-950"
                         : "bg-white/90 text-gray-600 hover:bg-amber-100 hover:text-amber-700"
@@ -213,7 +213,7 @@ export function FotosModal({
                     <X size={14} />
                   </button>
                 </div>
-                <p className="mt-1 truncate text-[10px] text-gray-400">
+                <p className="mt-1 truncate text-xs text-gray-500">
                   {foto.legenda ?? formatarData(foto.criadaEm)}
                 </p>
               </li>

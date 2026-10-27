@@ -247,7 +247,7 @@ export function MeusVeiculos() {
             <h3 className="font-display text-xl leading-none font-bold tracking-wide text-gray-900 uppercase">
               {ehFrota ? "Veículos cadastrados" : "Seus veículos"}
             </h3>
-            <p className="mt-1 text-[11px] text-gray-400">
+            <p className="mt-1 text-xs text-gray-500">
               {carregando
                 ? "Carregando..."
                 : `${totalRegistros} veículo(s) encontrado(s)`}
@@ -264,13 +264,13 @@ export function MeusVeiculos() {
               placeholder="Buscar por placa, apelido ou modelo..."
               value={busca}
               onChange={(event) => setBusca(event.target.value)}
-              className="h-9 w-full rounded-lg border border-gray-200 bg-gray-50 pl-9 pr-3 text-xs text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:bg-white"
+              className="h-9 w-full rounded-lg border border-gray-200 bg-gray-50 pl-9 pr-3 text-xs text-gray-700 outline-none transition placeholder:text-gray-500 focus:border-blue-500 focus:bg-white"
             />
           </div>
         </div>
 
         {!carregando && veiculos.length === 0 ? (
-          <p className="px-5 py-12 text-center text-xs text-gray-400">
+          <p className="px-5 py-12 text-center text-xs text-gray-500">
             {buscaDebounced
               ? "Nenhum veículo encontrado."
               : "Você ainda não cadastrou nenhum veículo. Clique em “Novo veículo” para começar."}
@@ -302,7 +302,7 @@ export function MeusVeiculos() {
           </div>
         )}
         <div className="flex items-center justify-between border-t border-gray-200 px-5 py-3">
-          <p className="text-[11px] text-gray-400">
+          <p className="text-xs text-gray-500">
             Página {pagina} de {totalPaginas}
           </p>
 
@@ -311,7 +311,7 @@ export function MeusVeiculos() {
               type="button"
               onClick={() => setPagina(Math.max(1, pagina - 1))}
               disabled={pagina <= 1 || carregando}
-              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-xs font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <ChevronLeft size={14} />
               Anterior
@@ -320,7 +320,7 @@ export function MeusVeiculos() {
               type="button"
               onClick={() => setPagina(Math.min(totalPaginas, pagina + 1))}
               disabled={pagina >= totalPaginas || carregando}
-              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-[11px] font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-xs font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Próxima
               <ChevronRight size={14} />
@@ -717,7 +717,7 @@ export function VeiculoContaModal({
                   </option>
                 ))}
               </select>
-              <p className="mt-1 text-[11px] text-gray-400">
+              <p className="mt-1 text-xs text-gray-500">
                 Vale nas reservas que não escolherem outro centro.
               </p>
             </div>

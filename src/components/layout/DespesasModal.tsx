@@ -79,7 +79,7 @@ function Linha({
     <li className="flex items-center justify-between gap-3 px-4 py-2.5">
       <div className="min-w-0">
         <p className="text-xs text-gray-700">{rotulo}</p>
-        {detalhe && <p className="text-[10px] text-gray-400">{detalhe}</p>}
+        {detalhe && <p className="text-xs text-gray-500">{detalhe}</p>}
       </div>
       <p className="shrink-0 text-xs font-semibold text-gray-900">{valor}</p>
     </li>
@@ -145,7 +145,7 @@ export function DespesasModal({
               key={item.chave}
               type="button"
               onClick={() => setPeriodo(item.chave)}
-              className={`h-8 rounded-full border px-3 text-[11px] font-semibold transition ${
+              className={`h-8 rounded-full border px-3 text-xs font-semibold transition ${
                 periodo === item.chave
                   ? "border-blue-500 bg-blue-50 text-blue-600"
                   : "border-gray-200 text-gray-500 hover:bg-gray-50"
@@ -175,11 +175,11 @@ export function DespesasModal({
         )}
 
         {!dados ? (
-          !erro && <p className="text-xs text-gray-400">Carregando...</p>
+          !erro && <p className="text-xs text-gray-500">Carregando...</p>
         ) : (
           <>
             <div className="rounded-lg bg-blue-50 px-4 py-3">
-              <p className="text-[11px] text-blue-700">
+              <p className="text-xs text-blue-700">
                 Gasto no período (combustível + serviços)
               </p>
               <p className="mt-1 text-xl font-bold text-blue-700">
@@ -188,7 +188,7 @@ export function DespesasModal({
             </div>
 
             {vazio && (
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-gray-500">
                 Nada registrado neste período. Os gastos aparecem aqui conforme
                 você registra abastecimentos (em Meus veículos) e serviços (na
                 aba Serviços, informando o valor pago).
@@ -251,7 +251,7 @@ export function DespesasModal({
             )}
 
             {dados.seguro.itens.length > 0 && (
-              <p className="text-[11px] text-gray-400">
+              <p className="text-xs text-gray-500">
                 O seguro é o valor anual da apólice atual e não entra no total
                 do período, porque não registramos quando você pagou.
               </p>

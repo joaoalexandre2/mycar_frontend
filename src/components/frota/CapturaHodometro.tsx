@@ -80,7 +80,7 @@ export function CapturaHodometro({
             className={`${classeCampo} mt-1.5`}
           />
         </label>
-        {dica && <p className="mt-1 text-[11px] text-gray-500">{dica}</p>}
+        {dica && <p className="mt-1 text-xs text-gray-500">{dica}</p>}
       </div>
 
       <div className="flex items-center gap-3">
@@ -125,7 +125,7 @@ export function CapturaHodometro({
       </div>
 
       {erro && (
-        <p role="alert" className="text-[11px] text-red-600">
+        <p role="alert" className="text-xs text-red-600">
           {erro}
         </p>
       )}

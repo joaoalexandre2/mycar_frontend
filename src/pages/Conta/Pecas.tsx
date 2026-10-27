@@ -109,28 +109,28 @@ function PecaItem({
       <div className="flex flex-wrap items-center gap-2">
         <p className="text-xs font-semibold text-gray-900">{peca.nome}</p>
         {peca.posicao && (
-          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[9px] font-bold uppercase text-gray-500">
+          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-bold uppercase text-gray-500">
             {peca.posicao}
           </span>
         )}
       </div>
 
       {peca.intervaloKm !== null && (
-        <p className="mt-1 text-[11px] text-gray-500">
+        <p className="mt-1 text-xs text-gray-500">
           Troca típica a cada {formatarKm(peca.intervaloKm)}
         </p>
       )}
       {peca.observacao && (
-        <p className="mt-0.5 text-[11px] text-gray-400">{peca.observacao}</p>
+        <p className="mt-0.5 text-xs text-gray-500">{peca.observacao}</p>
       )}
 
       {peca.marcas.length > 0 && (
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
-          <span className="text-[10px] text-gray-400">Marcas comuns:</span>
+          <span className="text-xs text-gray-500">Marcas comuns:</span>
           {peca.marcas.map((m) => (
             <span
               key={m}
-              className="rounded-full border border-gray-200 px-2 py-0.5 text-[10px] font-medium text-gray-600"
+              className="rounded-full border border-gray-200 px-2 py-0.5 text-xs font-medium text-gray-600"
             >
               {m}
             </span>
@@ -140,14 +140,14 @@ function PecaItem({
 
       {peca.codigosCatalogo.length > 0 && (
         <div className="mt-2 rounded-lg border border-blue-100 bg-blue-50/60 px-3 py-2">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-blue-700">
+          <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
             Códigos do catálogo para o seu veículo
           </p>
           <ul className="mt-1 space-y-1">
             {peca.codigosCatalogo.map((c) => (
               <li
                 key={`${c.fabricante}-${c.codigo}-${c.anoDe}-${c.anoAte}-${c.motor}`}
-                className="text-[11px] text-gray-700"
+                className="text-xs text-gray-700"
                 title={c.fonte ? `Fonte: ${c.fonte}` : undefined}
               >
                 <span className="select-text font-semibold text-gray-900">
@@ -157,7 +157,7 @@ function PecaItem({
               </li>
             ))}
           </ul>
-          <p className="mt-1 text-[10px] text-gray-400">
+          <p className="mt-1 text-xs text-gray-500">
             Confirme pelo chassi ou pelo código da peça original antes de comprar.
           </p>
         </div>
@@ -168,7 +168,7 @@ function PecaItem({
           {peca.meusCodigos.map((item) => (
             <li
               key={item.id}
-              className="flex items-center justify-between gap-2 rounded-lg bg-emerald-50 px-3 py-1.5 text-[11px] text-emerald-800"
+              className="flex items-center justify-between gap-2 rounded-lg bg-emerald-50 px-3 py-1.5 text-xs text-emerald-800"
             >
               <span className="select-text">
                 <strong>Meu código:</strong> {item.codigo}
@@ -188,7 +188,7 @@ function PecaItem({
       )}
 
       {links && (
-        <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px]">
+        <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
           <a
             href={links.google}
             target="_blank"
@@ -236,14 +236,14 @@ function PecaItem({
             />
           </div>
           {erro && (
-            <p role="alert" className="text-[11px] text-red-600">
+            <p role="alert" className="text-xs text-red-600">
               {erro}
             </p>
           )}
           <button
             type="submit"
             disabled={salvando}
-            className="h-8 rounded-lg bg-blue-600 px-3 text-[11px] font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+            className="h-8 rounded-lg bg-blue-600 px-3 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
           >
             {salvando ? "Salvando..." : "Salvar código"}
           </button>
@@ -251,7 +251,7 @@ function PecaItem({
       )}
 
       {!aberto && erro && (
-        <p role="alert" className="mt-1 text-[11px] text-red-600">
+        <p role="alert" className="mt-1 text-xs text-red-600">
           {erro}
         </p>
       )}
@@ -364,7 +364,7 @@ export function Pecas() {
               maxLength={80}
               placeholder="Ex.: coifa, amortecedor, pastilha de freio..."
               onChange={(e) => setBusca(e.target.value)}
-              className="h-10 w-full rounded-lg border border-gray-200 bg-gray-50 pl-9 pr-3 text-xs text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:bg-white"
+              className="h-10 w-full rounded-lg border border-gray-200 bg-gray-50 pl-9 pr-3 text-xs text-gray-700 outline-none transition placeholder:text-gray-500 focus:border-blue-500 focus:bg-white"
             />
           </div>
 
@@ -381,13 +381,13 @@ export function Pecas() {
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <span className="text-[11px] text-gray-400">Tente:</span>
+          <span className="text-xs text-gray-500">Tente:</span>
           {SUGESTOES.map((termo) => (
             <button
               key={termo}
               type="button"
               onClick={() => setBusca(termo)}
-              className="rounded-full border border-gray-200 px-3 py-1 text-[11px] text-gray-600 transition hover:bg-gray-50"
+              className="rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 transition hover:bg-gray-50"
             >
               {termo}
             </button>
@@ -395,7 +395,7 @@ export function Pecas() {
         </div>
 
         {dados && (
-          <div className="mt-4 rounded-lg bg-blue-50 px-4 py-3 text-[11px] text-blue-700">
+          <div className="mt-4 rounded-lg bg-blue-50 px-4 py-3 text-xs text-blue-700">
             {dados.escopo === "modelo" && dados.modelo && (
               <p>
                 Peças do <strong>{dados.modelo.nome}</strong> (
@@ -427,7 +427,7 @@ export function Pecas() {
           <button
             type="button"
             onClick={() => setSistema("")}
-            className={`h-8 rounded-full border px-3 text-[11px] font-semibold transition ${
+            className={`h-8 rounded-full border px-3 text-xs font-semibold transition ${
               sistema === ""
                 ? "border-blue-500 bg-blue-50 text-blue-600"
                 : "border-gray-200 text-gray-500 hover:bg-gray-50"
@@ -442,22 +442,22 @@ export function Pecas() {
                 key={s.chave}
                 type="button"
                 onClick={() => setSistema(s.chave)}
-                className={`h-8 rounded-full border px-3 text-[11px] font-semibold transition ${
+                className={`h-8 rounded-full border px-3 text-xs font-semibold transition ${
                   sistema === s.chave
                     ? "border-blue-500 bg-blue-50 text-blue-600"
                     : "border-gray-200 text-gray-500 hover:bg-gray-50"
                 }`}
               >
-                {s.rotulo} <span className="font-normal text-gray-400">{s.total}</span>
+                {s.rotulo} <span className="font-normal text-gray-500">{s.total}</span>
               </button>
             ))}
         </div>
       )}
 
       {!dados ? (
-        !erro && <p className="text-xs text-gray-400">Carregando...</p>
+        !erro && <p className="text-xs text-gray-500">Carregando...</p>
       ) : veiculosDaConta.total === 0 && dados.escopo === "catalogo" && !buscaAplicada ? (
-        <p className="mb-4 text-[11px] text-gray-500">
+        <p className="mb-4 text-xs text-gray-500">
           Você ainda não cadastrou veículo.{" "}
           <Link to="/veiculos" className="font-semibold text-blue-600 hover:text-blue-700">
             Cadastrar veículo
@@ -471,7 +471,7 @@ export function Pecas() {
           <p className="text-xs text-gray-500">
             Nenhuma peça encontrada para “{buscaAplicada}”.
           </p>
-          <p className="mt-1 text-[11px] text-gray-400">
+          <p className="mt-1 text-xs text-gray-500">
             Tente outra palavra (por exemplo: amortecedor, coifa, pastilha, vela,
             bateria).
           </p>
@@ -489,7 +489,7 @@ export function Pecas() {
                 <Package size={15} className="text-blue-600" />
                 {grupo.rotulo}
               </h3>
-              <span className="text-[10px] text-gray-400">
+              <span className="text-xs text-gray-500">
                 {grupo.itens.length} peça(s)
               </span>
             </div>
@@ -510,7 +510,7 @@ export function Pecas() {
       </div>
 
       {dados && (
-        <p className="mt-5 flex items-start gap-2 text-[11px] text-gray-400">
+        <p className="mt-5 flex items-start gap-2 text-xs text-gray-500">
           <Info size={14} className="mt-0.5 shrink-0" />
           {dados.aviso} As marcas são fabricantes comuns desse tipo de peça, não
           garantia de que servem no seu carro: use “Achar o código” e confirme

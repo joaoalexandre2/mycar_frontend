@@ -86,7 +86,7 @@ export function NovoMycarModal({
               />
               <span>
                 <span className="block text-xs font-semibold text-gray-900">{PERFIS[opcao].produto}</span>
-                <span className="block text-[11px] text-gray-500">{PERFIS[opcao].descricao}</span>
+                <span className="block text-xs text-gray-500">{PERFIS[opcao].descricao}</span>
               </span>
             </label>
           ))}

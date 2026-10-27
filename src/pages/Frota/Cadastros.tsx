@@ -139,19 +139,19 @@ function Motoristas() {
               <li key={m.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
                 <div className={m.ativo ? "" : "opacity-50"}>
                   <p className="text-sm font-semibold text-gray-900">{m.nome}</p>
-                  <p className="text-[11px] text-gray-500">
+                  <p className="text-xs text-gray-500">
                     {[m.telefone, m.cnhNumero ? `CNH ${m.cnhNumero}` : null].filter(Boolean).join(" · ") || "Sem contato"}
                     {m.cnhValidade && ` · validade ${formatarData(m.cnhValidade)}`}
                   </p>
-                  {cnh === "vencida" && <p className="text-[11px] font-semibold text-red-600">CNH vencida</p>}
-                  {cnh === "vence_em_breve" && <p className="text-[11px] font-semibold text-amber-600">CNH vence em breve</p>}
+                  {cnh === "vencida" && <p className="text-xs font-semibold text-red-600">CNH vencida</p>}
+                  {cnh === "vence_em_breve" && <p className="text-xs font-semibold text-amber-600">CNH vence em breve</p>}
                 </div>
 
                 <div className="flex items-center gap-1">
                   <button
                     type="button"
                     onClick={() => void alternarAtivo(m)}
-                    className="h-8 rounded-lg px-3 text-[11px] font-semibold text-gray-600 hover:bg-gray-50"
+                    className="h-8 rounded-lg px-3 text-xs font-semibold text-gray-600 hover:bg-gray-50"
                   >
                     {m.ativo ? "Desativar" : "Reativar"}
                   </button>
@@ -360,11 +360,11 @@ function Centros() {
             <li key={c.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
               <div className={c.ativo ? "" : "opacity-50"}>
                 <p className="text-sm font-semibold text-gray-900">{c.nome}</p>
-                {c.codigo && <p className="text-[11px] text-gray-500">Código {c.codigo}</p>}
+                {c.codigo && <p className="text-xs text-gray-500">Código {c.codigo}</p>}
               </div>
 
               <div className="flex items-center gap-1">
-                <button type="button" onClick={() => void alternarAtivo(c)} className="h-8 rounded-lg px-3 text-[11px] font-semibold text-gray-600 hover:bg-gray-50">
+                <button type="button" onClick={() => void alternarAtivo(c)} className="h-8 rounded-lg px-3 text-xs font-semibold text-gray-600 hover:bg-gray-50">
                   {c.ativo ? "Desativar" : "Reativar"}
                 </button>
                 <button type="button" onClick={() => setEditando(c)} aria-label={`Editar ${c.nome}`} className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-50">

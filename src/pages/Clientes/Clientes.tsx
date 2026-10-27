@@ -233,7 +233,7 @@ export function Clientes() {
                 placeholder="Buscar cliente..."
                 value={busca}
                 onChange={(event) => setBusca(event.target.value)}
-                className="h-9 w-full rounded-lg border border-gray-200 bg-gray-50 pl-9 pr-3 text-xs text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:bg-white"
+                className="h-9 w-full rounded-lg border border-gray-200 bg-gray-50 pl-9 pr-3 text-xs text-gray-700 outline-none transition placeholder:text-gray-500 focus:border-blue-500 focus:bg-white"
               />
             </div>
 
@@ -397,7 +397,7 @@ export function Clientes() {
 function StatusCliente({ ativo }: { ativo: boolean }) {
   return (
     <span
-      className={`inline-flex rounded-full px-2 py-1 text-[10px] font-semibold ${
+      className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
         ativo ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
       }`}
     >

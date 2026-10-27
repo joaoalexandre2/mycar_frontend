@@ -29,7 +29,7 @@ export function StatCard({
         </strong>
       </div>
 
-      <p className="mt-2 text-[11px] text-gray-400">
+      <p className="mt-2 text-xs text-gray-500">
         {description}
       </p>
     </div>

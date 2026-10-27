@@ -31,7 +31,7 @@ const SITUACAO: Record<SituacaoServico, { texto: string; classe: string }> = {
   vence_em_breve: { texto: "Trocar em breve", classe: "bg-amber-50 text-amber-700" },
   vencido: { texto: "Vencido", classe: "bg-red-50 text-red-600" },
   sem_aviso: { texto: "Sem aviso", classe: "bg-gray-100 text-gray-500" },
-  anterior: { texto: "Anterior", classe: "bg-gray-100 text-gray-400" },
+  anterior: { texto: "Anterior", classe: "bg-gray-100 text-gray-500" },
 };
 
 /** Sugestões de aviso por tipo (o usuário pode trocar). */
@@ -207,7 +207,7 @@ export function Servicos() {
             <h3 className="font-display text-xl leading-none font-bold tracking-wide text-gray-900 uppercase">
               Histórico
             </h3>
-            <p className="mt-1 text-[11px] text-gray-400">
+            <p className="mt-1 text-xs text-gray-500">
               O aviso vale para o serviço mais recente de cada tipo. O km atual
               vem dos abastecimentos e serviços que você registrou.
             </p>
@@ -226,7 +226,7 @@ export function Servicos() {
         </div>
 
         {!dados || !veiculosDaConta.carregado ? (
-          <p className="p-5 text-xs text-gray-400">Carregando...</p>
+          <p className="p-5 text-xs text-gray-500">Carregando...</p>
         ) : veiculosDaConta.total === 0 ? (
           <div className="p-8 text-center">
             <p className="text-xs text-gray-500">
@@ -240,7 +240,7 @@ export function Servicos() {
             </Link>
           </div>
         ) : lista.length === 0 ? (
-          <p className="p-5 text-xs text-gray-400">
+          <p className="p-5 text-xs text-gray-500">
             Nenhum serviço registrado ainda. Clique em “Novo serviço” e informe,
             por exemplo, a última troca de óleo.
           </p>
@@ -253,7 +253,7 @@ export function Servicos() {
                     (titulo) => (
                       <th
                         key={titulo}
-                        className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wide text-gray-500"
+                        className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500"
                       >
                         {titulo}
                       </th>
@@ -283,12 +283,12 @@ export function Servicos() {
                               {item.rotulo}
                             </p>
                             {item.valor !== null && (
-                              <p className="mt-0.5 text-[10px] text-gray-400">
+                              <p className="mt-0.5 text-xs text-gray-500">
                                 {formatarMoeda(item.valor)}
                               </p>
                             )}
                             {item.observacoes && (
-                              <p className="mt-0.5 text-[10px] text-gray-400">
+                              <p className="mt-0.5 text-xs text-gray-500">
                                 {item.observacoes}
                               </p>
                             )}
@@ -297,14 +297,14 @@ export function Servicos() {
                       </td>
                       <td data-label="Veículo" className="px-5 py-4 text-xs text-gray-600">
                         {item.veiculo}
-                        <span className="block text-[10px] text-gray-400">
+                        <span className="block text-xs text-gray-500">
                           {item.placa}
                         </span>
                       </td>
                       <td data-label="Feito em" className="px-5 py-4 text-xs text-gray-600">
                         {formatarData(item.realizadoEm)}
                         {item.km !== null && (
-                          <span className="block text-[10px] text-gray-400">
+                          <span className="block text-xs text-gray-500">
                             {formatarKm(item.km)}
                           </span>
                         )}
@@ -312,14 +312,14 @@ export function Servicos() {
                       <td data-label="Próxima troca" className="px-5 py-4 text-xs text-gray-600">
                         {item.vigente ? textoProxima(item) : "—"}
                         {item.vigente && textoRestante(item) && (
-                          <span className="block text-[10px] text-gray-400">
+                          <span className="block text-xs text-gray-500">
                             {textoRestante(item)}
                           </span>
                         )}
                       </td>
                       <td data-label="Situação" className="px-5 py-4">
                         <span
-                          className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${situacao.classe}`}
+                          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${situacao.classe}`}
                         >
                           {situacao.texto}
                         </span>
@@ -463,7 +463,7 @@ function NovoServicoModal({
       <form onSubmit={(e) => void salvar(e)}>
         <div className="space-y-4 px-6 py-5">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="block text-[11px] text-gray-500">
+            <div className="block text-xs text-gray-500">
               Veículo
               <div className="mt-1">
                 <SeletorDeVeiculo
@@ -474,7 +474,7 @@ function NovoServicoModal({
               </div>
             </div>
 
-            <label className="block text-[11px] text-gray-500">
+            <label className="block text-xs text-gray-500">
               Serviço
               <select
                 value={tipo}
@@ -491,7 +491,7 @@ function NovoServicoModal({
           </div>
 
           {tipo === "outro" && (
-            <label className="block text-[11px] text-gray-500">
+            <label className="block text-xs text-gray-500">
               Nome do serviço
               <input
                 type="text"
@@ -505,7 +505,7 @@ function NovoServicoModal({
           )}
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <label className="block text-[11px] text-gray-500">
+            <label className="block text-xs text-gray-500">
               Feito em
               <input
                 type="date"
@@ -516,7 +516,7 @@ function NovoServicoModal({
                 required
               />
             </label>
-            <label className="block text-[11px] text-gray-500">
+            <label className="block text-xs text-gray-500">
               Km do veículo
               <input
                 type="text"
@@ -527,7 +527,7 @@ function NovoServicoModal({
                 className={`mt-1 ${classeCampo}`}
               />
             </label>
-            <label className="block text-[11px] text-gray-500">
+            <label className="block text-xs text-gray-500">
               Valor pago (R$)
               <input
                 type="text"
@@ -545,7 +545,7 @@ function NovoServicoModal({
             </p>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <label className="block text-[11px] text-gray-500">
+              <label className="block text-xs text-gray-500">
                 Por prazo
                 <select
                   value={meses}
@@ -560,7 +560,7 @@ function NovoServicoModal({
                 </select>
               </label>
 
-              <label className="block text-[11px] text-gray-500">
+              <label className="block text-xs text-gray-500">
                 Por quilometragem (a cada)
                 <input
                   type="text"
@@ -573,13 +573,13 @@ function NovoServicoModal({
               </label>
             </div>
 
-            <p className="text-[11px] text-gray-400">
+            <p className="text-xs text-gray-500">
               Pode usar os dois: avisamos pelo que chegar primeiro, por e-mail,
               30 dias ou 1.000 km antes.
             </p>
           </div>
 
-          <label className="block text-[11px] text-gray-500">
+          <label className="block text-xs text-gray-500">
             Observações (opcional)
             <input
               type="text"

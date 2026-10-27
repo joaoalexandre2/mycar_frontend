@@ -197,7 +197,7 @@ export function Atualizacoes() {
         >
           <div className="border-b border-gray-100 px-4 py-3">
             <p className="text-sm font-semibold text-gray-900">Atualizações</p>
-            <p className="mt-0.5 text-[11px] text-gray-400">
+            <p className="mt-0.5 text-xs text-gray-500">
               {conta
                 ? "O que vence em breve nos seus veículos."
                 : "Manutenções atrasadas e as que estão chegando."}
@@ -212,7 +212,7 @@ export function Atualizacoes() {
               {erro}
             </p>
           ) : avisos === null ? (
-            <p className="px-4 py-4 text-xs text-gray-400">Carregando...</p>
+            <p className="px-4 py-4 text-xs text-gray-500">Carregando...</p>
           ) : avisos.length === 0 ? (
             <p className="flex items-center gap-2 px-4 py-5 text-xs text-gray-500">
               <CircleCheck
@@ -231,7 +231,7 @@ export function Atualizacoes() {
                 >
                   <span
                     className={`mt-0.5 shrink-0 ${
-                      aviso.tom === "atrasado" ? "text-red-500" : "text-blue-500"
+                      aviso.tom === "atrasado" ? "text-red-600" : "text-amber-600"
                     }`}
                   >
                     {aviso.tom === "atrasado" ? (
@@ -251,13 +251,13 @@ export function Atualizacoes() {
                     <p className="truncate text-xs font-semibold text-gray-900">
                       {aviso.titulo}
                     </p>
-                    <p className="mt-0.5 truncate text-[11px] text-gray-500">
+                    <p className="mt-0.5 truncate text-xs text-gray-500">
                       {aviso.detalhe}
                     </p>
                   </div>
 
                   <span
-                    className={`shrink-0 text-[11px] font-semibold ${
+                    className={`shrink-0 text-xs font-semibold ${
                       aviso.tom === "atrasado" ? "text-red-600" : "text-gray-600"
                     }`}
                   >

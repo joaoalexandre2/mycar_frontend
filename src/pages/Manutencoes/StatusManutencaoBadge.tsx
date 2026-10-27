@@ -26,7 +26,7 @@ export function StatusManutencaoBadge({
 
   return (
     <span
-      className={`inline-flex rounded-full px-2 py-1 text-[10px] font-semibold ${item.className}`}
+      className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${item.className}`}
     >
       {item.label}
     </span>

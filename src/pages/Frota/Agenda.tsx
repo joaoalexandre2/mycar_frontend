@@ -238,7 +238,7 @@ export function Agenda() {
 
       {/* Calendário (telas largas) */}
       <div className="hidden overflow-hidden rounded-xl border border-gray-200 bg-white md:block" aria-busy={carregando}>
-        <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50 text-center text-[10px] font-bold tracking-wide text-gray-500 uppercase">
+        <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50 text-center text-xs font-bold tracking-wide text-gray-500 uppercase">
           {SEMANA.map((d) => (
             <div key={d} className="py-2">
               {d}
@@ -261,7 +261,7 @@ export function Agenda() {
                   onClick={() => setFormulario({ uso: null, dia: dia.data })}
                   disabled={semVeiculos}
                   title="Reservar neste dia"
-                  className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold hover:bg-blue-50 disabled:cursor-default ${
+                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold hover:bg-blue-50 disabled:cursor-default ${
                     dia.data === hoje
                       ? "bg-blue-600 text-white hover:bg-blue-600"
                       : dia.doMes
@@ -279,7 +279,7 @@ export function Agenda() {
                       type="button"
                       onClick={() => setAberto(uso)}
                       title={`${uso.veiculo?.placa ?? ""} · ${ROTULO_STATUS_USO[uso.status]}`}
-                      className={`block w-full truncate rounded border px-1.5 py-0.5 text-left text-[10px] font-medium ${COR_DO_STATUS[uso.status]}`}
+                      className={`block w-full truncate rounded border px-1.5 py-0.5 text-left text-xs font-medium ${COR_DO_STATUS[uso.status]}`}
                     >
                       {resumoDoUso(uso)}
                     </button>
@@ -288,7 +288,7 @@ export function Agenda() {
                     <button
                       type="button"
                       onClick={() => setAberto(doDia[POR_DIA_NO_CALENDARIO])}
-                      className="px-1 text-[10px] font-semibold text-gray-500 hover:text-gray-700"
+                      className="px-1 text-xs font-semibold text-gray-500 hover:text-gray-700"
                     >
                       +{doDia.length - POR_DIA_NO_CALENDARIO} mais
                     </button>
@@ -324,7 +324,7 @@ export function Agenda() {
                       <span className="font-semibold">
                         {uso.veiculo?.placa} · {uso.motorista ?? "sem motorista"}
                       </span>
-                      <span className="block text-[11px] opacity-80">
+                      <span className="block text-xs opacity-80">
                         {descreverJanela(uso.inicioPrevisto, uso.fimPrevisto)} · {ROTULO_STATUS_USO[uso.status]}
                       </span>
                     </button>

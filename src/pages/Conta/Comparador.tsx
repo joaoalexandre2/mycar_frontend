@@ -128,7 +128,7 @@ export function Comparador() {
         className="mb-5 space-y-4 rounded-2xl border border-gray-200 bg-white p-5"
       >
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div className="block text-[11px] text-gray-500">
+          <div className="block text-xs text-gray-500">
             Veículo
             <div className="mt-1">
               {veiculosDaConta.carregado && (
@@ -149,7 +149,7 @@ export function Comparador() {
             </div>
           </div>
 
-          <label className="block text-[11px] text-gray-500">
+          <label className="block text-xs text-gray-500">
             O que comparar
             <select
               value={peca}
@@ -170,7 +170,7 @@ export function Comparador() {
         </div>
 
         {peca === "livre" && (
-          <label className="block text-[11px] text-gray-500">
+          <label className="block text-xs text-gray-500">
             Peça
             <input
               type="text"
@@ -185,7 +185,7 @@ export function Comparador() {
 
         {precisaMedida && (
           <div>
-            <label className="block text-[11px] text-gray-500">
+            <label className="block text-xs text-gray-500">
               Medida do pneu
               <input
                 type="text"
@@ -199,7 +199,7 @@ export function Comparador() {
                 className={`mt-1 ${classeCampo}`}
               />
             </label>
-            <p className="mt-1 text-[11px] text-gray-400">
+            <p className="mt-1 text-xs text-gray-500">
               {medidaDaFicha ? (
                 <>Medida tirada da ficha técnica do seu veículo.</>
               ) : (
@@ -219,7 +219,7 @@ export function Comparador() {
         )}
 
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-[11px] text-gray-400">
+          <p className="text-xs text-gray-500">
             Busca: <strong className="text-gray-600">{consulta || "—"}</strong>
           </p>
           <button
@@ -255,7 +255,7 @@ export function Comparador() {
       {resultado?.status === "ok" && maisBarato && (
         <div className="mb-5 space-y-4">
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
-            <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-emerald-700">
+            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-emerald-700">
               <Tag size={14} />
               Mais barato agora
             </p>
@@ -296,13 +296,13 @@ export function Comparador() {
                 )}
 
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] font-bold uppercase text-gray-400">
+                  <p className="text-xs font-bold uppercase text-gray-500">
                     {indice + 1}º menor preço
                   </p>
                   <p className="truncate text-xs font-semibold text-gray-900">
                     {item.titulo}
                   </p>
-                  <p className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] text-gray-500">
+                  <p className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-gray-500">
                     {item.loja}
                     {item.freteGratis && (
                       <span className="flex items-center gap-1 text-emerald-600">
@@ -320,7 +320,7 @@ export function Comparador() {
                     href={item.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[11px] font-semibold text-blue-600 hover:text-blue-700"
+                    className="text-xs font-semibold text-blue-600 hover:text-blue-700"
                   >
                     Abrir
                   </a>
@@ -329,7 +329,7 @@ export function Comparador() {
             ))}
           </ul>
 
-          <p className="flex items-start gap-2 text-[11px] text-gray-400">
+          <p className="flex items-start gap-2 text-xs text-gray-500">
             <Info size={14} className="mt-0.5 shrink-0" />
             <span>
               Preços do {resultado.fonte} no momento da busca, entre{" "}

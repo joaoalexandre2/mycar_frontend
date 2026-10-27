@@ -135,7 +135,7 @@ export function VeiculoHistorico({
   if (carregando) {
     return (
       <div className="p-4 md:p-8">
-        <p className="text-xs text-gray-400">Carregando histórico...</p>
+        <p className="text-xs text-gray-500">Carregando histórico...</p>
       </div>
     );
   }
@@ -149,7 +149,7 @@ export function VeiculoHistorico({
         >
           <ArrowLeft size={17} />
         </button>
-        <p className="text-xs text-gray-400">Não foi possível carregar o histórico.</p>
+        <p className="text-xs text-gray-500">Não foi possível carregar o histórico.</p>
       </div>
     );
   }
@@ -220,7 +220,7 @@ export function VeiculoHistorico({
             <h3 className="text-sm font-semibold text-gray-900">
               Valor FIPE ao longo do tempo
             </h3>
-            <p className="mt-1 text-[11px] text-gray-400">
+            <p className="mt-1 text-xs text-gray-500">
               Histórico das consultas feitas a este veículo.
             </p>
           </div>
@@ -233,7 +233,7 @@ export function VeiculoHistorico({
                   key={`${item.consultadoEm}-${indice}`}
                   className="flex items-center justify-between px-5 py-3"
                 >
-                  <span className="text-[11px] text-gray-400">
+                  <span className="text-xs text-gray-500">
                     {formatarData(item.consultadoEm)}
                   </span>
                   <span className="text-xs font-semibold text-gray-900">
@@ -250,13 +250,13 @@ export function VeiculoHistorico({
           <h3 className="text-sm font-semibold text-gray-900">
             Linha do tempo
           </h3>
-          <p className="mt-1 text-[11px] text-gray-400">
+          <p className="mt-1 text-xs text-gray-500">
             Ordens de serviço, manutenções e consultas FIPE, mais recentes primeiro.
           </p>
         </div>
 
         {timeline.length === 0 ? (
-          <div className="p-10 text-center text-xs text-gray-400">
+          <div className="p-10 text-center text-xs text-gray-500">
             <Car size={28} className="mx-auto mb-3 text-gray-300" />
             Nenhum evento registrado para este veículo ainda.
           </div>
@@ -277,23 +277,23 @@ export function VeiculoHistorico({
                     </h4>
                     {evento.badge && (
                       <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${evento.badge.classe}`}
+                        className={`rounded-full px-2 py-0.5 text-xs font-semibold ${evento.badge.classe}`}
                       >
                         {evento.badge.label}
                       </span>
                     )}
                   </div>
 
-                  <p className="mt-1 text-[11px] text-gray-500">
+                  <p className="mt-1 text-xs text-gray-500">
                     {evento.descricao}
                   </p>
 
                   <div className="mt-1 flex items-center gap-3">
-                    <span className="text-[10px] text-gray-400">
+                    <span className="text-xs text-gray-500">
                       {formatarData(evento.data)}
                     </span>
                     {evento.valor !== null && (
-                      <span className="text-[10px] font-semibold text-gray-600">
+                      <span className="text-xs font-semibold text-gray-600">
                         {formatarMoeda(evento.valor)}
                       </span>
                     )}
@@ -321,7 +321,7 @@ function SummaryCard({
     <div className="rounded-xl border border-gray-200 bg-white p-5">
       <div className="mb-3 flex items-center gap-2 text-gray-400">
         {icon}
-        <span className="text-[11px] font-medium">{label}</span>
+        <span className="text-xs font-medium">{label}</span>
       </div>
       <strong className="block truncate text-sm font-bold text-gray-900">
         {value}
