@@ -128,6 +128,7 @@ export function Veiculos() {
 
     try {
       await veiculosService.remover(id);
+      toast.sucesso("Veículo excluído.");
       recarregar();
     } catch (error) {
       toast.erro(mensagemErro(error));
@@ -170,6 +171,7 @@ export function Veiculos() {
         await veiculosService.criar(dados);
       }
 
+      toast.sucesso(veiculoEditando ? "Veículo salvo." : "Veículo criado.");
       setModalAberto(false);
       setVeiculoEditando(null);
       recarregar();
@@ -478,7 +480,7 @@ export function Veiculos() {
             setModalAberto(false);
             setVeiculoEditando(null);
           }}
-          onSave={(dados) => void salvarVeiculo(dados)}
+          onSave={salvarVeiculo}
         />
       )}
     </div>

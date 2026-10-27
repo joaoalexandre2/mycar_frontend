@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Modal } from "../../components/ui/Modal";
 import { useToast } from "../../hooks/useNotificacoes";
+import { useEnvio } from "../../hooks/useEnvio";
 
 import { clientesService } from "../../services/clientes";
 import { SelectComBusca } from "../../components/ui/SelectComBusca";
@@ -37,9 +38,18 @@ export function VeiculoModal({
 }: {
   veiculo: Veiculo | null;
   onClose: () => void;
-  onSave: (veiculo: DadosVeiculoForm) => void;
+  onSave: (veiculo: DadosVeiculoForm) => void | Promise<void>;
 }) {
   const toast = useToast();
+  const { enviando, enviar } = useEnvio();
+  const idMarca = useId();
+  const idModelo = useId();
+  const idPlaca = useId();
+  const idAjudaPlaca = useId();
+  const idUf = useId();
+  const idAno = useId();
+  const idAnoFab = useId();
+  const idAjudaAnoFab = useId();
   const [clienteId, setClienteId] = useState(
     veiculo?.clienteId?.toString() ?? "",
   );
@@ -92,17 +102,19 @@ export function VeiculoModal({
       return;
     }
 
-    onSave({
-      clienteId: Number(clienteId),
-      tipo,
-      placa: placa.trim().toUpperCase(),
-      marca: marca.trim(),
-      modelo: modelo.trim(),
-      ano: anoNumerico,
-      anoFabricacao: anoFabNumerico,
-      uf,
-      fipe,
-    });
+    void enviar(() =>
+      onSave({
+        clienteId: Number(clienteId),
+        tipo,
+        placa: placa.trim().toUpperCase(),
+        marca: marca.trim(),
+        modelo: modelo.trim(),
+        ano: anoNumerico,
+        anoFabricacao: anoFabNumerico,
+        uf,
+        fipe,
+      }),
+    );
   }
 
   return (
@@ -115,10 +127,11 @@ export function VeiculoModal({
       <form onSubmit={handleSubmit}>
         <div className="space-y-4 px-6 py-5">
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+            <span className="mb-1.5 block text-xs font-medium text-gray-700">
               Cliente
-            </label>
+            </span>
             <SelectComBusca
+              rotulo="Cliente"
               valor={clienteId}
               rotuloInicial={veiculo?.cliente?.nome ?? ""}
               placeholder="Busque o cliente por nome, CPF ou telefone"
@@ -155,10 +168,14 @@ export function VeiculoModal({
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              <label
+                htmlFor={idMarca}
+                className="mb-1.5 block text-xs font-medium text-gray-700"
+              >
                 Marca
               </label>
               <input
+                id={idMarca}
                 type="text"
                 value={marca}
                 onChange={(event) => setMarca(event.target.value)}
@@ -167,10 +184,14 @@ export function VeiculoModal({
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              <label
+                htmlFor={idModelo}
+                className="mb-1.5 block text-xs font-medium text-gray-700"
+              >
                 Modelo
               </label>
               <input
+                id={idModelo}
                 type="text"
                 value={modelo}
                 onChange={(event) => setModelo(event.target.value)}
@@ -181,11 +202,16 @@ export function VeiculoModal({
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+            <label
+              htmlFor={idPlaca}
+              className="mb-1.5 block text-xs font-medium text-gray-700"
+            >
               Placa
             </label>
             <input
+              id={idPlaca}
               type="text"
+              aria-describedby={placa ? idAjudaPlaca : undefined}
               value={placa}
               onChange={(event) => setPlaca(limparPlaca(event.target.value))}
               maxLength={8}
@@ -196,8 +222,9 @@ export function VeiculoModal({
             />
             {placa && (
               <p
-                className={`mt-1 text-[11px] ${
-                  placaValida(placa) ? "text-emerald-600" : "text-gray-400"
+                id={idAjudaPlaca}
+                className={`mt-1 text-xs ${
+                  placaValida(placa) ? "text-emerald-700" : "text-gray-500"
                 }`}
               >
                 {placaValida(placa)
@@ -208,10 +235,14 @@ export function VeiculoModal({
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+            <label
+              htmlFor={idUf}
+              className="mb-1.5 block text-xs font-medium text-gray-700"
+            >
               Estado de emplacamento
             </label>
             <select
+              id={idUf}
               value={uf}
               onChange={(event) => setUf(event.target.value)}
               className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none transition focus:border-blue-500"
@@ -226,10 +257,14 @@ export function VeiculoModal({
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+            <label
+              htmlFor={idAno}
+              className="mb-1.5 block text-xs font-medium text-gray-700"
+            >
               Ano modelo
             </label>
             <input
+              id={idAno}
               type="number"
               min="1900"
               max={new Date().getFullYear() + 1}
@@ -241,10 +276,15 @@ export function VeiculoModal({
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+            <label
+              htmlFor={idAnoFab}
+              className="mb-1.5 block text-xs font-medium text-gray-700"
+            >
               Ano de fabricação (opcional)
             </label>
             <input
+              id={idAnoFab}
+              aria-describedby={idAjudaAnoFab}
               type="number"
               min="1900"
               max={new Date().getFullYear()}
@@ -253,7 +293,7 @@ export function VeiculoModal({
               onChange={(event) => setAnoFab(event.target.value)}
               className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
             />
-            <p className="mt-1 text-[11px] text-gray-400">
+            <p id={idAjudaAnoFab} className="mt-1 text-xs text-gray-500">
               Se for diferente do ano modelo, informe (como no documento: 2018/2019).
             </p>
           </div>
@@ -269,9 +309,14 @@ export function VeiculoModal({
           </button>
           <button
             type="submit"
-            className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700"
+            disabled={enviando}
+            className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {veiculo ? "Salvar alterações" : "Criar veículo"}
+            {enviando
+              ? "Salvando..."
+              : veiculo
+                ? "Salvar alterações"
+                : "Criar veículo"}
           </button>
         </div>
       </form>

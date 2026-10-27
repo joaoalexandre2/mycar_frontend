@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Modal } from "../../components/ui/Modal";
 import { useToast } from "../../hooks/useNotificacoes";
+import { useEnvio } from "../../hooks/useEnvio";
 
 import type {
   OrdemServico,
@@ -24,9 +25,14 @@ export function OrdemServicoModal({
     status: StatusOrdemServico;
     valor: number;
     dataAbertura: string;
-  }) => void;
+  }) => void | Promise<void>;
 }) {
   const toast = useToast();
+  const { enviando, enviar } = useEnvio();
+  const idDescricao = useId();
+  const idValor = useId();
+  const idData = useId();
+  const idStatus = useId();
   const [veiculoId, setVeiculoId] = useState(
     ordem?.veiculoId?.toString() ?? "",
   );
@@ -48,13 +54,15 @@ export function OrdemServicoModal({
       return;
     }
 
-    onSave({
-      veiculoId: Number(veiculoId),
-      descricao: descricao.trim(),
-      status,
-      valor: valorNumerico,
-      dataAbertura,
-    });
+    void enviar(() =>
+      onSave({
+        veiculoId: Number(veiculoId),
+        descricao: descricao.trim(),
+        status,
+        valor: valorNumerico,
+        dataAbertura,
+      }),
+    );
   }
 
   return (
@@ -67,10 +75,11 @@ export function OrdemServicoModal({
       <form onSubmit={handleSubmit}>
         <div className="space-y-4 px-6 py-5">
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+            <span className="mb-1.5 block text-xs font-medium text-gray-700">
               Veículo
-            </label>
+            </span>
             <SelectComBusca
+              rotulo="Veículo"
               valor={veiculoId}
               rotuloInicial={ordem?.veiculo ? rotuloVeiculo(ordem.veiculo) : ""}
               placeholder="Busque por placa, modelo ou cliente"
@@ -85,10 +94,14 @@ export function OrdemServicoModal({
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+            <label
+              htmlFor={idDescricao}
+              className="mb-1.5 block text-xs font-medium text-gray-700"
+            >
               Descrição do problema / serviço
             </label>
             <textarea
+              id={idDescricao}
               value={descricao}
               onChange={(event) => setDescricao(event.target.value)}
               rows={4}
@@ -99,10 +112,14 @@ export function OrdemServicoModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              <label
+                htmlFor={idValor}
+                className="mb-1.5 block text-xs font-medium text-gray-700"
+              >
                 Valor
               </label>
               <input
+                id={idValor}
                 type="number"
                 min="0"
                 step="0.01"
@@ -113,10 +130,14 @@ export function OrdemServicoModal({
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              <label
+                htmlFor={idData}
+                className="mb-1.5 block text-xs font-medium text-gray-700"
+              >
                 Data de abertura
               </label>
               <input
+                id={idData}
                 type="date"
                 value={dataAbertura}
                 onChange={(event) => setDataAbertura(event.target.value)}
@@ -128,10 +149,14 @@ export function OrdemServicoModal({
 
           {ordem && (
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              <label
+                htmlFor={idStatus}
+                className="mb-1.5 block text-xs font-medium text-gray-700"
+              >
                 Status
               </label>
               <select
+                id={idStatus}
                 value={status}
                 onChange={(event) =>
                   setStatus(event.target.value as StatusOrdemServico)
@@ -158,9 +183,14 @@ export function OrdemServicoModal({
           </button>
           <button
             type="submit"
-            className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white"
+            disabled={enviando}
+            className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {ordem ? "Salvar alterações" : "Criar ordem"}
+            {enviando
+              ? "Salvando..."
+              : ordem
+                ? "Salvar alterações"
+                : "Criar ordem"}
           </button>
         </div>
       </form>

@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { Modal } from "../../components/ui/Modal";
 import { useToast } from "../../hooks/useNotificacoes";
+import { useEnvio } from "../../hooks/useEnvio";
 import { Plus, Trash2 } from "lucide-react";
 import type { Manutencao, PecaManutencao } from "../../types/manutencao";
 import { veiculosService } from "../../services/veiculos";
@@ -33,9 +34,17 @@ export function ManutencaoModal({
     proximaData: string | null;
     proximaQuilometragem: number | null;
     pecas: PecaManutencao[];
-  }) => void;
+  }) => void | Promise<void>;
 }) {
   const toast = useToast();
+  const { enviando, enviar } = useEnvio();
+  const idTipo = useId();
+  const idDescricao = useId();
+  const idValor = useId();
+  const idData = useId();
+  const idProximaData = useId();
+  const idKm = useId();
+  const idProximaKm = useId();
   const [veiculoId, setVeiculoId] = useState(
     manutencao?.veiculoId?.toString() ?? "",
   );
@@ -176,21 +185,23 @@ export function ManutencaoModal({
       return;
     }
 
-    onSave({
-      pecas: linhasPreenchidas.map((peca) => ({
-        tipo: peca.tipo,
-        especificacao: peca.especificacao.trim(),
-        marca: peca.marca.trim() || null,
-      })),
-      veiculoId: Number(veiculoId),
-      tipo: tipo.trim(),
-      descricao: descricao.trim(),
-      valor: valorNumerico,
-      dataManutencao,
-      quilometragem: quilometragemNumerica,
-      proximaData: proximaData || null,
-      proximaQuilometragem: proximaQuilometragemNumerica,
-    });
+    void enviar(() =>
+      onSave({
+        pecas: linhasPreenchidas.map((peca) => ({
+          tipo: peca.tipo,
+          especificacao: peca.especificacao.trim(),
+          marca: peca.marca.trim() || null,
+        })),
+        veiculoId: Number(veiculoId),
+        tipo: tipo.trim(),
+        descricao: descricao.trim(),
+        valor: valorNumerico,
+        dataManutencao,
+        quilometragem: quilometragemNumerica,
+        proximaData: proximaData || null,
+        proximaQuilometragem: proximaQuilometragemNumerica,
+      }),
+    );
   }
 
   return (
@@ -205,11 +216,12 @@ export function ManutencaoModal({
         <div className="max-h-[70vh] space-y-4 overflow-y-auto px-6 py-5">
           {/* Veículo */}
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+            <span className="mb-1.5 block text-xs font-medium text-gray-700">
               Veículo
-            </label>
+            </span>
 
             <SelectComBusca
+              rotulo="Veículo"
               valor={veiculoId}
               rotuloInicial={
                 manutencao?.veiculo ? rotuloVeiculo(manutencao.veiculo) : ""
@@ -227,11 +239,15 @@ export function ManutencaoModal({
 
           {/* Tipo */}
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+            <label
+              htmlFor={idTipo}
+              className="mb-1.5 block text-xs font-medium text-gray-700"
+            >
               Tipo de manutenção
             </label>
 
             <input
+              id={idTipo}
               type="text"
               value={tipo}
               onChange={(event) =>
@@ -245,11 +261,15 @@ export function ManutencaoModal({
 
           {/* Descrição */}
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+            <label
+              htmlFor={idDescricao}
+              className="mb-1.5 block text-xs font-medium text-gray-700"
+            >
               Descrição
             </label>
 
             <textarea
+              id={idDescricao}
               value={descricao}
               onChange={(event) =>
                 setDescricao(event.target.value)
@@ -263,11 +283,15 @@ export function ManutencaoModal({
 
           {/* Valor */}
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+            <label
+              htmlFor={idValor}
+              className="mb-1.5 block text-xs font-medium text-gray-700"
+            >
               Valor (opcional)
             </label>
 
             <input
+              id={idValor}
               type="number"
               min="0"
               step="0.01"
@@ -281,11 +305,15 @@ export function ManutencaoModal({
           {/* Datas */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              <label
+                htmlFor={idData}
+                className="mb-1.5 block text-xs font-medium text-gray-700"
+              >
                 Data da manutenção
               </label>
 
               <input
+                id={idData}
                 type="date"
                 value={dataManutencao}
                 onChange={(event) =>
@@ -297,11 +325,15 @@ export function ManutencaoModal({
             </div>
 
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              <label
+                htmlFor={idProximaData}
+                className="mb-1.5 block text-xs font-medium text-gray-700"
+              >
                 Próxima manutenção (opcional)
               </label>
 
               <input
+                id={idProximaData}
                 type="date"
                 value={proximaData}
                 onChange={(event) =>
@@ -315,11 +347,15 @@ export function ManutencaoModal({
           {/* KM */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              <label
+                htmlFor={idKm}
+                className="mb-1.5 block text-xs font-medium text-gray-700"
+              >
                 KM atual (opcional)
               </label>
 
               <input
+                id={idKm}
                 type="number"
                 min="0"
                 value={quilometragem}
@@ -332,11 +368,15 @@ export function ManutencaoModal({
             </div>
 
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              <label
+                htmlFor={idProximaKm}
+                className="mb-1.5 block text-xs font-medium text-gray-700"
+              >
                 Próxima KM (opcional)
               </label>
 
               <input
+                id={idProximaKm}
                 type="number"
                 min="0"
                 value={proximaQuilometragem}
@@ -512,11 +552,14 @@ export function ManutencaoModal({
 
           <button
             type="submit"
-            className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white transition hover:bg-blue-700"
+            disabled={enviando}
+            className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {manutencao
-              ? "Salvar alterações"
-              : "Criar manutenção"}
+            {enviando
+              ? "Salvando..."
+              : manutencao
+                ? "Salvar alterações"
+                : "Criar manutenção"}
           </button>
         </div>
       </form>

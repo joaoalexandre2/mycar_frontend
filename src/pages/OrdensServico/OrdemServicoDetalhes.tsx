@@ -6,57 +6,59 @@ import {
   ClipboardList,
   Clock,
   FileText,
-  Package,
   Pencil,
-  Plus,
   UserRound,
-  Wrench,
 } from "lucide-react";
 
-import type { OrdemServico, StatusOrdemServico } from "../../types/ordemServico";
+import type { OrdemServico } from "../../types/ordemServico";
 import { formatarData, formatarMoeda } from "../../utils/formatters";
+import { STATUS_LABEL } from "./statusOrdemServico";
+import { StatusOrdemServicoBadge } from "./StatusOrdemServicoBadge";
 
-const STATUS_LABEL: Record<StatusOrdemServico, string> = {
-  aberta: "Aberta",
-  em_andamento: "Em andamento",
-  aguardando_peca: "Aguardando peça",
-  finalizada: "Finalizada",
-  cancelada: "Cancelada",
-};
+type Aba = "informacoes" | "historico";
 
 interface OrdemServicoDetalhesProps {
   ordem: OrdemServico;
   onVoltar: () => void;
+  onEditar: () => void;
+  onConcluir: () => void;
+  concluindo?: boolean;
 }
 
 export function OrdemServicoDetalhes({
   ordem,
   onVoltar,
+  onEditar,
+  onConcluir,
+  concluindo = false,
 }: OrdemServicoDetalhesProps) {
-  const [abaAtiva, setAbaAtiva] = useState("informacoes");
+  const [abaAtiva, setAbaAtiva] = useState<Aba>("informacoes");
   const veiculo = ordem.veiculo;
   const cliente = veiculo?.cliente;
+  const encerrada =
+    ordem.status === "finalizada" || ordem.status === "cancelada";
 
   return (
     <div className="p-4 md:p-8">
       {/* Cabeçalho */}
-      <div className="mb-6 flex items-center gap-4">
+      <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-3">
         <button
+          type="button"
           onClick={onVoltar}
-          className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:bg-gray-50 hover:text-gray-900"
+          aria-label="Voltar para a lista de ordens de serviço"
+          title="Voltar"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:bg-gray-50 hover:text-gray-900"
         >
-          <ArrowLeft size={17} />
+          <ArrowLeft size={17} aria-hidden="true" />
         </button>
 
-        <div>
-          <div className="flex items-center gap-3">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <h2 className="text-[21px] font-bold text-gray-900">
               OS-{String(ordem.id).padStart(4, "0")}
             </h2>
 
-            <span className="rounded-full bg-blue-100 px-2.5 py-1 text-[10px] font-semibold text-blue-700">
-              {STATUS_LABEL[ordem.status]}
-            </span>
+            <StatusOrdemServicoBadge status={ordem.status} />
           </div>
 
           <p className="mt-1 text-xs text-gray-500">
@@ -64,16 +66,27 @@ export function OrdemServicoDetalhes({
           </p>
         </div>
 
-        <div className="ml-auto flex gap-2">
-          <button className="flex h-9 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-xs font-medium text-gray-600 hover:bg-gray-50">
-            <Pencil size={15} />
+        <div className="flex gap-2 sm:ml-auto">
+          <button
+            type="button"
+            onClick={onEditar}
+            className="flex h-9 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-xs font-medium text-gray-600 hover:bg-gray-50"
+          >
+            <Pencil size={15} aria-hidden="true" />
             Editar
           </button>
 
-          <button className="flex h-9 items-center gap-2 rounded-lg bg-blue-600 px-3 text-xs font-semibold text-white hover:bg-blue-700">
-            <CheckCircle2 size={15} />
-            Concluir OS
-          </button>
+          {!encerrada && (
+            <button
+              type="button"
+              onClick={onConcluir}
+              disabled={concluindo}
+              className="flex h-9 items-center gap-2 rounded-lg bg-blue-600 px-3 text-xs font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <CheckCircle2 size={15} aria-hidden="true" />
+              {concluindo ? "Concluindo..." : "Concluir OS"}
+            </button>
+          )}
         </div>
       </div>
 
@@ -108,8 +121,14 @@ export function OrdemServicoDetalhes({
       {/* Conteúdo */}
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
         {/* Abas */}
-        <div className="flex border-b border-gray-200 px-5">
+        <div
+          role="tablist"
+          aria-label="Detalhes da ordem de serviço"
+          className="flex overflow-x-auto border-b border-gray-200 px-5"
+        >
           <Tab
+            id="aba-informacoes"
+            painel="painel-informacoes"
             active={abaAtiva === "informacoes"}
             onClick={() => setAbaAtiva("informacoes")}
             icon={<FileText size={15} />}
@@ -117,20 +136,8 @@ export function OrdemServicoDetalhes({
           />
 
           <Tab
-            active={abaAtiva === "servicos"}
-            onClick={() => setAbaAtiva("servicos")}
-            icon={<Wrench size={15} />}
-            label="Serviços"
-          />
-
-          <Tab
-            active={abaAtiva === "pecas"}
-            onClick={() => setAbaAtiva("pecas")}
-            icon={<Package size={15} />}
-            label="Peças"
-          />
-
-          <Tab
+            id="aba-historico"
+            painel="painel-historico"
             active={abaAtiva === "historico"}
             onClick={() => setAbaAtiva("historico")}
             icon={<Clock size={15} />}
@@ -138,24 +145,24 @@ export function OrdemServicoDetalhes({
           />
         </div>
 
-        {/* Informações */}
         {abaAtiva === "informacoes" && (
-          <Informacoes ordem={ordem} />
+          <div
+            role="tabpanel"
+            id="painel-informacoes"
+            aria-labelledby="aba-informacoes"
+          >
+            <Informacoes ordem={ordem} />
+          </div>
         )}
 
-        {/* Serviços */}
-        {abaAtiva === "servicos" && (
-          <Servicos />
-        )}
-
-        {/* Peças */}
-        {abaAtiva === "pecas" && (
-          <Pecas />
-        )}
-
-        {/* Histórico */}
         {abaAtiva === "historico" && (
-          <Historico />
+          <div
+            role="tabpanel"
+            id="painel-historico"
+            aria-labelledby="aba-historico"
+          >
+            <Historico ordem={ordem} />
+          </div>
         )}
       </div>
     </div>
@@ -174,20 +181,20 @@ function SummaryCard({
   description: string;
 }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5">
-      <div className="mb-3 flex items-center gap-2 text-gray-400">
+    <div className="min-w-0 rounded-xl border border-gray-200 bg-white p-5">
+      <div className="mb-3 flex items-center gap-2 text-gray-500">
         {icon}
 
-        <span className="text-[11px] font-medium">
+        <span className="text-xs font-medium">
           {label}
         </span>
       </div>
 
-      <strong className="block text-sm font-bold text-gray-900">
+      <strong className="block break-words text-sm font-bold text-gray-900">
         {value}
       </strong>
 
-      <span className="mt-1 block text-[10px] text-gray-400">
+      <span className="mt-1 block text-xs text-gray-500">
         {description}
       </span>
     </div>
@@ -195,11 +202,15 @@ function SummaryCard({
 }
 
 function Tab({
+  id,
+  painel,
   active,
   onClick,
   icon,
   label,
 }: {
+  id: string;
+  painel: string;
   active: boolean;
   onClick: () => void;
   icon: React.ReactNode;
@@ -207,11 +218,16 @@ function Tab({
 }) {
   return (
     <button
+      type="button"
+      role="tab"
+      id={id}
+      aria-selected={active}
+      aria-controls={painel}
       onClick={onClick}
-      className={`relative flex h-12 items-center gap-2 px-4 text-xs font-medium transition ${
+      className={`relative flex h-12 shrink-0 items-center gap-2 px-4 text-xs font-medium transition ${
         active
           ? "text-blue-600"
-          : "text-gray-400 hover:text-gray-700"
+          : "text-gray-500 hover:text-gray-700"
       }`}
     >
       {icon}
@@ -238,7 +254,7 @@ function Informacoes({ ordem }: { ordem: OrdemServico }) {
         </h3>
 
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-          <p className="text-xs leading-6 text-gray-600">
+          <p className="whitespace-pre-line break-words text-xs leading-6 text-gray-600">
             {ordem.descricao}
           </p>
         </div>
@@ -314,116 +330,27 @@ function InfoRow({
   value: string;
 }) {
   return (
-    <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-      <span className="text-[11px] text-gray-400">
+    <div className="flex items-center justify-between gap-4 border-b border-gray-100 pb-2">
+      <span className="text-xs text-gray-500">
         {label}
       </span>
 
-      <span className="text-xs font-medium text-gray-700">
+      <span className="text-right text-xs font-medium text-gray-700">
         {value}
       </span>
     </div>
   );
 }
 
-function Servicos() {
-  return (
-    <div className="p-6">
-      <div className="mb-5 flex items-center justify-between">
-        <div>
-          <h3 className="text-sm font-semibold text-gray-900">
-            Serviços realizados
-          </h3>
+/**
+ * Só o que a ordem de fato registra: a abertura, a situação atual e, quando
+ * existe, a data de encerramento. Não há um histórico de alterações no
+ * servidor, então nada além disso é mostrado.
+ */
+function Historico({ ordem }: { ordem: OrdemServico }) {
+  const encerrada =
+    ordem.status === "finalizada" || ordem.status === "cancelada";
 
-          <p className="mt-1 text-[11px] text-gray-400">
-            Serviços vinculados a esta ordem.
-          </p>
-        </div>
-
-        <button className="flex h-9 items-center gap-2 rounded-lg bg-blue-600 px-3 text-xs font-semibold text-white hover:bg-blue-700">
-          <Plus size={15} />
-          Adicionar serviço
-        </button>
-      </div>
-
-      <div className="overflow-hidden rounded-lg border border-gray-200">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-100 bg-gray-50">
-              <th className="px-4 py-3 text-left text-[10px] uppercase tracking-wide text-gray-500">
-                Serviço
-              </th>
-
-              <th className="px-4 py-3 text-left text-[10px] uppercase tracking-wide text-gray-500">
-                Quantidade
-              </th>
-
-              <th className="px-4 py-3 text-right text-[10px] uppercase tracking-wide text-gray-500">
-                Valor
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr>
-              <td className="px-4 py-4 text-xs text-gray-700">
-                Diagnóstico do motor
-              </td>
-
-              <td className="px-4 py-4 text-xs text-gray-500">
-                1
-              </td>
-
-              <td className="px-4 py-4 text-right text-xs font-semibold text-gray-700">
-                R$ 350,00
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-function Pecas() {
-  return (
-    <div className="p-6">
-      <div className="mb-5 flex items-center justify-between">
-        <div>
-          <h3 className="text-sm font-semibold text-gray-900">
-            Peças utilizadas
-          </h3>
-
-          <p className="mt-1 text-[11px] text-gray-400">
-            Peças utilizadas durante o serviço.
-          </p>
-        </div>
-
-        <button className="flex h-9 items-center gap-2 rounded-lg bg-blue-600 px-3 text-xs font-semibold text-white hover:bg-blue-700">
-          <Plus size={15} />
-          Adicionar peça
-        </button>
-      </div>
-
-      <div className="rounded-lg border border-dashed border-gray-200 py-12 text-center">
-        <Package
-          size={30}
-          className="mx-auto mb-3 text-gray-300"
-        />
-
-        <p className="text-xs font-medium text-gray-500">
-          Nenhuma peça adicionada
-        </p>
-
-        <p className="mt-1 text-[10px] text-gray-400">
-          As peças utilizadas aparecerão aqui.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function Historico() {
   return (
     <div className="p-6">
       <h3 className="mb-5 text-sm font-semibold text-gray-900">
@@ -434,21 +361,31 @@ function Historico() {
         <TimelineItem
           title="Ordem criada"
           description="A ordem de serviço foi aberta."
-          date="24/08/2026 às 09:20"
-          active
+          date={formatarData(ordem.dataAbertura)}
+          active={!encerrada}
         />
 
-        <TimelineItem
-          title="Veículo recebido"
-          description="Veículo recebido para avaliação."
-          date="24/08/2026 às 09:35"
-        />
-
-        <TimelineItem
-          title="Aguardando diagnóstico"
-          description="Aguardando avaliação do mecânico."
-          date="24/08/2026 às 10:00"
-        />
+        {encerrada ? (
+          <TimelineItem
+            title={STATUS_LABEL[ordem.status]}
+            description={
+              ordem.status === "finalizada"
+                ? "O serviço foi concluído."
+                : "A ordem de serviço foi cancelada."
+            }
+            date={
+              ordem.dataFechamento
+                ? formatarData(ordem.dataFechamento)
+                : undefined
+            }
+            active
+          />
+        ) : (
+          <TimelineItem
+            title={STATUS_LABEL[ordem.status]}
+            description="Situação atual da ordem."
+          />
+        )}
       </div>
     </div>
   );
@@ -462,11 +399,11 @@ function TimelineItem({
 }: {
   title: string;
   description: string;
-  date: string;
+  date?: string;
   active?: boolean;
 }) {
   return (
-    <div className="relative mb-7">
+    <div className="relative mb-7 last:mb-0">
       <div
         className={`absolute -left-[31px] top-0 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white ${
           active ? "bg-blue-600" : "bg-gray-300"
@@ -477,13 +414,15 @@ function TimelineItem({
         {title}
       </h4>
 
-      <p className="mt-1 text-[11px] text-gray-500">
+      <p className="mt-1 text-xs text-gray-500">
         {description}
       </p>
 
-      <span className="mt-1 block text-[10px] text-gray-400">
-        {date}
-      </span>
+      {date && (
+        <span className="mt-1 block text-xs text-gray-500">
+          {date}
+        </span>
+      )}
     </div>
   );
 }
