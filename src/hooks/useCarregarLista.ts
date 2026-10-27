@@ -12,16 +12,20 @@ import { mensagemErro } from "../services/api";
  * - Se `carregar` lançar um erro (e a busca ainda for a atual), `erro` traz a
  *   mensagem até a próxima carga: a tela mostra a falha em vez de uma lista
  *   que parece vazia.
+ *
+ * Só o resultado da última carga fica guardado. Assim, um erro antigo não
+ * reaparece ao voltar para uma página ou filtro que já falhou antes e que
+ * agora está carregando (ou carregou) bem.
  */
 export function useCarregarLista(
   chave: string,
   carregar: (ativo: () => boolean) => Promise<void>,
 ) {
   const [versao, setVersao] = useState(0);
-  const [concluida, setConcluida] = useState<string | null>(null);
-  const [falha, setFalha] = useState<{ chave: string; mensagem: string } | null>(
-    null,
-  );
+  const [resultado, setResultado] = useState<{
+    chave: string;
+    erro: string | null;
+  } | null>(null);
   const carregarRef = useRef(carregar);
 
   // Sempre usa a versão mais recente do callback (ele lê a página, a busca...).
@@ -34,27 +38,29 @@ export function useCarregarLista(
   useEffect(() => {
     let ativo = true;
 
-    void carregarRef
-      .current(() => ativo)
-      .catch((error: unknown) => {
+    void carregarRef.current(() => ativo).then(
+      () => {
         if (ativo) {
-          setFalha({ chave: chaveAtual, mensagem: mensagemErro(error) });
+          setResultado({ chave: chaveAtual, erro: null });
         }
-      })
-      .finally(() => {
+      },
+      (error: unknown) => {
         if (ativo) {
-          setConcluida(chaveAtual);
+          setResultado({ chave: chaveAtual, erro: mensagemErro(error) });
         }
-      });
+      },
+    );
 
     return () => {
       ativo = false;
     };
   }, [chaveAtual]);
 
+  const concluida = resultado?.chave === chaveAtual;
+
   return {
-    carregando: concluida !== chaveAtual,
-    erro: falha?.chave === chaveAtual ? falha.mensagem : null,
+    carregando: !concluida,
+    erro: concluida ? resultado.erro : null,
     recarregar: () => setVersao((atual) => atual + 1),
   };
 }

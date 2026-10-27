@@ -47,8 +47,13 @@ export function ClienteModal({
     if (soDigitos(cpf).length !== 11) novos[idCpf] = "O CPF precisa ter 11 dígitos.";
     if (!telefone.trim()) novos[idTelefone] = "Informe o telefone.";
 
+    // O e-mail é opcional; se foi preenchido, precisa parecer um e-mail.
+    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      novos[idEmail] = "Informe um e-mail válido, como nome@exemplo.com.";
+    }
+
     if (Object.keys(novos).length > 0) {
-      mostrar(novos, [idNome, idCpf, idTelefone]);
+      mostrar(novos, [idNome, idCpf, idTelefone, idEmail]);
       return;
     }
 
@@ -70,7 +75,7 @@ export function ClienteModal({
       larguraMax="max-w-lg"
       onClose={onClose}
     >
-      <form onSubmit={handleSubmit}>
+      <form noValidate onSubmit={handleSubmit}>
         <div className="space-y-4 px-6 py-5">
           <div>
             <label
@@ -157,12 +162,16 @@ export function ClienteModal({
               id={idEmail}
               type="email"
               autoComplete="email"
-              aria-describedby={idAjudaEmail}
+              {...atributos(idEmail, idAjudaEmail)}
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                limpar(idEmail);
+              }}
               placeholder="cliente@exemplo.com"
               className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none transition placeholder:text-gray-500 focus:border-blue-500 aria-invalid:border-red-500"
             />
+            <ErroDoCampo campo={idEmail} mensagem={erros[idEmail]} />
             <p id={idAjudaEmail} className="mt-1 text-xs text-gray-500">
               Opcional. Usado para avisar sobre manutenções próximas ou atrasadas.
             </p>

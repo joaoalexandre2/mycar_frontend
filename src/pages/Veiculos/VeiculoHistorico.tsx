@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useToast } from "../../hooks/useNotificacoes";
 import {
   ArrowLeft,
   Printer,
@@ -15,6 +14,7 @@ import {
   type HistoricoVeiculo,
 } from "../../services/veiculoHistorico";
 import { mensagemErro } from "../../services/api";
+import { ErroDeLista } from "../../components/ui/ErroDeLista";
 import { formatarData, formatarMoeda } from "../../utils/formatters";
 import type { StatusOrdemServico } from "../../types/ordemServico";
 import { FichaTecnicaCard } from "./FichaTecnicaCard";
@@ -106,9 +106,10 @@ export function VeiculoHistorico({
   veiculoId: number;
   onVoltar: () => void;
 }) {
-  const toast = useToast();
   const [historico, setHistorico] = useState<HistoricoVeiculo | null>(null);
   const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState<string | null>(null);
+  const [tentativa, setTentativa] = useState(0);
 
   useEffect(() => {
     let ativo = true;
@@ -116,10 +117,11 @@ export function VeiculoHistorico({
     async function carregar() {
       try {
         setCarregando(true);
+        setErro(null);
         const dados = await veiculoHistoricoService.buscar(veiculoId);
         if (ativo) setHistorico(dados);
       } catch (error) {
-        if (ativo) toast.erro(mensagemErro(error));
+        if (ativo) setErro(mensagemErro(error));
       } finally {
         if (ativo) setCarregando(false);
       }
@@ -130,7 +132,7 @@ export function VeiculoHistorico({
     return () => {
       ativo = false;
     };
-  }, [veiculoId, toast]);
+  }, [veiculoId, tentativa]);
 
   if (carregando) {
     return (
@@ -149,7 +151,13 @@ export function VeiculoHistorico({
         >
           <ArrowLeft size={17} />
         </button>
-        <p className="text-xs text-gray-500">Não foi possível carregar o histórico.</p>
+        <div className="overflow-hidden rounded-xl border border-red-200">
+          <ErroDeLista
+            titulo="Não foi possível carregar o histórico."
+            mensagem={erro ?? "Tente de novo em instantes."}
+            aoTentarDeNovo={() => setTentativa((atual) => atual + 1)}
+          />
+        </div>
       </div>
     );
   }

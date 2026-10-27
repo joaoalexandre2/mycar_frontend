@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { ErroDeLista } from "../../components/ui/ErroDeLista";
 import { Bell, Building2, Check, Palette, Settings, User } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { mensagemErro } from "../../services/api";
@@ -217,6 +218,10 @@ function Oficina() {
   const [dados, setDados] = useState({ nome: "", cnpj: "", telefone: "", endereco: "" });
   const [resumoSemanal, setResumoSemanal] = useState(true);
   const [carregando, setCarregando] = useState(true);
+  // Mensagem da falha ao carregar: sem os dados reais, salvar apagaria CNPJ,
+  // telefone e endereço da oficina.
+  const [falhaAoCarregar, setFalhaAoCarregar] = useState<string | null>(null);
+  const [tentativa, setTentativa] = useState(0);
   const [salvando, setSalvando] = useState(false);
   const [aviso, setAviso] = useState<Aviso | null>(null);
 
@@ -236,7 +241,7 @@ function Oficina() {
         setResumoSemanal(oficina.resumo_semanal ?? true);
       })
       .catch((error) => {
-        if (ativo) setAviso({ tipo: "erro", texto: mensagemErro(error) });
+        if (ativo) setFalhaAoCarregar(mensagemErro(error));
       })
       .finally(() => {
         if (ativo) setCarregando(false);
@@ -245,10 +250,21 @@ function Oficina() {
     return () => {
       ativo = false;
     };
-  }, []);
+  }, [tentativa]);
+
+  function tentarDeNovo() {
+    setFalhaAoCarregar(null);
+    setCarregando(true);
+    setTentativa((atual) => atual + 1);
+  }
 
   async function salvar(event: FormEvent) {
     event.preventDefault();
+
+    if (falhaAoCarregar) {
+      return;
+    }
+
     setAviso(null);
 
     try {
@@ -274,7 +290,7 @@ function Oficina() {
         value={dados[chave]}
         onChange={(e) => setDados({ ...dados, [chave]: e.target.value })}
         required={obrigatorio}
-        disabled={carregando}
+        disabled={carregando || Boolean(falhaAoCarregar)}
         className={ESTILO_CAMPO}
       />
     </Campo>
@@ -282,6 +298,16 @@ function Oficina() {
 
   return (
     <Secao titulo="Oficina" descricao="Informações da sua oficina.">
+      {falhaAoCarregar && (
+        <div className="mb-5 overflow-hidden rounded-lg border border-red-200">
+          <ErroDeLista
+            titulo="Não foi possível carregar os dados da oficina."
+            mensagem={falhaAoCarregar}
+            aoTentarDeNovo={tentarDeNovo}
+          />
+        </div>
+      )}
+
       <form onSubmit={(e) => void salvar(e)} className="space-y-5">
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           {campo("nome", "Nome da oficina", true)}
@@ -295,7 +321,7 @@ function Oficina() {
             type="checkbox"
             checked={resumoSemanal}
             onChange={(e) => setResumoSemanal(e.target.checked)}
-            disabled={carregando}
+            disabled={carregando || Boolean(falhaAoCarregar)}
             className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 accent-blue-600"
           />
           <span>
@@ -311,7 +337,12 @@ function Oficina() {
           </span>
         </label>
 
-        <Rodape aviso={aviso} salvando={salvando} rotulo="Salvar oficina" />
+        <Rodape
+          aviso={aviso}
+          salvando={salvando}
+          rotulo="Salvar oficina"
+          desabilitado={carregando || Boolean(falhaAoCarregar)}
+        />
       </form>
     </Secao>
   );
@@ -322,6 +353,10 @@ function Oficina() {
 function Lembretes() {
   const [ligado, setLigado] = useState(true);
   const [carregando, setCarregando] = useState(true);
+  // Sem a preferência real, salvar gravaria "ligado" por cima da escolha de quem
+  // já desligou os lembretes.
+  const [falhaAoCarregar, setFalhaAoCarregar] = useState<string | null>(null);
+  const [tentativa, setTentativa] = useState(0);
   const [salvando, setSalvando] = useState(false);
   const [aviso, setAviso] = useState<Aviso | null>(null);
 
@@ -334,7 +369,7 @@ function Lembretes() {
         if (ativo) setLigado(preferencias.lembretesEmail);
       })
       .catch((error) => {
-        if (ativo) setAviso({ tipo: "erro", texto: mensagemErro(error) });
+        if (ativo) setFalhaAoCarregar(mensagemErro(error));
       })
       .finally(() => {
         if (ativo) setCarregando(false);
@@ -343,10 +378,21 @@ function Lembretes() {
     return () => {
       ativo = false;
     };
-  }, []);
+  }, [tentativa]);
+
+  function tentarDeNovo() {
+    setFalhaAoCarregar(null);
+    setCarregando(true);
+    setTentativa((atual) => atual + 1);
+  }
 
   async function salvar(event: FormEvent) {
     event.preventDefault();
+
+    if (falhaAoCarregar) {
+      return;
+    }
+
     setAviso(null);
 
     try {
@@ -365,13 +411,23 @@ function Lembretes() {
       titulo="Lembretes"
       descricao="Avisos por e-mail dos vencimentos dos seus veículos."
     >
+      {falhaAoCarregar && (
+        <div className="mb-5 overflow-hidden rounded-lg border border-red-200">
+          <ErroDeLista
+            titulo="Não foi possível carregar a sua preferência."
+            mensagem={falhaAoCarregar}
+            aoTentarDeNovo={tentarDeNovo}
+          />
+        </div>
+      )}
+
       <form onSubmit={(e) => void salvar(e)} className="space-y-5">
         <label className="flex items-start gap-3 rounded-lg border border-gray-200 p-4">
           <input
             type="checkbox"
             checked={ligado}
             onChange={(e) => setLigado(e.target.checked)}
-            disabled={carregando}
+            disabled={carregando || Boolean(falhaAoCarregar)}
             className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 accent-blue-600"
           />
           <span>
@@ -387,7 +443,12 @@ function Lembretes() {
           </span>
         </label>
 
-        <Rodape aviso={aviso} salvando={salvando} rotulo="Salvar" />
+        <Rodape
+          aviso={aviso}
+          salvando={salvando}
+          rotulo="Salvar"
+          desabilitado={carregando || Boolean(falhaAoCarregar)}
+        />
       </form>
     </Secao>
   );
@@ -575,17 +636,20 @@ function Rodape({
   aviso,
   salvando,
   rotulo,
+  desabilitado = false,
 }: {
   aviso: Aviso | null;
   salvando: boolean;
   rotulo: string;
+  /** Impede salvar (ex.: a carga dos dados falhou). */
+  desabilitado?: boolean;
 }) {
   return (
     <div className="flex flex-wrap items-center gap-3">
       <button
         type="submit"
-        disabled={salvando}
-        className="h-10 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
+        disabled={salvando || desabilitado}
+        className="h-10 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {salvando ? "Salvando..." : rotulo}
       </button>

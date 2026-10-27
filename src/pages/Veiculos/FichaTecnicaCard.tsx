@@ -7,6 +7,7 @@ import {
   type FichaTecnicaDados,
 } from "../../services/fichaTecnica";
 import { mensagemErro } from "../../services/api";
+import { ErroDeLista } from "../../components/ui/ErroDeLista";
 
 type Chave = keyof FichaTecnicaDados;
 type Campo = { chave: Chave; rotulo: string; numerico?: boolean };
@@ -48,6 +49,11 @@ export function FichaTecnicaCard({ veiculoId }: { veiculoId: number }) {
   const [editando, setEditando] = useState(false);
   const [form, setForm] = useState<Record<string, string>>({});
   const [salvando, setSalvando] = useState(false);
+  const [carregado, setCarregado] = useState(false);
+  // Falha ao carregar: sem isto a tela dizia "nenhuma ficha cadastrada" e o
+  // botão Preencher deixaria salvar uma ficha vazia por cima da real.
+  const [erroDeCarga, setErroDeCarga] = useState<string | null>(null);
+  const [tentativa, setTentativa] = useState(0);
 
   useEffect(() => {
     let ativo = true;
@@ -55,16 +61,23 @@ export function FichaTecnicaCard({ veiculoId }: { veiculoId: number }) {
     fichaTecnicaService
       .buscar(veiculoId)
       .then((dados) => {
-        if (ativo) setFicha(dados);
+        if (!ativo) return;
+        setFicha(dados);
+        setCarregado(true);
       })
       .catch((error) => {
-        if (ativo) toast.erro(mensagemErro(error));
+        if (ativo) setErroDeCarga(mensagemErro(error));
       });
 
     return () => {
       ativo = false;
     };
-  }, [veiculoId, toast]);
+  }, [veiculoId, tentativa]);
+
+  function tentarDeNovo() {
+    setErroDeCarga(null);
+    setTentativa((atual) => atual + 1);
+  }
 
   function iniciarEdicao() {
     const atual: Partial<Record<Chave, unknown>> = ficha?.dados ?? {};
@@ -115,7 +128,7 @@ export function FichaTecnicaCard({ veiculoId }: { veiculoId: number }) {
             confirme com o manual do fabricante.
           </p>
         </div>
-        {!editando && (
+        {!editando && !erroDeCarga && (
           <button
             onClick={iniciarEdicao}
             className="flex h-8 shrink-0 items-center gap-2 rounded-lg border border-gray-200 px-3 text-xs font-medium text-gray-600 hover:bg-gray-50 print:hidden"
@@ -125,6 +138,14 @@ export function FichaTecnicaCard({ veiculoId }: { veiculoId: number }) {
           </button>
         )}
       </div>
+
+      {erroDeCarga && (
+        <ErroDeLista
+          titulo="Não foi possível carregar a ficha técnica."
+          mensagem={erroDeCarga}
+          aoTentarDeNovo={tentarDeNovo}
+        />
+      )}
 
       {editando ? (
         <div className="space-y-4 p-5">
@@ -210,9 +231,12 @@ export function FichaTecnicaCard({ veiculoId }: { veiculoId: number }) {
           )}
         </div>
       ) : (
-        <p className="p-5 text-xs text-gray-500">
-          Nenhuma ficha técnica cadastrada para este veículo ainda.
-        </p>
+        carregado &&
+        !erroDeCarga && (
+          <p className="p-5 text-xs text-gray-500">
+            Nenhuma ficha técnica cadastrada para este veículo ainda.
+          </p>
+        )
       )}
     </div>
   );
