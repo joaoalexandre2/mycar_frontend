@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useToast, useConfirmar } from "../../hooks/useNotificacoes";
 import { useCarregarLista } from "../../hooks/useCarregarLista";
+import { useEnvio } from "../../hooks/useEnvio";
 import {
   ChevronLeft,
   ChevronRight,
@@ -23,14 +24,7 @@ import { mensagemErro } from "../../services/api";
 import { formatarData, formatarMoeda } from "../../utils/formatters";
 import { OrdemServicoModal } from "./OrdemServicoModal";
 import { InfoCard } from "../../components/ui/InfoCard";
-
-const STATUS_LABEL: Record<StatusOrdemServico, string> = {
-  aberta: "Aberta",
-  em_andamento: "Em andamento",
-  aguardando_peca: "Aguardando peça",
-  finalizada: "Finalizada",
-  cancelada: "Cancelada",
-};
+import { StatusOrdemServicoBadge } from "./StatusOrdemServicoBadge";
 
 const RESUMO_INICIAL: ResumoOrdensServico = {
   total: 0,
@@ -43,6 +37,7 @@ const RESUMO_INICIAL: ResumoOrdensServico = {
 export function OrdensServico() {
   const toast = useToast();
   const pedirConfirmacao = useConfirmar();
+  const { enviando: concluindo, enviar: enviarConclusao } = useEnvio();
   const [ordens, setOrdens] = useState<OrdemServico[]>([]);
   const [ordemSelecionada, setOrdemSelecionada] =
     useState<OrdemServico | null>(null);
@@ -134,10 +129,35 @@ export function OrdensServico() {
       if (ordemSelecionada?.id === id) {
         setOrdemSelecionada(null);
       }
+      toast.sucesso("Ordem de serviço excluída.");
       recarregar();
     } catch (error) {
       toast.erro(mensagemErro(error));
     }
+  }
+
+  async function concluirOrdem(ordem: OrdemServico) {
+    await enviarConclusao(async () => {
+      try {
+        const atualizada = await ordensServicoService.atualizar(ordem.id, {
+          veiculo_id: ordem.veiculoId,
+          descricao: ordem.descricao,
+          status: "finalizada",
+          valor: ordem.valor,
+          data_abertura: ordem.dataAbertura,
+        });
+
+        setOrdemSelecionada((atual) =>
+          atual?.id === ordem.id
+            ? { ...atualizada, veiculo: atualizada.veiculo ?? atual.veiculo }
+            : atual,
+        );
+        toast.sucesso("Ordem de serviço concluída.");
+        recarregar();
+      } catch (error) {
+        toast.erro(mensagemErro(error));
+      }
+    });
   }
 
   async function salvarOrdem(dados: {
@@ -165,20 +185,50 @@ export function OrdensServico() {
         });
       }
 
+      const editando = ordemEditando !== null;
+
       setModalAberto(false);
       setOrdemEditando(null);
+
+      // Aberta pelo detalhe: recarrega a ordem para o detalhe mostrar o novo
+      // estado (o veículo e o cliente vêm junto na busca por id).
+      if (ordemEditando && ordemSelecionada?.id === ordemEditando.id) {
+        setOrdemSelecionada(await ordensServicoService.buscar(ordemEditando.id));
+      }
+
+      toast.sucesso(editando ? "Ordem de serviço salva." : "Ordem de serviço criada.");
       recarregar();
     } catch (error) {
       toast.erro(mensagemErro(error));
     }
   }
 
+  const modal = modalAberto && (
+    <OrdemServicoModal
+      ordem={ordemEditando}
+      onClose={() => {
+        setModalAberto(false);
+        setOrdemEditando(null);
+      }}
+      onSave={salvarOrdem}
+    />
+  );
+
   if (ordemSelecionada) {
     return (
-      <OrdemServicoDetalhes
-        ordem={ordemSelecionada}
-        onVoltar={() => setOrdemSelecionada(null)}
-      />
+      <>
+        <OrdemServicoDetalhes
+          ordem={ordemSelecionada}
+          onVoltar={() => setOrdemSelecionada(null)}
+          onEditar={() => {
+            setOrdemEditando(ordemSelecionada);
+            setModalAberto(true);
+          }}
+          onConcluir={() => void concluirOrdem(ordemSelecionada)}
+          concluindo={concluindo}
+        />
+        {modal}
+      </>
     );
   }
 
@@ -316,7 +366,7 @@ export function OrdensServico() {
                       {formatarMoeda(ordem.valor)}
                     </td>
                     <td data-label="Status" className="px-5 py-4">
-                      <Status status={ordem.status} />
+                      <StatusOrdemServicoBadge status={ordem.status} />
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex items-center justify-end gap-1">
@@ -390,34 +440,7 @@ export function OrdensServico() {
         </div>
       </div>
 
-      {modalAberto && (
-        <OrdemServicoModal
-          ordem={ordemEditando}
-          onClose={() => {
-            setModalAberto(false);
-            setOrdemEditando(null);
-          }}
-          onSave={(dados) => void salvarOrdem(dados)}
-        />
-      )}
+      {modal}
     </div>
-  );
-}
-
-function Status({ status }: { status: StatusOrdemServico }) {
-  const className = {
-    aberta: "bg-blue-100 text-blue-700",
-    em_andamento: "bg-yellow-100 text-yellow-700",
-    aguardando_peca: "bg-orange-100 text-orange-700",
-    finalizada: "bg-green-100 text-green-700",
-    cancelada: "bg-red-100 text-red-700",
-  }[status];
-
-  return (
-    <span
-      className={`inline-flex rounded-full px-2 py-1 text-[10px] font-semibold ${className}`}
-    >
-      {STATUS_LABEL[status]}
-    </span>
   );
 }

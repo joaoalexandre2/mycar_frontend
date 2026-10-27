@@ -140,6 +140,7 @@ export function Manutencoes() {
 
     try {
       await manutencoesService.remover(id);
+      toast.sucesso("Manutenção excluída.");
       recarregar();
     } catch (error) {
       toast.erro(mensagemErro(error));
@@ -176,6 +177,9 @@ export function Manutencoes() {
         await manutencoesService.criar(payload);
       }
 
+      toast.sucesso(
+        manutencaoEditando ? "Manutenção salva." : "Manutenção criada.",
+      );
       setModalAberto(false);
       setManutencaoEditando(null);
       recarregar();
@@ -521,7 +525,7 @@ export function Manutencoes() {
             setModalAberto(false);
             setManutencaoEditando(null);
           }}
-          onSave={(dados) => void salvarManutencao(dados)}
+          onSave={salvarManutencao}
         />
       )}
     </div>

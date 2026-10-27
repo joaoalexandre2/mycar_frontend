@@ -127,6 +127,7 @@ export function Clientes() {
 
     try {
       await clientesService.remover(id);
+      toast.sucesso("Cliente excluído.");
       recarregar();
     } catch (error) {
       toast.erro(mensagemErro(error));
@@ -155,6 +156,7 @@ export function Clientes() {
         await clientesService.criar(payload);
       }
 
+      toast.sucesso(clienteEditando ? "Cliente salvo." : "Cliente criado.");
       setModalAberto(false);
       setClienteEditando(null);
       recarregar();
@@ -385,7 +387,7 @@ export function Clientes() {
             setModalAberto(false);
             setClienteEditando(null);
           }}
-          onSave={(dados) => void salvarCliente(dados)}
+          onSave={salvarCliente}
         />
       )}
     </div>

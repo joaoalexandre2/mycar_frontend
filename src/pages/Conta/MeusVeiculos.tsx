@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useToast, useConfirmar } from "../../hooks/useNotificacoes";
+import { useEnvio } from "../../hooks/useEnvio";
 import { useCarregarLista } from "../../hooks/useCarregarLista";
 import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 import {
@@ -164,6 +165,7 @@ export function MeusVeiculos() {
         await contaService.criarVeiculo(payload);
       }
 
+      toast.sucesso(editando ? "Veículo salvo." : "Veículo cadastrado.");
       setModalAberto(false);
       setEditando(null);
       recarregar();
@@ -183,6 +185,7 @@ export function MeusVeiculos() {
 
     try {
       await contaService.removerVeiculo(veiculo.id);
+      toast.sucesso("Veículo removido.");
       recarregar();
     } catch (erro) {
       toast.erro(mensagemErro(erro));
@@ -383,7 +386,7 @@ export function MeusVeiculos() {
             setModalAberto(false);
             setEditando(null);
           }}
-          onSave={(dados) => void salvar(dados)}
+          onSave={salvar}
         />
       )}
     </div>
@@ -400,9 +403,22 @@ export function VeiculoContaModal({
   /** Centros de custo da frota; vazio (null) nos outros perfis, que não escolhem. */
   centros: CentroCusto[] | null;
   onClose: () => void;
-  onSave: (dados: DadosForm) => void;
+  onSave: (dados: DadosForm) => void | Promise<void>;
 }) {
   const toast = useToast();
+  const { enviando, enviar } = useEnvio();
+  const idApelido = useId();
+  const idMarca = useId();
+  const idModelo = useId();
+  const idPlaca = useId();
+  const idAjudaPlaca = useId();
+  const idAno = useId();
+  const idAjudaAno = useId();
+  const idAnoFab = useId();
+  const idAjudaAnoFab = useId();
+  const idUf = useId();
+  const idRevisao = useId();
+  const idAjudaRevisao = useId();
   const [tipo, setTipo] = useState<TipoVeiculo>(veiculo?.tipoVeiculo ?? "carro");
   const [apelido, setApelido] = useState(veiculo?.apelido ?? "");
   const [placa, setPlaca] = useState(veiculo?.placa ?? "");
@@ -455,19 +471,21 @@ export function VeiculoContaModal({
       return;
     }
 
-    onSave({
-      tipo,
-      apelido,
-      placa: placa.trim().toUpperCase(),
-      marca: marca.trim(),
-      modelo: modelo.trim(),
-      ano: anoNumerico,
-      anoFabricacao: anoFabNumerico,
-      uf,
-      revisao,
-      fipe,
-      centroCustoId: centroId ? Number(centroId) : null,
-    });
+    void enviar(() =>
+      onSave({
+        tipo,
+        apelido,
+        placa: placa.trim().toUpperCase(),
+        marca: marca.trim(),
+        modelo: modelo.trim(),
+        ano: anoNumerico,
+        anoFabricacao: anoFabNumerico,
+        uf,
+        revisao,
+        fipe,
+        centroCustoId: centroId ? Number(centroId) : null,
+      }),
+    );
   }
 
   const classeCampo =
@@ -483,10 +501,14 @@ export function VeiculoContaModal({
       <form onSubmit={handleSubmit}>
         <div className="space-y-4 px-6 py-5">
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+            <label
+              htmlFor={idApelido}
+              className="mb-1.5 block text-xs font-medium text-gray-700"
+            >
               Apelido (opcional)
             </label>
             <input
+              id={idApelido}
               type="text"
               value={apelido}
               onChange={(event) => setApelido(event.target.value)}
@@ -519,10 +541,14 @@ export function VeiculoContaModal({
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              <label
+                htmlFor={idMarca}
+                className="mb-1.5 block text-xs font-medium text-gray-700"
+              >
                 Marca
               </label>
               <input
+                id={idMarca}
                 type="text"
                 value={marca}
                 onChange={(event) => setMarca(event.target.value)}
@@ -531,10 +557,14 @@ export function VeiculoContaModal({
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              <label
+                htmlFor={idModelo}
+                className="mb-1.5 block text-xs font-medium text-gray-700"
+              >
                 Modelo
               </label>
               <input
+                id={idModelo}
                 type="text"
                 value={modelo}
                 onChange={(event) => setModelo(event.target.value)}
@@ -546,11 +576,16 @@ export function VeiculoContaModal({
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              <label
+                htmlFor={idPlaca}
+                className="mb-1.5 block text-xs font-medium text-gray-700"
+              >
                 Placa
               </label>
               <input
+                id={idPlaca}
                 type="text"
+                aria-describedby={placa ? idAjudaPlaca : undefined}
                 value={placa}
                 onChange={(event) => setPlaca(limparPlaca(event.target.value))}
                 maxLength={8}
@@ -561,8 +596,9 @@ export function VeiculoContaModal({
               />
               {placa && (
                 <p
-                  className={`mt-1 text-[11px] ${
-                    placaValida(placa) ? "text-emerald-600" : "text-gray-400"
+                  id={idAjudaPlaca}
+                  className={`mt-1 text-xs ${
+                    placaValida(placa) ? "text-emerald-700" : "text-gray-500"
                   }`}
                 >
                   {placaValida(placa)
@@ -572,10 +608,15 @@ export function VeiculoContaModal({
               )}
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              <label
+                htmlFor={idAno}
+                className="mb-1.5 block text-xs font-medium text-gray-700"
+              >
                 Ano modelo
               </label>
               <input
+                id={idAno}
+                aria-describedby={idAjudaAno}
                 type="number"
                 min="1900"
                 max={new Date().getFullYear() + 1}
@@ -584,17 +625,22 @@ export function VeiculoContaModal({
                 className={classeCampo}
                 required
               />
-              <p className="mt-1 text-[11px] text-gray-400">
+              <p id={idAjudaAno} className="mt-1 text-xs text-gray-500">
                 Ano do modelo (o mesmo da tabela FIPE). Pode ser o ano seguinte ao de fabricação.
               </p>
             </div>
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+            <label
+              htmlFor={idAnoFab}
+              className="mb-1.5 block text-xs font-medium text-gray-700"
+            >
               Ano de fabricação (opcional)
             </label>
             <input
+              id={idAnoFab}
+              aria-describedby={idAjudaAnoFab}
               type="number"
               min="1900"
               max={new Date().getFullYear()}
@@ -603,16 +649,20 @@ export function VeiculoContaModal({
               onChange={(event) => setAnoFab(event.target.value)}
               className={classeCampo}
             />
-            <p className="mt-1 text-[11px] text-gray-400">
+            <p id={idAjudaAnoFab} className="mt-1 text-xs text-gray-500">
               Se for diferente do ano modelo, informe (como no documento: 2018/2019). Só pode ser igual ao ano modelo ou um ano antes.
             </p>
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+            <label
+              htmlFor={idUf}
+              className="mb-1.5 block text-xs font-medium text-gray-700"
+            >
               Estado de emplacamento
             </label>
             <select
+              id={idUf}
               value={uf}
               onChange={(event) => setUf(event.target.value)}
               className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none transition focus:border-blue-500"
@@ -627,16 +677,21 @@ export function VeiculoContaModal({
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-gray-700">
+            <label
+              htmlFor={idRevisao}
+              className="mb-1.5 block text-xs font-medium text-gray-700"
+            >
               Próxima revisão (opcional)
             </label>
             <input
+              id={idRevisao}
+              aria-describedby={idAjudaRevisao}
               type="date"
               value={revisao}
               onChange={(event) => setRevisao(event.target.value)}
               className={classeCampo}
             />
-            <p className="mt-1 text-[11px] text-gray-400">
+            <p id={idAjudaRevisao} className="mt-1 text-xs text-gray-500">
               Avisamos por e-mail quando faltar até 30 dias.
             </p>
           </div>
@@ -679,9 +734,14 @@ export function VeiculoContaModal({
           </button>
           <button
             type="submit"
-            className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700"
+            disabled={enviando}
+            className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {veiculo ? "Salvar alterações" : "Cadastrar veículo"}
+            {enviando
+              ? "Salvando..."
+              : veiculo
+                ? "Salvar alterações"
+                : "Cadastrar veículo"}
           </button>
         </div>
       </form>
