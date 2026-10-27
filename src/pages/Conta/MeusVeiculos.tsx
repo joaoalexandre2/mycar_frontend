@@ -536,7 +536,7 @@ export function VeiculoContaModal({
       larguraMax="max-w-lg"
       onClose={onClose}
     >
-      <form onSubmit={handleSubmit}>
+      <form noValidate onSubmit={handleSubmit}>
         <div className="space-y-4 px-6 py-5">
           <div>
             <label
@@ -572,17 +572,19 @@ export function VeiculoContaModal({
             onChange={(selecao, nomes) => {
               setFipe(selecao);
               if (nomes.marca !== undefined) {
-  setMarca(nomes.marca);
-  limpar(idMarca);
-}
+                setMarca(nomes.marca);
+                limpar(idMarca);
+              }
               if (nomes.modelo !== undefined) {
-  setModelo(nomes.modelo);
-  limpar(idModelo);
-}
+                setModelo(nomes.modelo);
+                limpar(idModelo);
+              }
               if (nomes.ano !== undefined) {
-  setAno(String(nomes.ano));
-  limpar(idAno);
-}
+                setAno(String(nomes.ano));
+                limpar(idAno);
+                // O erro do ano de fabricação depende do ano modelo.
+                limpar(idAnoFab);
+              }
             }}
           />
 
@@ -685,6 +687,7 @@ export function VeiculoContaModal({
                 onChange={(event) => {
                   setAno(event.target.value);
                   limpar(idAno);
+                  limpar(idAnoFab);
                 }}
                 className={classeCampo}
                 required

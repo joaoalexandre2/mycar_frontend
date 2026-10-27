@@ -7,6 +7,7 @@ import {
   type Peca,
 } from "../../services/pecas";
 import { mensagemErro } from "../../services/api";
+import { ErroDeLista } from "../../components/ui/ErroDeLista";
 import { formatarData } from "../../utils/formatters";
 
 const FORM_VAZIO = {
@@ -26,6 +27,11 @@ export function PecasCard({ veiculoId }: { veiculoId: number }) {
   const [aberto, setAberto] = useState(false);
   const [form, setForm] = useState(FORM_VAZIO);
   const [salvando, setSalvando] = useState(false);
+  const [carregado, setCarregado] = useState(false);
+  // Falha ao carregar: sem isto a tela dizia "nenhuma peça registrada".
+  const [erroDeCarga, setErroDeCarga] = useState<string | null>(null);
+  const [tentativa, setTentativa] = useState(0);
+  const [erroDoForm, setErroDoForm] = useState<string | null>(null);
 
   useEffect(() => {
     let ativo = true;
@@ -36,19 +42,30 @@ export function PecasCard({ veiculoId }: { veiculoId: number }) {
         if (!ativo) return;
         setTipos(resposta.tipos);
         setPecas(resposta.pecas);
+        setCarregado(true);
       })
       .catch((error) => {
-        if (ativo) toast.erro(mensagemErro(error));
+        if (ativo) setErroDeCarga(mensagemErro(error));
       });
 
     return () => {
       ativo = false;
     };
-  }, [veiculoId, toast]);
+  }, [veiculoId, tentativa]);
+
+  function tentarDeNovo() {
+    setErroDeCarga(null);
+    setTentativa((atual) => atual + 1);
+  }
+
+  function alterarForm(campos: Partial<typeof FORM_VAZIO>) {
+    setErroDoForm(null);
+    setForm((atual) => ({ ...atual, ...campos }));
+  }
 
   async function registrar() {
     if (!form.tipo || !form.especificacao.trim()) {
-      toast.aviso("Escolha o tipo e informe o código ou a especificação.");
+      setErroDoForm("Escolha o tipo e informe o código ou a especificação.");
       return;
     }
 
@@ -124,7 +141,8 @@ export function PecasCard({ veiculoId }: { veiculoId: number }) {
               Tipo
               <select
                 value={form.tipo}
-                onChange={(e) => setForm({ ...form, tipo: e.target.value })}
+                aria-invalid={erroDoForm && !form.tipo ? true : undefined}
+                onChange={(e) => alterarForm({ tipo: e.target.value })}
                 className="mt-1 h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
               >
                 <option value="">Selecione</option>
@@ -139,7 +157,8 @@ export function PecasCard({ veiculoId }: { veiculoId: number }) {
               Código ou especificação
               <input
                 value={form.especificacao}
-                onChange={(e) => setForm({ ...form, especificacao: e.target.value })}
+                aria-invalid={erroDoForm && !form.especificacao.trim() ? true : undefined}
+                onChange={(e) => alterarForm({ especificacao: e.target.value })}
                 className="mt-1 h-9 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
               />
             </label>
@@ -147,7 +166,7 @@ export function PecasCard({ veiculoId }: { veiculoId: number }) {
               Marca (opcional)
               <input
                 value={form.marca}
-                onChange={(e) => setForm({ ...form, marca: e.target.value })}
+                onChange={(e) => alterarForm({ marca: e.target.value })}
                 className="mt-1 h-9 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
               />
             </label>
@@ -157,7 +176,7 @@ export function PecasCard({ veiculoId }: { veiculoId: number }) {
                 type="date"
                 value={form.usado_em}
                 max={new Date().toISOString().slice(0, 10)}
-                onChange={(e) => setForm({ ...form, usado_em: e.target.value })}
+                onChange={(e) => alterarForm({ usado_em: e.target.value })}
                 className="mt-1 h-9 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
               />
             </label>
@@ -167,7 +186,7 @@ export function PecasCard({ veiculoId }: { veiculoId: number }) {
               <input
                 type="radio"
                 checked={form.fonte === "servico"}
-                onChange={() => setForm({ ...form, fonte: "servico" })}
+                onChange={() => alterarForm({ fonte: "servico" })}
               />
               Peça instalada em um serviço
             </label>
@@ -175,15 +194,21 @@ export function PecasCard({ veiculoId }: { veiculoId: number }) {
               <input
                 type="radio"
                 checked={form.fonte === "ficha"}
-                onChange={() => setForm({ ...form, fonte: "ficha" })}
+                onChange={() => alterarForm({ fonte: "ficha" })}
               />
               Referência (manual / catálogo)
             </label>
           </div>
+          {erroDoForm && (
+            <p role="alert" className="text-xs font-medium text-red-700">
+              {erroDoForm}
+            </p>
+          )}
           <div className="flex justify-end gap-2">
             <button
               onClick={() => {
                 setAberto(false);
+                setErroDoForm(null);
                 setForm(FORM_VAZIO);
               }}
               className="h-9 rounded-lg border border-gray-200 px-4 text-xs font-medium text-gray-600 hover:bg-gray-50"
@@ -201,10 +226,21 @@ export function PecasCard({ veiculoId }: { veiculoId: number }) {
         </div>
       )}
 
+      {erroDeCarga && (
+        <ErroDeLista
+          titulo="Não foi possível carregar as peças."
+          mensagem={erroDeCarga}
+          aoTentarDeNovo={tentarDeNovo}
+        />
+      )}
+
       {tiposComPeca.length === 0 ? (
-        <p className="p-5 text-xs text-gray-500">
-          Nenhuma peça registrada para este veículo ainda.
-        </p>
+        carregado &&
+        !erroDeCarga && (
+          <p className="p-5 text-xs text-gray-500">
+            Nenhuma peça registrada para este veículo ainda.
+          </p>
+        )
       ) : (
         <div className="divide-y divide-gray-100">
           {tiposComPeca.map((tipo) => {

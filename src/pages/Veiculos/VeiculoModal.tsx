@@ -141,7 +141,7 @@ export function VeiculoModal({
       larguraMax="max-w-lg"
       onClose={onClose}
     >
-      <form onSubmit={handleSubmit}>
+      <form noValidate onSubmit={handleSubmit}>
         <div className="space-y-4 px-6 py-5">
           <div>
             <span className="mb-1.5 block text-xs font-medium text-gray-700">
@@ -185,17 +185,19 @@ export function VeiculoModal({
             onChange={(selecao, nomes) => {
               setFipe(selecao);
               if (nomes.marca !== undefined) {
-  setMarca(nomes.marca);
-  limpar(idMarca);
-}
+                setMarca(nomes.marca);
+                limpar(idMarca);
+              }
               if (nomes.modelo !== undefined) {
-  setModelo(nomes.modelo);
-  limpar(idModelo);
-}
+                setModelo(nomes.modelo);
+                limpar(idModelo);
+              }
               if (nomes.ano !== undefined) {
-  setAno(String(nomes.ano));
-  limpar(idAno);
-}
+                setAno(String(nomes.ano));
+                limpar(idAno);
+                // O erro do ano de fabricação depende do ano modelo.
+                limpar(idAnoFab);
+              }
             }}
           />
 
@@ -320,6 +322,7 @@ export function VeiculoModal({
               onChange={(event) => {
                 setAno(event.target.value);
                 limpar(idAno);
+                limpar(idAnoFab);
               }}
               className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500 aria-invalid:border-red-500"
               required

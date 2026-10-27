@@ -103,6 +103,7 @@ export function ManutencaoModal({
   }
 
   function alterarPeca(indice: number, campos: Partial<PecaEditavel>) {
+    limpar(idPecas);
     setPecas((atuais) =>
       atuais.map((peca, i) => (i === indice ? { ...peca, ...campos } : peca)),
     );
@@ -227,7 +228,7 @@ export function ManutencaoModal({
       onClose={onClose}
     >
       {/* Form */}
-      <form onSubmit={handleSubmit}>
+      <form noValidate onSubmit={handleSubmit}>
         <div className="max-h-[70vh] space-y-4 overflow-y-auto px-6 py-5">
           {/* Veículo */}
           <div>
@@ -451,12 +452,13 @@ export function ManutencaoModal({
 
               <button
                 type="button"
-                onClick={() =>
+                onClick={() => {
+                  limpar(idPecas);
                   setPecas((atuais) => [
                     ...atuais,
                     { tipo: "", especificacao: "", marca: "" },
-                  ])
-                }
+                  ]);
+                }}
                 disabled={!veiculoId}
                 title={
                   veiculoId ? undefined : "Selecione o veículo primeiro"
@@ -513,11 +515,12 @@ export function ManutencaoModal({
 
                         <button
                           type="button"
-                          onClick={() =>
+                          onClick={() => {
+                            limpar(idPecas);
                             setPecas((atuais) =>
                               atuais.filter((_, i) => i !== indice),
-                            )
-                          }
+                            );
+                          }}
                           title="Remover peça"
                           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-red-600"
                         >

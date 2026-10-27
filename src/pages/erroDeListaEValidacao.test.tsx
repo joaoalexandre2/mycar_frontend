@@ -37,6 +37,58 @@ describe("useCarregarLista guarda a falha", () => {
   });
 });
 
+describe("useCarregarLista não deixa um erro velho preso", () => {
+  it("voltar a uma chave que já falhou e agora funciona não traz o erro de volta", async () => {
+    let servidorForaDoAr = true;
+
+    const { result, rerender } = renderHook(
+      ({ chave }) =>
+        useCarregarLista(chave, async () => {
+          if (chave === "A" && servidorForaDoAr) throw new Error("fora do ar");
+        }),
+      { initialProps: { chave: "A" } },
+    );
+
+    await waitFor(() => expect(result.current.carregando).toBe(false));
+    expect(result.current.erro).toBeTruthy();
+
+    rerender({ chave: "B" });
+    await waitFor(() => expect(result.current.carregando).toBe(false));
+    expect(result.current.erro).toBeNull();
+
+    servidorForaDoAr = false;
+    rerender({ chave: "A" });
+
+    // Enquanto A recarrega, o erro de antes não aparece...
+    expect(result.current.erro).toBeNull();
+
+    await waitFor(() => expect(result.current.carregando).toBe(false));
+
+    // ...e, carregada com sucesso, continua sem erro.
+    expect(result.current.erro).toBeNull();
+  });
+
+  it("uma carga que falha depois de várias boas mostra o erro", async () => {
+    let falhar = false;
+
+    const { result, rerender } = renderHook(
+      ({ chave }) =>
+        useCarregarLista(chave, async () => {
+          if (falhar) throw new Error("caiu");
+        }),
+      { initialProps: { chave: "1" } },
+    );
+
+    await waitFor(() => expect(result.current.carregando).toBe(false));
+    expect(result.current.erro).toBeNull();
+
+    falhar = true;
+    rerender({ chave: "2" });
+
+    await waitFor(() => expect(result.current.erro).toBeTruthy());
+  });
+});
+
 describe("lista de clientes com falha ao carregar", () => {
   afterEach(() => {
     vi.restoreAllMocks();

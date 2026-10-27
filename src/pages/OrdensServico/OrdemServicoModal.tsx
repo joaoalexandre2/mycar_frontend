@@ -55,12 +55,15 @@ export function OrdemServicoModal({
 
     if (!veiculoId) novos[idVeiculo] = "Escolha o veículo da ordem.";
     if (!descricao.trim()) novos[idDescricao] = "Descreva o problema ou o serviço.";
-    if (Number.isNaN(valorNumerico) || valorNumerico < 0) {
+    if (!valor.trim()) {
+      novos[idValor] = "Informe o valor da ordem.";
+    } else if (Number.isNaN(valorNumerico) || valorNumerico < 0) {
       novos[idValor] = "Informe um valor igual ou maior que zero.";
     }
+    if (!dataAbertura) novos[idData] = "Informe a data de abertura.";
 
     if (Object.keys(novos).length > 0) {
-      mostrar(novos, [idVeiculo, idDescricao, idValor]);
+      mostrar(novos, [idVeiculo, idDescricao, idValor, idData]);
       return;
     }
 
@@ -82,7 +85,7 @@ export function OrdemServicoModal({
       larguraMax="max-w-lg"
       onClose={onClose}
     >
-      <form onSubmit={handleSubmit}>
+      <form noValidate onSubmit={handleSubmit}>
         <div className="space-y-4 px-6 py-5">
           <div>
             <span className="mb-1.5 block text-xs font-medium text-gray-700">
@@ -166,11 +169,16 @@ export function OrdemServicoModal({
               <input
                 id={idData}
                 type="date"
+                {...atributos(idData)}
                 value={dataAbertura}
-                onChange={(event) => setDataAbertura(event.target.value)}
+                onChange={(event) => {
+                  setDataAbertura(event.target.value);
+                  limpar(idData);
+                }}
                 className="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs outline-none focus:border-blue-500 aria-invalid:border-red-500"
                 required
               />
+              <ErroDoCampo campo={idData} mensagem={erros[idData]} />
             </div>
           </div>
 
