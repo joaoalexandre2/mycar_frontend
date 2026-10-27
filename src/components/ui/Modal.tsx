@@ -72,7 +72,7 @@ export function Modal({
             onClick={onClose}
             aria-label="Fechar"
             title="Fechar"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
           >
             <X
               size={17}

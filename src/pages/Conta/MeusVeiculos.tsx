@@ -267,6 +267,7 @@ export function MeusVeiculos() {
             />
             <input
               type="text"
+              aria-label="Buscar veículo"
               placeholder="Buscar por placa, apelido ou modelo..."
               value={busca}
               onChange={(event) => setBusca(event.target.value)}

@@ -250,8 +250,9 @@ export function DocumentosModal({
                     <button
                       type="button"
                       onClick={() => void remover(item.id)}
+                      aria-label={`Remover documento ${item.titulo ?? item.rotulo}`}
                       title="Remover"
-                      className="text-gray-400 hover:text-red-600"
+                      className="-m-3 p-3 text-gray-500 transition hover:text-red-600"
                     >
                       <Trash2 size={14} />
                     </button>

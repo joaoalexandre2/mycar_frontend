@@ -270,6 +270,7 @@ export function Manutencoes() {
 
               <input
                 type="text"
+                aria-label="Buscar manutenção"
                 placeholder="Buscar manutenção..."
                 value={busca}
                 onChange={(event) =>
@@ -281,6 +282,7 @@ export function Manutencoes() {
 
             {/* Filtro */}
             <select
+              aria-label="Filtrar manutenções por status"
               value={filtroStatus}
               onChange={(event) => {
                 setFiltroStatus(
@@ -464,9 +466,9 @@ export function Manutencoes() {
                           onClick={() =>
                             abrirEdicao(manutencao)
                           }
-                          className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-blue-50 hover:text-blue-600"
+                          className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition hover:bg-blue-50 hover:text-blue-600"
                           title="Editar"
-                          aria-label="Editar"
+                          aria-label={`Editar manutenção ${manutencao.tipo}`}
                         >
                           <Pencil size={15} />
                         </button>
@@ -477,9 +479,9 @@ export function Manutencoes() {
                               manutencao.id,
                             )
                           }
-                          className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-red-50 hover:text-red-600"
+                          className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition hover:bg-red-50 hover:text-red-600"
                           title="Excluir"
-                          aria-label="Excluir"
+                          aria-label={`Excluir manutenção ${manutencao.tipo}`}
                         >
                           <Trash2 size={15} />
                         </button>

@@ -73,6 +73,7 @@ function RespostaDaEquipe({
     <div className="mt-3 space-y-2 rounded-lg bg-gray-50 p-3">
       <div className="flex flex-wrap items-center gap-2">
         <select
+          aria-label="Status da sugestão"
           value={status}
           onChange={(e) => setStatus(e.target.value as StatusSugestao)}
           className={`h-8 ${classeCampo} sm:w-48`}
@@ -96,6 +97,7 @@ function RespostaDaEquipe({
         value={resposta}
         maxLength={1000}
         rows={2}
+        aria-label="Resposta para quem enviou"
         placeholder="Resposta para quem enviou (opcional)"
         onChange={(e) => setResposta(e.target.value)}
         className={`${classeCampo} py-2`}
@@ -296,8 +298,9 @@ export function Sugestoes() {
                 <button
                   type="button"
                   onClick={() => setImagens((atuais) => atuais.filter((_, i) => i !== indice))}
+                  aria-label={`Remover imagem ${indice + 1}`}
                   title="Remover imagem"
-                  className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-gray-800 text-gray-50 hover:bg-red-600"
+                  className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full after:absolute after:-inset-3 after:content-[''] bg-gray-800 text-gray-50 hover:bg-red-600"
                 >
                   <X size={12} />
                 </button>
@@ -371,6 +374,7 @@ export function Sugestoes() {
 
               {visao === "todas" && (
                 <select
+                  aria-label="Filtrar sugestões por status"
                   value={filtro}
                   onChange={(e) => {
                     setFiltro(e.target.value as StatusSugestao | "");

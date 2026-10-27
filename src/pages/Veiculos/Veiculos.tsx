@@ -240,6 +240,7 @@ export function Veiculos() {
             />
             <input
               type="text"
+              aria-label="Buscar veículo"
               placeholder="Buscar veículo..."
               value={busca}
               onChange={(event) => setBusca(event.target.value)}
@@ -399,9 +400,9 @@ export function Veiculos() {
                           <button
                             onClick={() => void consultarFipe(veiculo.id)}
                             disabled={consultandoId === veiculo.id}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-50"
+                            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-50"
                             title="Consultar valor na FIPE"
-                            aria-label="Consultar valor na FIPE"
+                            aria-label={`Consultar valor na FIPE de ${veiculo.marca} ${veiculo.modelo}`}
                           >
                             <RefreshCw
                               size={15}
@@ -415,9 +416,9 @@ export function Veiculos() {
                         )}
                       <button
                         onClick={() => setVeiculoHistoricoId(veiculo.id)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-indigo-50 hover:text-indigo-600"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition hover:bg-indigo-50 hover:text-indigo-600"
                         title="Ver histórico"
-                        aria-label="Ver histórico"
+                        aria-label={`Ver histórico de ${veiculo.marca} ${veiculo.modelo}`}
                       >
                         <Clock size={15} />
                       </button>
@@ -426,17 +427,17 @@ export function Veiculos() {
                           setVeiculoEditando(veiculo);
                           setModalAberto(true);
                         }}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-blue-50 hover:text-blue-600"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition hover:bg-blue-50 hover:text-blue-600"
                         title="Editar"
-                        aria-label="Editar"
+                        aria-label={`Editar ${veiculo.marca} ${veiculo.modelo}`}
                       >
                         <Pencil size={15} />
                       </button>
                       <button
                         onClick={() => void excluirVeiculo(veiculo.id)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-red-50 hover:text-red-600"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition hover:bg-red-50 hover:text-red-600"
                         title="Excluir"
-                        aria-label="Excluir"
+                        aria-label={`Excluir ${veiculo.marca} ${veiculo.modelo}`}
                       >
                         <Trash2 size={15} />
                       </button>

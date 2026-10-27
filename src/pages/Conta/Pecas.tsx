@@ -177,6 +177,7 @@ function PecaItem({
               <button
                 type="button"
                 onClick={() => void remover(item)}
+                aria-label={`Remover o código ${item.codigo}`}
                 title="Remover"
                 className="text-emerald-700 hover:text-red-600"
               >
@@ -222,6 +223,7 @@ function PecaItem({
               type="text"
               value={marca}
               maxLength={60}
+              aria-label="Marca da peça"
               placeholder="Marca (ex.: Cofap)"
               onChange={(e) => setMarca(e.target.value)}
               className={classeCampo}
@@ -230,6 +232,7 @@ function PecaItem({
               type="text"
               value={codigo}
               maxLength={60}
+              aria-label="Código confirmado da peça"
               placeholder="Código confirmado"
               onChange={(e) => setCodigo(e.target.value)}
               className={classeCampo}
@@ -362,6 +365,7 @@ export function Pecas() {
               type="text"
               value={busca}
               maxLength={80}
+              aria-label="Buscar peça"
               placeholder="Ex.: coifa, amortecedor, pastilha de freio..."
               onChange={(e) => setBusca(e.target.value)}
               className="h-10 w-full rounded-lg border border-gray-200 bg-gray-50 pl-9 pr-3 text-xs text-gray-700 outline-none transition placeholder:text-gray-500 focus:border-blue-500 focus:bg-white"

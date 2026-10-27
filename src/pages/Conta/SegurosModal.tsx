@@ -443,8 +443,9 @@ export function SegurosModal({
                     <button
                       type="button"
                       onClick={() => void remover(item.id)}
+                      aria-label={`Remover seguro ${item.seguradora}`}
                       title="Remover"
-                      className="text-gray-400 hover:text-red-600"
+                      className="-m-3 p-3 text-gray-500 transition hover:text-red-600"
                     >
                       <Trash2 size={14} />
                     </button>

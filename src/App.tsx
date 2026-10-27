@@ -53,22 +53,31 @@ const RedefinirSenha = lazy(() =>
   })),
 );
 
-function AppLayout() {
+export function AppLayout() {
   const [menuAberto, setMenuAberto] = useState(false);
   const { usuario } = useAuth();
   const telaGrande = useTelaGrande();
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Primeiro item da tabulação: quem usa teclado pula o menu a cada página. */}
+      <a
+        href="#conteudo"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[80] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-gray-900 focus:shadow-lg print:hidden"
+      >
+        Pular para o conteúdo
+      </a>
+
       <Sidebar
         aberta={menuAberto}
         aoFechar={() => setMenuAberto(false)}
       />
 
-      {/* Com o menu aberto no celular, o que está atrás dele não recebe foco. */}
-      <main
+      {/* Com o menu aberto no celular, o que está atrás dele não recebe foco. O
+          cabeçalho fica fora do <main>, para ser o landmark "banner". */}
+      <div
         inert={menuAberto && !telaGrande}
-        className="min-h-screen md:ml-[250px] print:ml-0"
+        className="flex min-h-screen flex-col md:ml-[250px] print:ml-0"
       >
         <Header
           aoAbrirMenu={() => setMenuAberto(true)}
@@ -76,12 +85,18 @@ function AppLayout() {
         />
 
         {/* Menu e cabeçalho ficam na tela enquanto o pacote do perfil chega. */}
-        <ErroDeTela>
-          <Suspense fallback={<CarregandoTela />}>
-            {ehConta(perfilDe(usuario)) ? <RotasConta /> : <RotasOficina />}
-          </Suspense>
-        </ErroDeTela>
-      </main>
+        <main
+          id="conteudo"
+          tabIndex={-1}
+          className="flex-1 outline-none"
+        >
+          <ErroDeTela>
+            <Suspense fallback={<CarregandoTela />}>
+              {ehConta(perfilDe(usuario)) ? <RotasConta /> : <RotasOficina />}
+            </Suspense>
+          </ErroDeTela>
+        </main>
+      </div>
     </div>
   );
 }

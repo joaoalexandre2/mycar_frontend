@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
   import { CircleDollarSign, Menu } from "lucide-react";
   import { DespesasModal } from "./DespesasModal";
   import { BuscaGlobal } from "./BuscaGlobal";
@@ -46,6 +46,12 @@ import { useState } from "react";
     const [despesasAbertas, setDespesasAbertas] = useState(false);
     const titulos = ehConta(perfilDe(usuario)) ? TITULOS_CONTA : TITULOS;
     const { titulo, subtitulo } = titulos[pathname] ?? titulos["/"];
+
+    // O título da aba/janela acompanha a tela (leitor de tela e histórico do
+    // navegador mostravam "MyCar" em todas).
+    useEffect(() => {
+      document.title = `${titulo} · MyCar`;
+    }, [titulo]);
 
     return (
       <header className="print:hidden flex h-[82px] items-center justify-between border-b border-gray-200 bg-white px-4 md:px-8">

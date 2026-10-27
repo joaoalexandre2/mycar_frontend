@@ -106,6 +106,13 @@ th {
   outline-offset: 2px;
 }
 
+/* O Tailwind pinta o placeholder com 50% da cor do texto (2,6:1 sobre branco).
+   gray-500 dá 5,4:1 e acompanha o tema escuro. */
+::placeholder {
+  color: var(--color-gray-500);
+  opacity: 1;
+}
+
 /* Em telas de toque, campos com menos de 16px fazem o iOS dar zoom na página ao
    focar. Só quem usa toque é afetado; no mouse os campos seguem em 12px. */
 @media (pointer: coarse) {
@@ -113,6 +120,14 @@ th {
   select,
   textarea {
     font-size: 16px;
+  }
+
+  /* Botões de ícone quadrados (28 a 36px) ganham 44px de área de toque. O
+     cabeçalho fica de fora: com 44px por botão, o título da página não teria
+     espaço no celular. */
+  button:where(.h-7, .h-8, .h-9):where(.w-7, .w-8, .w-9):not(header button) {
+    min-width: 44px;
+    min-height: 44px;
   }
 }
 

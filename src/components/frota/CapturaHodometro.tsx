@@ -116,7 +116,8 @@ export function CapturaHodometro({
               type="button"
               onClick={() => onFoto(null)}
               title="Tirar a foto"
-              className="text-gray-400 transition hover:text-red-600"
+              aria-label="Remover a foto do hodômetro"
+              className="-m-3 p-3 text-gray-500 transition hover:text-red-600"
             >
               <Trash2 size={14} />
             </button>
