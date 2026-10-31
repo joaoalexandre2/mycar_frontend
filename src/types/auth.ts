@@ -11,6 +11,8 @@ export interface Usuario {
   conta?: string | null;
   /** Papel na frota (administrador, gestor, motorista); null fora da frota. */
   papel?: string | null;
+  /** Centro de custo do motorista (só para o papel motorista); a reserva sai nele. */
+  centro_do_motorista?: { id: number; nome: string } | null;
   /** Permissões da frota (papel + grupos); ausente em sessões antigas. Só mostra/esconde telas. */
   permissoes?: string[];
   /** Menus da frota que esta pessoa vê; null fora da frota, ausente em sessões antigas (mostra tudo). */

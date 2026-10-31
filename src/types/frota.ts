@@ -79,6 +79,8 @@ export interface Motorista {
   cnhNumero: string | null;
   cnhValidade: string | null;
   ativo: boolean;
+  /** Centro de custo a que o motorista está amarrado; as reservas dele saem nele. */
+  centroCustoId: number | null;
 }
 
 export interface MotoristaPayload {
@@ -87,6 +89,7 @@ export interface MotoristaPayload {
   cnh_numero?: string | null;
   cnh_validade?: string | null;
   ativo?: boolean;
+  centro_custo_id?: number | null;
 }
 
 /** agendado → em_uso (saída) → concluido (chegada); cancelado sai da agenda. */

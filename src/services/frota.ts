@@ -32,6 +32,7 @@ interface MotoristaApi {
   cnh_numero?: string | null;
   cnh_validade?: string | null;
   ativo: boolean;
+  centro_custo_id?: number | null;
 }
 
 export function mapearMotorista(item: MotoristaApi): Motorista {
@@ -42,6 +43,7 @@ export function mapearMotorista(item: MotoristaApi): Motorista {
     cnhNumero: item.cnh_numero ?? null,
     cnhValidade: item.cnh_validade ? item.cnh_validade.slice(0, 10) : null,
     ativo: Boolean(item.ativo),
+    centroCustoId: item.centro_custo_id ?? null,
   };
 }
 
