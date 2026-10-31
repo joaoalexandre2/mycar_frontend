@@ -12,6 +12,53 @@ export interface CentroCustoPayload {
   ativo?: boolean;
 }
 
+/** Uma troca de centro de custo de um uso, com os nomes de quando ela aconteceu. */
+export interface TrocaDeCentro {
+  id: number;
+  usoId: number | null;
+  veiculoId: number | null;
+  de: { id: number | null; nome: string | null };
+  para: { id: number | null; nome: string | null };
+  usuario: string | null;
+  motivo: string | null;
+  em: string;
+}
+
+export interface FiltroTrocasDeCentro {
+  de?: string;
+  ate?: string;
+  centroCustoId?: number;
+}
+
+export interface UsuarioDaFrota {
+  id: number;
+  name: string;
+  email: string;
+}
+
+/** Grupo de usuários da frota: reúne pessoas e concede permissões além do papel. */
+export interface GrupoUsuario {
+  id: number;
+  nome: string;
+  descricao: string | null;
+  permissoes: string[];
+  membros: UsuarioDaFrota[];
+}
+
+export interface GrupoUsuarioPayload {
+  nome: string;
+  descricao?: string | null;
+  permissoes: string[];
+  membros: number[];
+}
+
+export interface GruposDaFrota {
+  grupos: GrupoUsuario[];
+  /** chave => descrição, vinda do servidor. */
+  catalogo: Record<string, string>;
+  usuarios: UsuarioDaFrota[];
+}
+
 /** Motorista da frota: só cadastro, ou com login quando o convite existir. */
 export interface Motorista {
   id: number;

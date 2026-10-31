@@ -51,3 +51,11 @@ export function formatarKm(km: number | null | undefined) {
 export function hojeISO() {
   return new Date().toISOString().slice(0, 10);
 }
+
+export function formatarDataHora(valor: string) {
+  const data = new Date(valor);
+
+  return Number.isNaN(data.getTime())
+    ? valor
+    : data.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+}

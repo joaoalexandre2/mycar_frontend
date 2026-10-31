@@ -6,11 +6,17 @@ import type {
   CentroCustoPayload,
   ErrosDeImportacao,
   FiltroAgenda,
+  FiltroTrocasDeCentro,
+  GrupoUsuario,
+  GrupoUsuarioPayload,
+  GruposDaFrota,
   Motorista,
   MotoristaPayload,
   ResumoImportacao,
   StatusUso,
+  TrocaDeCentro,
   UsoPayload,
+  UsuarioDaFrota,
   UsoVeiculo,
 } from "../types/frota";
 
@@ -88,7 +94,80 @@ export const centrosCustoService = {
   async remover(id: number): Promise<void> {
     await api.delete(`/conta/centros-custo/${id}`);
   },
+
+  /** Relatório das trocas de centro de custo, da mais recente para a mais antiga. */
+  async trocas(filtro: FiltroTrocasDeCentro = {}): Promise<TrocaDeCentro[]> {
+    const { data } = await api.get<TrocaApi[]>("/conta/centros-custo/historico", {
+      params: { de: filtro.de || undefined, ate: filtro.ate || undefined, centro_custo_id: filtro.centroCustoId },
+    });
+
+    return data.map(mapearTroca);
+  },
 };
+
+// ------------------------------------------------------- grupos de usuários
+
+interface GrupoApi {
+  id: number;
+  nome: string;
+  descricao: string | null;
+  permissoes: string[];
+  membros: UsuarioDaFrota[];
+}
+
+function mapearGrupo(g: GrupoApi): GrupoUsuario {
+  return { id: g.id, nome: g.nome, descricao: g.descricao ?? null, permissoes: g.permissoes ?? [], membros: g.membros ?? [] };
+}
+
+export const gruposUsuariosService = {
+  async listar(): Promise<GruposDaFrota> {
+    const { data } = await api.get<{ grupos: GrupoApi[]; permissoes: Record<string, string>; usuarios: UsuarioDaFrota[] }>(
+      "/conta/grupos-usuarios",
+    );
+
+    return { grupos: data.grupos.map(mapearGrupo), catalogo: data.permissoes, usuarios: data.usuarios };
+  },
+
+  async criar(payload: GrupoUsuarioPayload): Promise<GrupoUsuario> {
+    const { data } = await api.post<GrupoApi>("/conta/grupos-usuarios", payload);
+
+    return mapearGrupo(data);
+  },
+
+  async atualizar(id: number, payload: GrupoUsuarioPayload): Promise<GrupoUsuario> {
+    const { data } = await api.put<GrupoApi>(`/conta/grupos-usuarios/${id}`, payload);
+
+    return mapearGrupo(data);
+  },
+
+  async remover(id: number): Promise<void> {
+    await api.delete(`/conta/grupos-usuarios/${id}`);
+  },
+};
+
+interface TrocaApi {
+  id: number;
+  uso_veiculo_id: number | null;
+  veiculo_conta_id: number | null;
+  de: { id: number | null; nome: string | null };
+  para: { id: number | null; nome: string | null };
+  usuario: string | null;
+  motivo: string | null;
+  em: string;
+}
+
+function mapearTroca(t: TrocaApi): TrocaDeCentro {
+  return {
+    id: t.id,
+    usoId: t.uso_veiculo_id ?? null,
+    veiculoId: t.veiculo_conta_id ?? null,
+    de: t.de,
+    para: t.para,
+    usuario: t.usuario ?? null,
+    motivo: t.motivo ?? null,
+    em: t.em,
+  };
+}
 
 // ------------------------------------------------------------------------- usos
 
@@ -202,6 +281,19 @@ export const usosService = {
 
   async remover(id: number): Promise<void> {
     await api.delete(`/conta/usos/${id}`);
+  },
+
+  /** Troca o centro de custo de um uso (mesmo concluído). O anterior fica no histórico, com o motivo. */
+  async trocarCentro(id: number, centroCustoId: number, motivo: string): Promise<UsoVeiculo> {
+    const { data } = await api.put<UsoApi>(`/conta/usos/${id}/centro-custo`, { centro_custo_id: centroCustoId, motivo });
+
+    return mapearUso(data);
+  },
+
+  async historicoDeCentros(id: number): Promise<TrocaDeCentro[]> {
+    const { data } = await api.get<TrocaApi[]>(`/conta/usos/${id}/centros-historico`);
+
+    return data.map(mapearTroca);
   },
 
   async registrarSaida(id: number, km: number, foto?: Blob | null): Promise<UsoVeiculo> {

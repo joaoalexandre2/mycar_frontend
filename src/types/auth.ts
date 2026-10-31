@@ -9,6 +9,8 @@ export interface Usuario {
   oficina?: string | null;
   /** Nome da conta, nos perfis pessoa e frota. */
   conta?: string | null;
+  /** Permissões da frota (papel + grupos); ausente em sessões antigas. Só mostra/esconde telas. */
+  permissoes?: string[];
   /** Operador da plataforma. Só mostra/esconde o menu: o backend é quem barra. */
   admin?: boolean;
   /** Aparência gravada na conta; null/ausente = nunca escolheu. */

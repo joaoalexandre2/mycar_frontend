@@ -1,6 +1,9 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Building2, Pencil, Plus, Trash2, UserRound } from "lucide-react";
+import { Building2, History, Pencil, Plus, Trash2, UserRound, Users } from "lucide-react";
 import { Modal } from "../../components/ui/Modal";
+import { Grupos } from "./Grupos";
+import { HistoricoCentros } from "./HistoricoCentros";
+import { usePodeNaFrota } from "../../hooks/usePodeNaFrota";
 import { centrosCustoService, motoristasService } from "../../services/frota";
 import { mensagemErro } from "../../services/api";
 import { useConfirmar } from "../../hooks/useNotificacoes";
@@ -12,36 +15,44 @@ const classeCampo =
   "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
 const rotulo = "mb-1.5 block text-xs font-medium text-gray-700";
 
-type Aba = "motoristas" | "centros";
+type Aba = "motoristas" | "centros" | "historico" | "grupos";
 
-/** Motoristas e centros de custo da frota. */
+/** Motoristas, centros de custo, histórico de trocas de centro e grupos de usuários da frota. */
 export function Cadastros() {
+  const pode = usePodeNaFrota();
   const [aba, setAba] = useState<Aba>("motoristas");
+
+  const abas = (
+    [
+      ["motoristas", "Motoristas", UserRound, "motoristas"],
+      ["centros", "Centros de custo", Building2, "centros_custo"],
+      ["historico", "Histórico de centros", History, "centros_custo"],
+      ["grupos", "Grupos de usuários", Users, "grupos"],
+    ] as const
+  ).filter(([, , , permissao]) => pode(permissao));
+
+  // Sem permissão para a aba escolhida (ou para a inicial), vale a primeira que a pessoa pode ver.
+  const atual = abas.some(([chave]) => chave === aba) ? aba : abas[0]?.[0];
 
   return (
     <div className="space-y-6 p-4 sm:p-8">
       <div>
         <h2 className="text-xl font-bold text-gray-900">Motoristas e centros de custo</h2>
         <p className="mt-1 text-sm text-gray-500">
-          Quem dirige os veículos da frota e a que área cada gasto e cada viagem pertence.
+          Quem dirige os veículos da frota, a que área cada gasto e cada viagem pertence e quem pode fazer o quê.
         </p>
       </div>
 
-      <div role="tablist" className="flex gap-1 border-b border-gray-200">
-        {(
-          [
-            ["motoristas", "Motoristas", UserRound],
-            ["centros", "Centros de custo", Building2],
-          ] as const
-        ).map(([chave, titulo, Icone]) => (
+      <div role="tablist" className="flex gap-1 overflow-x-auto border-b border-gray-200">
+        {abas.map(([chave, titulo, Icone]) => (
           <button
             key={chave}
             type="button"
             role="tab"
-            aria-selected={aba === chave}
+            aria-selected={atual === chave}
             onClick={() => setAba(chave)}
             className={`-mb-px flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-semibold ${
-              aba === chave
+              atual === chave
                 ? "border-blue-600 text-blue-700"
                 : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
@@ -51,7 +62,10 @@ export function Cadastros() {
         ))}
       </div>
 
-      {aba === "motoristas" ? <Motoristas /> : <Centros />}
+      {atual === "motoristas" && <Motoristas />}
+      {atual === "centros" && <Centros />}
+      {atual === "historico" && <HistoricoCentros />}
+      {atual === "grupos" && <Grupos />}
     </div>
   );
 }
