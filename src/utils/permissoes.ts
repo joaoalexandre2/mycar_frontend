@@ -9,3 +9,13 @@ export function podeNaFrota(usuario: Usuario | null | undefined, permissao: stri
 
   return usuario.permissoes.includes(permissao);
 }
+
+/**
+ * Se o menu da frota aparece para a pessoa (só aparece se um grupo liberar, ou se for administrador). Só
+ * decide o que mostrar: a API barra as rotas. Sessão antiga, sem a lista, mostra tudo.
+ */
+export function podeVerMenu(usuario: Usuario | null | undefined, menu: string): boolean {
+  if (!usuario?.menus) return true;
+
+  return usuario.menus.includes(menu);
+}

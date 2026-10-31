@@ -2,16 +2,16 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Building2 } from "lucide-react";
 import { Modal } from "../ui/Modal";
 import { LinhaDeTroca } from "./LinhaDeTroca";
-import { centrosCustoService, usosService } from "../../services/frota";
+import { centrosCustoService, motivosTrocaCentroService, usosService } from "../../services/frota";
 import { mensagemErro } from "../../services/api";
-import type { CentroCusto, TrocaDeCentro, UsoVeiculo } from "../../types/frota";
+import type { CentroCusto, MotivoTrocaCentro, TrocaDeCentro, UsoVeiculo } from "../../types/frota";
 
 const classeCampo =
   "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
 const rotulo = "mb-1.5 block text-xs font-medium text-gray-700";
 
 /**
- * Troca o centro de custo de um uso, mesmo concluído. O motivo é obrigatório e o
+ * Troca o centro de custo de um uso, mesmo concluído. O motivo vem da lista cadastrada pela frota e o
  * centro anterior fica no histórico, que aparece aqui embaixo.
  */
 export function TrocarCentroModal({
@@ -26,7 +26,8 @@ export function TrocarCentroModal({
   const [centros, setCentros] = useState<CentroCusto[]>([]);
   const [historico, setHistorico] = useState<TrocaDeCentro[] | null>(null);
   const [centroId, setCentroId] = useState("");
-  const [motivo, setMotivo] = useState("");
+  const [motivos, setMotivos] = useState<MotivoTrocaCentro[]>([]);
+  const [motivoId, setMotivoId] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
 
@@ -37,6 +38,15 @@ export function TrocarCentroModal({
       .listar()
       .then((dados) => {
         if (ativo) setCentros(dados);
+      })
+      .catch((error) => {
+        if (ativo) setErro(mensagemErro(error));
+      });
+
+    motivosTrocaCentroService
+      .listar()
+      .then((dados) => {
+        if (ativo) setMotivos(dados);
       })
       .catch((error) => {
         if (ativo) setErro(mensagemErro(error));
@@ -65,14 +75,14 @@ export function TrocarCentroModal({
       return;
     }
 
-    if (motivo.trim().length < 5) {
-      setErro("Explique o motivo da troca (mínimo 5 letras).");
+    if (!motivoId) {
+      setErro("Escolha o motivo da troca.");
       return;
     }
 
     try {
       setSalvando(true);
-      onTrocado(await usosService.trocarCentro(uso.id, Number(centroId), motivo.trim()));
+      onTrocado(await usosService.trocarCentro(uso.id, Number(centroId), Number(motivoId)));
     } catch (error) {
       setErro(mensagemErro(error));
     } finally {
@@ -96,7 +106,15 @@ export function TrocarCentroModal({
         </div>
         <div>
           <label htmlFor="tc-motivo" className={rotulo}>Motivo</label>
-          <input id="tc-motivo" type="text" value={motivo} maxLength={255} onChange={(e) => setMotivo(e.target.value)} placeholder="Ex.: lançado errado pelo motorista" className={classeCampo} />
+          <select id="tc-motivo" value={motivoId} onChange={(e) => setMotivoId(e.target.value)} className={classeCampo}>
+            <option value="">Escolha...</option>
+            {motivos.map((m) => (
+              <option key={m.id} value={m.id}>{m.nome}</option>
+            ))}
+          </select>
+          {motivos.length === 0 && (
+            <p className="mt-1 text-xs text-gray-500">Nenhum motivo cadastrado. Cadastre em Cadastros &gt; Motivos de troca.</p>
+          )}
         </div>
 
         {erro && (

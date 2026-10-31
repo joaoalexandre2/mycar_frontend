@@ -361,6 +361,7 @@ describe("Cadastros: motoristas", () => {
 
   it("cadastra um motorista e recarrega a lista", async () => {
     const listar = vi.spyOn(motoristasService, "listar").mockResolvedValue([]);
+    vi.spyOn(centrosCustoService, "listar").mockResolvedValue([entregas]);
     const criar = vi.spyOn(motoristasService, "criar").mockResolvedValue(maria);
     cadastros();
 
@@ -369,10 +370,18 @@ describe("Cadastros: motoristas", () => {
     await userEvent.click(screen.getByRole("button", { name: /Novo motorista/ }));
     await userEvent.type(await screen.findByLabelText("Nome"), "  Maria Silva  ");
     await userEvent.type(screen.getByLabelText("Telefone"), "11 99999-0000");
+    await screen.findByRole("option", { name: "Entregas" });
+    await userEvent.selectOptions(screen.getByLabelText("Centro de custo"), String(entregas.id));
     await userEvent.click(screen.getByRole("button", { name: "Salvar" }));
 
     await waitFor(() =>
-      expect(criar).toHaveBeenCalledWith({ nome: "Maria Silva", telefone: "11 99999-0000", cnh_numero: null, cnh_validade: null }),
+      expect(criar).toHaveBeenCalledWith({
+        nome: "Maria Silva",
+        telefone: "11 99999-0000",
+        cnh_numero: null,
+        cnh_validade: null,
+        centro_custo_id: entregas.id,
+      }),
     );
     await waitFor(() => expect(listar).toHaveBeenCalledTimes(2));
   });

@@ -4,6 +4,7 @@ import { CalendarDays, ChevronLeft, ChevronRight, FileUp, Plus } from "lucide-re
 import { contaService } from "../../services/conta";
 import { centrosCustoService, motoristasService, usosService } from "../../services/frota";
 import { mensagemErro } from "../../services/api";
+import { usePodeNaFrota, useUsuarioDaFrota } from "../../hooks/usePodeNaFrota";
 import { UsoFormModal } from "../../components/frota/UsoFormModal";
 import { UsoDetalheModal } from "../../components/frota/UsoDetalheModal";
 import { ImportarPlanilhaModal } from "../../components/frota/ImportarPlanilhaModal";
@@ -40,6 +41,13 @@ export function Agenda() {
     mes: Number(hoje.slice(5, 7)),
   }));
 
+  const pode = usePodeNaFrota();
+  const usuario = useUsuarioDaFrota();
+  // Motorista não lista motoristas nem centros: a reserva dele sai no centro que o gestor amarrou.
+  const podeMotoristas = pode("motoristas");
+  const podeCentros = pode("centros_custo");
+  const souMotorista = usuario?.papel === "motorista";
+
   const [veiculos, setVeiculos] = useState<VeiculoConta[]>([]);
   const [motoristas, setMotoristas] = useState<Motorista[]>([]);
   const [centros, setCentros] = useState<CentroCusto[]>([]);
@@ -59,7 +67,11 @@ export function Agenda() {
   useEffect(() => {
     let ativo = true;
 
-    Promise.all([contaService.listarTodosVeiculos(), motoristasService.listar(), centrosCustoService.listar()])
+    Promise.all([
+      contaService.listarTodosVeiculos(),
+      podeMotoristas ? motoristasService.listar() : Promise.resolve<Motorista[]>([]),
+      podeCentros ? centrosCustoService.listar() : Promise.resolve<CentroCusto[]>([]),
+    ])
       .then(([v, m, c]) => {
         if (!ativo) return;
         setVeiculos(v);
@@ -74,7 +86,7 @@ export function Agenda() {
     return () => {
       ativo = false;
     };
-  }, [recarregar]);
+  }, [recarregar, podeMotoristas, podeCentros]);
 
   useEffect(() => {
     let ativo = true;
@@ -349,6 +361,7 @@ export function Agenda() {
           veiculos={veiculos}
           motoristas={motoristas}
           centros={centros}
+          modoMotorista={souMotorista ? { centro: usuario?.centro_do_motorista ?? null } : null}
           onSalvo={() => {
             setFormulario(null);
             setAberto(null);

@@ -5,6 +5,9 @@ import type {
   CentroCusto,
   CentroCustoPayload,
   ErrosDeImportacao,
+  MotivoTrocaCentro,
+  PapelDaFrota,
+  PessoaDaFrota,
   FiltroAgenda,
   FiltroTrocasDeCentro,
   GrupoUsuario,
@@ -29,6 +32,7 @@ interface MotoristaApi {
   cnh_numero?: string | null;
   cnh_validade?: string | null;
   ativo: boolean;
+  centro_custo_id?: number | null;
 }
 
 export function mapearMotorista(item: MotoristaApi): Motorista {
@@ -39,6 +43,7 @@ export function mapearMotorista(item: MotoristaApi): Motorista {
     cnhNumero: item.cnh_numero ?? null,
     cnhValidade: item.cnh_validade ? item.cnh_validade.slice(0, 10) : null,
     ativo: Boolean(item.ativo),
+    centroCustoId: item.centro_custo_id ?? null,
   };
 }
 
@@ -112,20 +117,31 @@ interface GrupoApi {
   nome: string;
   descricao: string | null;
   permissoes: string[];
+  menus_liberados?: string[];
   membros: UsuarioDaFrota[];
 }
 
 function mapearGrupo(g: GrupoApi): GrupoUsuario {
-  return { id: g.id, nome: g.nome, descricao: g.descricao ?? null, permissoes: g.permissoes ?? [], membros: g.membros ?? [] };
+  return {
+    id: g.id,
+    nome: g.nome,
+    descricao: g.descricao ?? null,
+    permissoes: g.permissoes ?? [],
+    menus_liberados: g.menus_liberados ?? [],
+    membros: g.membros ?? [],
+  };
 }
 
 export const gruposUsuariosService = {
   async listar(): Promise<GruposDaFrota> {
-    const { data } = await api.get<{ grupos: GrupoApi[]; permissoes: Record<string, string>; usuarios: UsuarioDaFrota[] }>(
-      "/conta/grupos-usuarios",
-    );
+    const { data } = await api.get<{
+      grupos: GrupoApi[];
+      permissoes: Record<string, string>;
+      menus: Record<string, string>;
+      usuarios: UsuarioDaFrota[];
+    }>("/conta/grupos-usuarios");
 
-    return { grupos: data.grupos.map(mapearGrupo), catalogo: data.permissoes, usuarios: data.usuarios };
+    return { grupos: data.grupos.map(mapearGrupo), catalogo: data.permissoes, menus: data.menus, usuarios: data.usuarios };
   },
 
   async criar(payload: GrupoUsuarioPayload): Promise<GrupoUsuario> {
@@ -283,9 +299,9 @@ export const usosService = {
     await api.delete(`/conta/usos/${id}`);
   },
 
-  /** Troca o centro de custo de um uso (mesmo concluído). O anterior fica no histórico, com o motivo. */
-  async trocarCentro(id: number, centroCustoId: number, motivo: string): Promise<UsoVeiculo> {
-    const { data } = await api.put<UsoApi>(`/conta/usos/${id}/centro-custo`, { centro_custo_id: centroCustoId, motivo });
+  /** Troca o centro de custo de um uso (mesmo concluído). O anterior fica no histórico, com o motivo escolhido. */
+  async trocarCentro(id: number, centroCustoId: number, motivoId: number): Promise<UsoVeiculo> {
+    const { data } = await api.put<UsoApi>(`/conta/usos/${id}/centro-custo`, { centro_custo_id: centroCustoId, motivo_id: motivoId });
 
     return mapearUso(data);
   },
@@ -387,3 +403,49 @@ export class ErroDePlanilha extends Error {
     this.detalhes = detalhes;
   }
 }
+
+// ------------------------------------------------------- pessoas e papéis
+
+export const pessoasFrotaService = {
+  async listar(): Promise<PessoaDaFrota[]> {
+    const { data } = await api.get<PessoaDaFrota[]>("/conta/pessoas");
+
+    return data;
+  },
+
+  async convidar(payload: { nome: string; email: string; papel: "administrador" | "gestor" }): Promise<PessoaDaFrota> {
+    const { data } = await api.post<PessoaDaFrota>("/conta/pessoas", payload);
+
+    return data;
+  },
+
+  async mudarPapel(id: number, papel: PapelDaFrota): Promise<PessoaDaFrota> {
+    const { data } = await api.put<PessoaDaFrota>(`/conta/pessoas/${id}/papel`, { papel });
+
+    return data;
+  },
+};
+
+// ------------------------------------------------------- motivos de troca de centro
+
+export const motivosTrocaCentroService = {
+  async listar(todos = false): Promise<MotivoTrocaCentro[]> {
+    const { data } = await api.get<MotivoTrocaCentro[]>("/conta/motivos-troca-centro", {
+      params: todos ? { todos: 1 } : undefined,
+    });
+
+    return data;
+  },
+
+  async criar(nome: string): Promise<MotivoTrocaCentro> {
+    const { data } = await api.post<MotivoTrocaCentro>("/conta/motivos-troca-centro", { nome });
+
+    return data;
+  },
+
+  async atualizar(id: number, dados: { nome?: string; ativo?: boolean }): Promise<MotivoTrocaCentro> {
+    const { data } = await api.put<MotivoTrocaCentro>(`/conta/motivos-troca-centro/${id}`, dados);
+
+    return data;
+  },
+};

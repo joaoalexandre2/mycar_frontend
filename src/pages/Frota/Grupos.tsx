@@ -96,6 +96,11 @@ export function Grupos() {
                     ? "Sem permissões extras"
                     : g.permissoes.map((p) => dados.catalogo[p] ?? p).join(" · ")}
                 </p>
+                {g.menus_liberados.length > 0 && (
+                  <p className="text-xs text-gray-600">
+                    Libera: {g.menus_liberados.map((m) => dados.menus[m] ?? m).join(" · ")}
+                  </p>
+                )}
                 <p className="text-xs text-gray-500">
                   {g.membros.length === 0
                     ? "Sem membros"
@@ -159,6 +164,7 @@ function GrupoModal({
   const [nome, setNome] = useState(grupo?.nome ?? "");
   const [descricao, setDescricao] = useState(grupo?.descricao ?? "");
   const [permissoes, setPermissoes] = useState<string[]>(grupo?.permissoes ?? []);
+  const [menusLiberados, setMenusLiberados] = useState<string[]>(grupo?.menus_liberados ?? []);
   const [membros, setMembros] = useState<number[]>(grupo?.membros.map((m) => m.id) ?? []);
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
@@ -172,7 +178,7 @@ function GrupoModal({
       return;
     }
 
-    const payload = { nome: nome.trim(), descricao: descricao.trim() || null, permissoes, membros };
+    const payload = { nome: nome.trim(), descricao: descricao.trim() || null, permissoes, menus_liberados: menusLiberados, membros };
 
     try {
       setSalvando(true);
@@ -211,6 +217,22 @@ function GrupoModal({
                 type="checkbox"
                 checked={permissoes.includes(chave)}
                 onChange={() => setPermissoes((atual) => alternar(atual, chave))}
+                className="mt-0.5"
+              />
+              {texto}
+            </label>
+          ))}
+        </fieldset>
+
+        <fieldset className="space-y-2">
+          <legend className={rotulo}>Liberar estes menus para quem está no grupo</legend>
+          <p className="text-xs text-gray-500">Administrador e gestor veem todos. Os demais veem só o que o grupo libera.</p>
+          {Object.entries(dados.menus).map(([chave, texto]) => (
+            <label key={chave} className="flex items-start gap-2 text-xs text-gray-700">
+              <input
+                type="checkbox"
+                checked={menusLiberados.includes(chave)}
+                onChange={() => setMenusLiberados((atual) => alternar(atual, chave))}
                 className="mt-0.5"
               />
               {texto}

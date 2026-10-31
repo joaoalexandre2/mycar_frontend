@@ -1,9 +1,11 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Building2, History, Pencil, Plus, Trash2, UserRound, Users } from "lucide-react";
+import { Building2, History, ListChecks, Pencil, Plus, Trash2, UserCog, UserRound, Users } from "lucide-react";
 import { Modal } from "../../components/ui/Modal";
 import { Grupos } from "./Grupos";
 import { HistoricoCentros } from "./HistoricoCentros";
-import { usePodeNaFrota } from "../../hooks/usePodeNaFrota";
+import { MotivosTroca } from "./MotivosTroca";
+import { Pessoas } from "./Pessoas";
+import { usePodeNaFrota, usePodeVerMenu, useUsuarioDaFrota } from "../../hooks/usePodeNaFrota";
 import { centrosCustoService, motoristasService } from "../../services/frota";
 import { mensagemErro } from "../../services/api";
 import { useConfirmar } from "../../hooks/useNotificacoes";
@@ -15,24 +17,37 @@ const classeCampo =
   "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
 const rotulo = "mb-1.5 block text-xs font-medium text-gray-700";
 
-type Aba = "motoristas" | "centros" | "historico" | "grupos";
+type Aba = "motoristas" | "centros" | "motivos" | "historico" | "grupos" | "pessoas";
 
-/** Motoristas, centros de custo, histórico de trocas de centro e grupos de usuários da frota. */
+/** Motoristas, centros de custo, histórico de trocas, grupos de usuários e pessoas da frota. */
 export function Cadastros() {
+  const usuario = useUsuarioDaFrota();
   const pode = usePodeNaFrota();
+  const podeVer = usePodeVerMenu();
   const [aba, setAba] = useState<Aba>("motoristas");
+  const ehAdministrador = usuario?.papel === "administrador";
 
   const abas = (
     [
       ["motoristas", "Motoristas", UserRound, "motoristas"],
       ["centros", "Centros de custo", Building2, "centros_custo"],
+      ["motivos", "Motivos de troca", ListChecks, "centros_custo"],
       ["historico", "Histórico de centros", History, "centros_custo"],
       ["grupos", "Grupos de usuários", Users, "grupos"],
+      ["pessoas", "Pessoas e papéis", UserCog, "pessoas"],
     ] as const
-  ).filter(([, , , permissao]) => pode(permissao));
+  ).filter(([chave, , , permissao]) => (chave === "pessoas" ? ehAdministrador : pode(permissao)));
 
   // Sem permissão para a aba escolhida (ou para a inicial), vale a primeira que a pessoa pode ver.
   const atual = abas.some(([chave]) => chave === aba) ? aba : abas[0]?.[0];
+
+  if (!podeVer("cadastros")) {
+    return (
+      <div className="p-4 sm:p-8">
+        <p className="text-sm text-gray-500">Esta área não está liberada para o seu acesso na frota.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 p-4 sm:p-8">
@@ -66,6 +81,8 @@ export function Cadastros() {
       {atual === "centros" && <Centros />}
       {atual === "historico" && <HistoricoCentros />}
       {atual === "grupos" && <Grupos />}
+      {atual === "pessoas" && <Pessoas />}
+      {atual === "motivos" && <MotivosTroca />}
     </div>
   );
 }
@@ -219,8 +236,27 @@ function MotoristaModal({
   const [telefone, setTelefone] = useState(motorista?.telefone ?? "");
   const [cnh, setCnh] = useState(motorista?.cnhNumero ?? "");
   const [validade, setValidade] = useState(motorista?.cnhValidade ?? "");
+  const [centros, setCentros] = useState<CentroCusto[]>([]);
+  const [centroId, setCentroId] = useState(motorista?.centroCustoId ? String(motorista.centroCustoId) : "");
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
+
+  useEffect(() => {
+    let ativo = true;
+
+    centrosCustoService
+      .listar()
+      .then((dados) => {
+        if (ativo) setCentros(dados);
+      })
+      .catch((error) => {
+        if (ativo) setErro(mensagemErro(error));
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, []);
 
   async function salvar(evento: FormEvent) {
     evento.preventDefault();
@@ -231,11 +267,17 @@ function MotoristaModal({
       return;
     }
 
+    if (!centroId) {
+      setErro("Escolha o centro de custo do motorista. As reservas dele saem nesse centro.");
+      return;
+    }
+
     const payload = {
       nome: nome.trim(),
       telefone: telefone.trim() || null,
       cnh_numero: cnh.trim() || null,
       cnh_validade: validade || null,
+      centro_custo_id: Number(centroId),
     };
 
     try {
@@ -265,6 +307,16 @@ function MotoristaModal({
         <div>
           <label htmlFor="mot-tel" className={rotulo}>Telefone</label>
           <input id="mot-tel" type="text" value={telefone} maxLength={30} onChange={(e) => setTelefone(e.target.value)} className={classeCampo} />
+        </div>
+        <div>
+          <label htmlFor="mot-centro" className={rotulo}>Centro de custo</label>
+          <select id="mot-centro" value={centroId} onChange={(e) => setCentroId(e.target.value)} className={classeCampo}>
+            <option value="">Escolha...</option>
+            {centros.map((c) => (
+              <option key={c.id} value={c.id}>{c.nome}</option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-gray-500">As reservas do motorista saem nesse centro de custo.</p>
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>

@@ -6,6 +6,13 @@ export interface CentroCusto {
   ativo: boolean;
 }
 
+/** Motivo cadastrado pela frota para trocar o centro de custo de um uso. */
+export interface MotivoTrocaCentro {
+  id: number;
+  nome: string;
+  ativo: boolean;
+}
+
 export interface CentroCustoPayload {
   nome: string;
   codigo?: string | null;
@@ -42,6 +49,8 @@ export interface GrupoUsuario {
   nome: string;
   descricao: string | null;
   permissoes: string[];
+  /** Menus que o grupo libera a quem pertence a ele. */
+  menus_liberados: string[];
   membros: UsuarioDaFrota[];
 }
 
@@ -49,6 +58,7 @@ export interface GrupoUsuarioPayload {
   nome: string;
   descricao?: string | null;
   permissoes: string[];
+  menus_liberados: string[];
   membros: number[];
 }
 
@@ -56,6 +66,8 @@ export interface GruposDaFrota {
   grupos: GrupoUsuario[];
   /** chave => descrição, vinda do servidor. */
   catalogo: Record<string, string>;
+  /** menu => descrição, vinda do servidor. */
+  menus: Record<string, string>;
   usuarios: UsuarioDaFrota[];
 }
 
@@ -67,6 +79,8 @@ export interface Motorista {
   cnhNumero: string | null;
   cnhValidade: string | null;
   ativo: boolean;
+  /** Centro de custo a que o motorista está amarrado; as reservas dele saem nele. */
+  centroCustoId: number | null;
 }
 
 export interface MotoristaPayload {
@@ -75,6 +89,7 @@ export interface MotoristaPayload {
   cnh_numero?: string | null;
   cnh_validade?: string | null;
   ativo?: boolean;
+  centro_custo_id?: number | null;
 }
 
 /** agendado → em_uso (saída) → concluido (chegada); cancelado sai da agenda. */
@@ -146,4 +161,14 @@ export interface ErrosDeImportacao {
   mensagem: string;
   erros: string[];
   totalDeErros: number;
+}
+
+/** Pessoa da frota e seu papel (administrador, gestor ou motorista). */
+export type PapelDaFrota = "administrador" | "gestor" | "motorista";
+
+export interface PessoaDaFrota {
+  id: number;
+  name: string;
+  email: string;
+  papel: PapelDaFrota;
 }

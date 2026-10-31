@@ -22,6 +22,7 @@ export function UsoFormModal({
   veiculos,
   motoristas,
   centros,
+  modoMotorista,
   onSalvo,
   onClose,
 }: {
@@ -32,6 +33,8 @@ export function UsoFormModal({
   veiculos: VeiculoConta[];
   motoristas: Motorista[];
   centros: CentroCusto[];
+  /** Quando quem reserva é o motorista: a reserva sai no centro dele, sem escolher motorista nem centro. */
+  modoMotorista?: { centro: { id: number; nome: string } | null } | null;
   onSalvo: (uso: UsoVeiculo) => void;
   onClose: () => void;
 }) {
@@ -128,45 +131,61 @@ export function UsoFormModal({
           </select>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor="uso-motorista" className={rotulo}>
-              Motorista
-            </label>
-            <select
-              id="uso-motorista"
-              value={motoristaId}
-              onChange={(e) => setMotoristaId(e.target.value)}
-              className={classeCampo}
-            >
-              <option value="">Sem motorista definido</option>
-              {motoristas.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.nome}
-                </option>
-              ))}
-            </select>
+        {modoMotorista ? (
+          <div className="space-y-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-xs text-gray-700">
+            <p>Motorista: <span className="font-semibold">você</span></p>
+            {modoMotorista.centro ? (
+              <p>
+                Centro de custo: <span className="font-semibold">{modoMotorista.centro.nome}</span>{" "}
+                <span className="text-gray-500">(definido pelo gestor)</span>
+              </p>
+            ) : (
+              <p role="alert" className="text-red-600">
+                Você ainda não está amarrado a um centro de custo. Peça ao gestor.
+              </p>
+            )}
           </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="uso-motorista" className={rotulo}>
+                Motorista
+              </label>
+              <select
+                id="uso-motorista"
+                value={motoristaId}
+                onChange={(e) => setMotoristaId(e.target.value)}
+                className={classeCampo}
+              >
+                <option value="">Sem motorista definido</option>
+                {motoristas.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.nome}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          <div>
-            <label htmlFor="uso-centro" className={rotulo}>
-              Centro de custo
-            </label>
-            <select
-              id="uso-centro"
-              value={centroId}
-              onChange={(e) => setCentroId(e.target.value)}
-              className={classeCampo}
-            >
-              <option value="">Padrão do veículo</option>
-              {centros.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nome}
-                </option>
-              ))}
-            </select>
+            <div>
+              <label htmlFor="uso-centro" className={rotulo}>
+                Centro de custo
+              </label>
+              <select
+                id="uso-centro"
+                value={centroId}
+                onChange={(e) => setCentroId(e.target.value)}
+                className={classeCampo}
+              >
+                <option value="">Padrão do veículo</option>
+                {centros.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nome}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>

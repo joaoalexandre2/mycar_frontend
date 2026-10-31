@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { NotificacoesProvider } from "../../contexts/NotificacoesProvider";
 import { AuthContext, type AuthContextValor } from "../../contexts/authContextDefinition";
 import { TrocarCentroModal } from "../../components/frota/TrocarCentroModal";
-import { centrosCustoService, gruposUsuariosService, usosService } from "../../services/frota";
+import { centrosCustoService, gruposUsuariosService, motivosTrocaCentroService, usosService } from "../../services/frota";
 import { Cadastros } from "./Cadastros";
 import { Grupos } from "./Grupos";
 import { HistoricoCentros } from "./HistoricoCentros";
@@ -33,10 +33,12 @@ const dadosDosGrupos: GruposDaFrota = {
       nome: "Apoio",
       descricao: "Time de apoio",
       permissoes: ["centros_custo"],
+      menus_liberados: [],
       membros: [{ id: 10, name: "Bia", email: "bia@x.com" }],
     },
   ],
   catalogo: { centros_custo: "Gerenciar centros de custo", grupos: "Gerenciar grupos de usuários" },
+  menus: { veiculos: "Veículos da frota", agenda: "Agenda", cadastros: "Motoristas e centros" },
   usuarios: [
     { id: 10, name: "Bia", email: "bia@x.com" },
     { id: 11, name: "Caio", email: "caio@x.com" },
@@ -76,8 +78,26 @@ describe("Grupos de usuários", () => {
         nome: "Vendas SP",
         descricao: null,
         permissoes: ["centros_custo"],
+        menus_liberados: [],
         membros: [11],
       }),
+    );
+  });
+
+  it("escolhe os menus que o grupo libera", async () => {
+    vi.spyOn(gruposUsuariosService, "listar").mockResolvedValue({ ...dadosDosGrupos, grupos: [] });
+    const criar = vi.spyOn(gruposUsuariosService, "criar").mockResolvedValue(dadosDosGrupos.grupos[0]);
+    const usuario = userEvent.setup();
+
+    comProvedores(<Grupos />);
+
+    await usuario.click(await screen.findByRole("button", { name: /Novo grupo/ }));
+    await usuario.type(screen.getByLabelText("Nome"), "Sem cadastros");
+    await usuario.click(screen.getByLabelText("Motoristas e centros"));
+    await usuario.click(screen.getByRole("button", { name: "Salvar" }));
+
+    await waitFor(() =>
+      expect(criar).toHaveBeenCalledWith(expect.objectContaining({ menus_liberados: ["cadastros"] })),
     );
   });
 
@@ -129,8 +149,11 @@ describe("Trocar centro de custo de um uso", () => {
     centroCusto: "Vendas",
   } as UsoVeiculo;
 
-  it("exige o motivo e envia a troca", async () => {
+  it("exige o motivo escolhido na lista e envia a troca", async () => {
     vi.spyOn(centrosCustoService, "listar").mockResolvedValue([vendas, entregas]);
+    vi.spyOn(motivosTrocaCentroService, "listar").mockResolvedValue([
+      { id: 5, nome: "Reclassificação mensal", ativo: true },
+    ]);
     vi.spyOn(usosService, "historicoDeCentros").mockResolvedValue([troca]);
     const trocar = vi.spyOn(usosService, "trocarCentro").mockResolvedValue({ ...uso, centroCustoId: 2, centroCusto: "Entregas" });
     const onTrocado = vi.fn();
@@ -148,10 +171,10 @@ describe("Trocar centro de custo de um uso", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("motivo");
     expect(trocar).not.toHaveBeenCalled();
 
-    await usuario.type(screen.getByLabelText("Motivo"), "Reclassificação mensal");
+    await usuario.selectOptions(screen.getByLabelText("Motivo"), "5");
     await usuario.click(screen.getByRole("button", { name: "Trocar centro" }));
 
-    await waitFor(() => expect(trocar).toHaveBeenCalledWith(7, 2, "Reclassificação mensal"));
+    await waitFor(() => expect(trocar).toHaveBeenCalledWith(7, 2, 5));
     expect(onTrocado).toHaveBeenCalled();
   });
 });
@@ -181,6 +204,24 @@ describe("Abas do cadastro da frota", () => {
     expect(screen.getByRole("tab", { name: /Histórico de centros/ })).toBeInTheDocument();
     expect(screen.queryByRole("tab", { name: /Grupos de usuários/ })).not.toBeInTheDocument();
     expect(screen.queryByRole("tab", { name: /Motoristas/ })).not.toBeInTheDocument();
+  });
+
+  it("mostra o aviso quando o menu Motoristas e centros não está liberado", async () => {
+    const valor = {
+      usuario: { id: 1, name: "Ana", email: "ana@x.com", perfil: "frota", permissoes: ["motoristas", "centros_custo"], menus: ["veiculos", "agenda"] },
+      autenticado: true,
+    } as unknown as AuthContextValor;
+
+    render(
+      <AuthContext.Provider value={valor}>
+        <NotificacoesProvider>
+          <Cadastros />
+        </NotificacoesProvider>
+      </AuthContext.Provider>,
+    );
+
+    expect(screen.getByText(/não está liberada para o seu acesso na frota/)).toBeInTheDocument();
+    expect(screen.queryByRole("tab")).not.toBeInTheDocument();
   });
 
   it("abre na primeira aba permitida quando falta permissão para Motoristas", async () => {
