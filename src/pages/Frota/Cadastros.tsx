@@ -38,7 +38,7 @@ export function Cadastros() {
   if (!podeVer("cadastros")) {
     return (
       <div className="p-4 sm:p-8">
-        <p className="text-sm text-gray-500">Esta área está escondida para o seu acesso na frota.</p>
+        <p className="text-sm text-gray-500">Esta área não está liberada para o seu acesso na frota.</p>
       </div>
     );
   }

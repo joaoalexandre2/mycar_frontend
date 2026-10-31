@@ -33,7 +33,7 @@ const dadosDosGrupos: GruposDaFrota = {
       nome: "Apoio",
       descricao: "Time de apoio",
       permissoes: ["centros_custo"],
-      menus_ocultos: [],
+      menus_liberados: [],
       membros: [{ id: 10, name: "Bia", email: "bia@x.com" }],
     },
   ],
@@ -78,13 +78,13 @@ describe("Grupos de usuários", () => {
         nome: "Vendas SP",
         descricao: null,
         permissoes: ["centros_custo"],
-        menus_ocultos: [],
+        menus_liberados: [],
         membros: [11],
       }),
     );
   });
 
-  it("escolhe os menus que o grupo esconde", async () => {
+  it("escolhe os menus que o grupo libera", async () => {
     vi.spyOn(gruposUsuariosService, "listar").mockResolvedValue({ ...dadosDosGrupos, grupos: [] });
     const criar = vi.spyOn(gruposUsuariosService, "criar").mockResolvedValue(dadosDosGrupos.grupos[0]);
     const usuario = userEvent.setup();
@@ -97,7 +97,7 @@ describe("Grupos de usuários", () => {
     await usuario.click(screen.getByRole("button", { name: "Salvar" }));
 
     await waitFor(() =>
-      expect(criar).toHaveBeenCalledWith(expect.objectContaining({ menus_ocultos: ["cadastros"] })),
+      expect(criar).toHaveBeenCalledWith(expect.objectContaining({ menus_liberados: ["cadastros"] })),
     );
   });
 
@@ -203,7 +203,7 @@ describe("Abas do cadastro da frota", () => {
     expect(screen.queryByRole("tab", { name: /Motoristas/ })).not.toBeInTheDocument();
   });
 
-  it("some com a área inteira quando o menu Motoristas e centros está escondido", async () => {
+  it("mostra o aviso quando o menu Motoristas e centros não está liberado", async () => {
     const valor = {
       usuario: { id: 1, name: "Ana", email: "ana@x.com", perfil: "frota", permissoes: ["motoristas", "centros_custo"], menus: ["veiculos", "agenda"] },
       autenticado: true,
@@ -217,7 +217,7 @@ describe("Abas do cadastro da frota", () => {
       </AuthContext.Provider>,
     );
 
-    expect(screen.getByText(/escondida para o seu acesso na frota/)).toBeInTheDocument();
+    expect(screen.getByText(/não está liberada para o seu acesso na frota/)).toBeInTheDocument();
     expect(screen.queryByRole("tab")).not.toBeInTheDocument();
   });
 

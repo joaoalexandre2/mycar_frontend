@@ -42,8 +42,8 @@ export interface GrupoUsuario {
   nome: string;
   descricao: string | null;
   permissoes: string[];
-  /** Menus que o grupo esconde de quem pertence a ele. */
-  menus_ocultos: string[];
+  /** Menus que o grupo libera a quem pertence a ele. */
+  menus_liberados: string[];
   membros: UsuarioDaFrota[];
 }
 
@@ -51,7 +51,7 @@ export interface GrupoUsuarioPayload {
   nome: string;
   descricao?: string | null;
   permissoes: string[];
-  menus_ocultos: string[];
+  menus_liberados: string[];
   membros: number[];
 }
 

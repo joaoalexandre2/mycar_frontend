@@ -112,7 +112,7 @@ interface GrupoApi {
   nome: string;
   descricao: string | null;
   permissoes: string[];
-  menus_ocultos?: string[];
+  menus_liberados?: string[];
   membros: UsuarioDaFrota[];
 }
 
@@ -122,7 +122,7 @@ function mapearGrupo(g: GrupoApi): GrupoUsuario {
     nome: g.nome,
     descricao: g.descricao ?? null,
     permissoes: g.permissoes ?? [],
-    menus_ocultos: g.menus_ocultos ?? [],
+    menus_liberados: g.menus_liberados ?? [],
     membros: g.membros ?? [],
   };
 }

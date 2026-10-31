@@ -12,7 +12,7 @@ export function usePodeNaFrota() {
   return (permissao: string) => podeNaFrota(usuario, permissao);
 }
 
-/** Se o menu da frota aparece para a pessoa logada. Fora de um AuthProvider não esconde nada. */
+/** Se o menu da frota aparece para a pessoa logada. Fora de um AuthProvider não bloqueia nada. */
 export function usePodeVerMenu() {
   const usuario = useContext(AuthContext)?.usuario;
 
