@@ -2,6 +2,8 @@ import { useRef, useState, type ChangeEvent } from "react";
 import { Camera, Gauge, Pencil, Trash2 } from "lucide-react";
 import { Modal } from "../ui/Modal";
 import { CapturaHodometro } from "./CapturaHodometro";
+import { TrocarCentroModal } from "./TrocarCentroModal";
+import { usePodeNaFrota } from "../../hooks/usePodeNaFrota";
 import { usosService } from "../../services/frota";
 import { mensagemErro } from "../../services/api";
 import { useConfirmar } from "../../hooks/useNotificacoes";
@@ -86,6 +88,8 @@ export function UsoDetalheModal({
   onClose: () => void;
 }) {
   const pedirConfirmacao = useConfirmar();
+  const pode = usePodeNaFrota();
+  const [trocandoCentro, setTrocandoCentro] = useState(false);
   const [km, setKm] = useState("");
   const [foto, setFoto] = useState<Blob | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -148,6 +152,7 @@ export function UsoDetalheModal({
   const kmAtual = uso.veiculo?.kmAtual ?? null;
 
   return (
+    <>
     <Modal
       titulo={uso.veiculo ? `${uso.veiculo.placa} · ${uso.veiculo.nome}` : "Uso do veículo"}
       subtitulo={descreverJanela(uso.inicioPrevisto, uso.fimPrevisto)}
@@ -175,7 +180,18 @@ export function UsoDetalheModal({
           </div>
           <div>
             <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">Centro de custo</dt>
-            <dd className="mt-0.5 text-gray-800">{uso.centroCusto ?? "—"}</dd>
+            <dd className="mt-0.5 flex flex-wrap items-center gap-2 text-gray-800">
+              {uso.centroCusto ?? "—"}
+              {pode("usos_corrigir") && uso.status !== "cancelado" && (
+                <button
+                  type="button"
+                  onClick={() => setTrocandoCentro(true)}
+                  className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+                >
+                  Trocar
+                </button>
+              )}
+            </dd>
           </div>
           <div className="sm:col-span-2">
             <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">Finalidade</dt>
@@ -284,5 +300,17 @@ export function UsoDetalheModal({
         </div>
       </div>
     </Modal>
+
+    {trocandoCentro && (
+      <TrocarCentroModal
+        uso={uso}
+        onTrocado={(atualizado) => {
+          setTrocandoCentro(false);
+          onAtualizado(atualizado);
+        }}
+        onClose={() => setTrocandoCentro(false)}
+      />
+    )}
+    </>
   );
 }
