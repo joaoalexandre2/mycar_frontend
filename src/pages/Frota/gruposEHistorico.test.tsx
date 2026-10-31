@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { NotificacoesProvider } from "../../contexts/NotificacoesProvider";
 import { AuthContext, type AuthContextValor } from "../../contexts/authContextDefinition";
 import { TrocarCentroModal } from "../../components/frota/TrocarCentroModal";
-import { centrosCustoService, gruposUsuariosService, usosService } from "../../services/frota";
+import { centrosCustoService, gruposUsuariosService, motivosTrocaCentroService, usosService } from "../../services/frota";
 import { Cadastros } from "./Cadastros";
 import { Grupos } from "./Grupos";
 import { HistoricoCentros } from "./HistoricoCentros";
@@ -149,8 +149,11 @@ describe("Trocar centro de custo de um uso", () => {
     centroCusto: "Vendas",
   } as UsoVeiculo;
 
-  it("exige o motivo e envia a troca", async () => {
+  it("exige o motivo escolhido na lista e envia a troca", async () => {
     vi.spyOn(centrosCustoService, "listar").mockResolvedValue([vendas, entregas]);
+    vi.spyOn(motivosTrocaCentroService, "listar").mockResolvedValue([
+      { id: 5, nome: "Reclassificação mensal", ativo: true },
+    ]);
     vi.spyOn(usosService, "historicoDeCentros").mockResolvedValue([troca]);
     const trocar = vi.spyOn(usosService, "trocarCentro").mockResolvedValue({ ...uso, centroCustoId: 2, centroCusto: "Entregas" });
     const onTrocado = vi.fn();
@@ -168,10 +171,10 @@ describe("Trocar centro de custo de um uso", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("motivo");
     expect(trocar).not.toHaveBeenCalled();
 
-    await usuario.type(screen.getByLabelText("Motivo"), "Reclassificação mensal");
+    await usuario.selectOptions(screen.getByLabelText("Motivo"), "5");
     await usuario.click(screen.getByRole("button", { name: "Trocar centro" }));
 
-    await waitFor(() => expect(trocar).toHaveBeenCalledWith(7, 2, "Reclassificação mensal"));
+    await waitFor(() => expect(trocar).toHaveBeenCalledWith(7, 2, 5));
     expect(onTrocado).toHaveBeenCalled();
   });
 });

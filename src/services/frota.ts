@@ -5,6 +5,7 @@ import type {
   CentroCusto,
   CentroCustoPayload,
   ErrosDeImportacao,
+  MotivoTrocaCentro,
   PapelDaFrota,
   PessoaDaFrota,
   FiltroAgenda,
@@ -296,9 +297,9 @@ export const usosService = {
     await api.delete(`/conta/usos/${id}`);
   },
 
-  /** Troca o centro de custo de um uso (mesmo concluído). O anterior fica no histórico, com o motivo. */
-  async trocarCentro(id: number, centroCustoId: number, motivo: string): Promise<UsoVeiculo> {
-    const { data } = await api.put<UsoApi>(`/conta/usos/${id}/centro-custo`, { centro_custo_id: centroCustoId, motivo });
+  /** Troca o centro de custo de um uso (mesmo concluído). O anterior fica no histórico, com o motivo escolhido. */
+  async trocarCentro(id: number, centroCustoId: number, motivoId: number): Promise<UsoVeiculo> {
+    const { data } = await api.put<UsoApi>(`/conta/usos/${id}/centro-custo`, { centro_custo_id: centroCustoId, motivo_id: motivoId });
 
     return mapearUso(data);
   },
@@ -418,6 +419,30 @@ export const pessoasFrotaService = {
 
   async mudarPapel(id: number, papel: PapelDaFrota): Promise<PessoaDaFrota> {
     const { data } = await api.put<PessoaDaFrota>(`/conta/pessoas/${id}/papel`, { papel });
+
+    return data;
+  },
+};
+
+// ------------------------------------------------------- motivos de troca de centro
+
+export const motivosTrocaCentroService = {
+  async listar(todos = false): Promise<MotivoTrocaCentro[]> {
+    const { data } = await api.get<MotivoTrocaCentro[]>("/conta/motivos-troca-centro", {
+      params: todos ? { todos: 1 } : undefined,
+    });
+
+    return data;
+  },
+
+  async criar(nome: string): Promise<MotivoTrocaCentro> {
+    const { data } = await api.post<MotivoTrocaCentro>("/conta/motivos-troca-centro", { nome });
+
+    return data;
+  },
+
+  async atualizar(id: number, dados: { nome?: string; ativo?: boolean }): Promise<MotivoTrocaCentro> {
+    const { data } = await api.put<MotivoTrocaCentro>(`/conta/motivos-troca-centro/${id}`, dados);
 
     return data;
   },

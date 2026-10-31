@@ -6,6 +6,13 @@ export interface CentroCusto {
   ativo: boolean;
 }
 
+/** Motivo cadastrado pela frota para trocar o centro de custo de um uso. */
+export interface MotivoTrocaCentro {
+  id: number;
+  nome: string;
+  ativo: boolean;
+}
+
 export interface CentroCustoPayload {
   nome: string;
   codigo?: string | null;
