@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import { AdminRoute } from "../components/auth/AdminRoute";
 import { FrotaRoute } from "../components/auth/FrotaRoute";
+import { MenuRoute } from "../components/auth/MenuRoute";
 import { ContaInicio } from "../pages/Conta/ContaInicio";
 import { MeusVeiculos } from "../pages/Conta/MeusVeiculos";
 import { Servicos } from "../pages/Conta/Servicos";
@@ -54,10 +55,12 @@ export default function RotasConta() {
 
       {/* Só o perfil frota: agenda de uso dos veículos, motoristas e centros de custo. */}
       <Route element={<FrotaRoute />}>
-        <Route
-          path="/agenda"
-          element={<Agenda />}
-        />
+        <Route element={<MenuRoute menu="agenda" />}>
+          <Route
+            path="/agenda"
+            element={<Agenda />}
+          />
+        </Route>
 
         <Route
           path="/frota/cadastros"
