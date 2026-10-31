@@ -226,7 +226,7 @@ function GrupoModal({
 
         <fieldset className="space-y-2">
           <legend className={rotulo}>Liberar estes menus para quem está no grupo</legend>
-          <p className="text-xs text-gray-500">Sem liberar, a pessoa não vê o menu. O administrador vê todos.</p>
+          <p className="text-xs text-gray-500">Administrador e gestor veem todos. Os demais veem só o que o grupo libera.</p>
           {Object.entries(dados.menus).map(([chave, texto]) => (
             <label key={chave} className="flex items-start gap-2 text-xs text-gray-700">
               <input
