@@ -3,7 +3,7 @@ import { Building2, History, Pencil, Plus, Trash2, UserRound, Users } from "luci
 import { Modal } from "../../components/ui/Modal";
 import { Grupos } from "./Grupos";
 import { HistoricoCentros } from "./HistoricoCentros";
-import { usePodeNaFrota } from "../../hooks/usePodeNaFrota";
+import { usePodeNaFrota, usePodeVerMenu } from "../../hooks/usePodeNaFrota";
 import { centrosCustoService, motoristasService } from "../../services/frota";
 import { mensagemErro } from "../../services/api";
 import { useConfirmar } from "../../hooks/useNotificacoes";
@@ -20,6 +20,7 @@ type Aba = "motoristas" | "centros" | "historico" | "grupos";
 /** Motoristas, centros de custo, histórico de trocas de centro e grupos de usuários da frota. */
 export function Cadastros() {
   const pode = usePodeNaFrota();
+  const podeVer = usePodeVerMenu();
   const [aba, setAba] = useState<Aba>("motoristas");
 
   const abas = (
@@ -33,6 +34,14 @@ export function Cadastros() {
 
   // Sem permissão para a aba escolhida (ou para a inicial), vale a primeira que a pessoa pode ver.
   const atual = abas.some(([chave]) => chave === aba) ? aba : abas[0]?.[0];
+
+  if (!podeVer("cadastros")) {
+    return (
+      <div className="p-4 sm:p-8">
+        <p className="text-sm text-gray-500">Esta área está escondida para o seu acesso na frota.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 p-4 sm:p-8">

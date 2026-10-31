@@ -11,6 +11,8 @@ export interface Usuario {
   conta?: string | null;
   /** Permissões da frota (papel + grupos); ausente em sessões antigas. Só mostra/esconde telas. */
   permissoes?: string[];
+  /** Menus da frota que esta pessoa vê; null fora da frota, ausente em sessões antigas (mostra tudo). */
+  menus?: string[] | null;
   /** Operador da plataforma. Só mostra/esconde o menu: o backend é quem barra. */
   admin?: boolean;
   /** Aparência gravada na conta; null/ausente = nunca escolheu. */

@@ -33,10 +33,12 @@ const dadosDosGrupos: GruposDaFrota = {
       nome: "Apoio",
       descricao: "Time de apoio",
       permissoes: ["centros_custo"],
+      menus_ocultos: [],
       membros: [{ id: 10, name: "Bia", email: "bia@x.com" }],
     },
   ],
   catalogo: { centros_custo: "Gerenciar centros de custo", grupos: "Gerenciar grupos de usuários" },
+  menus: { veiculos: "Veículos da frota", agenda: "Agenda", cadastros: "Motoristas e centros" },
   usuarios: [
     { id: 10, name: "Bia", email: "bia@x.com" },
     { id: 11, name: "Caio", email: "caio@x.com" },
@@ -76,8 +78,26 @@ describe("Grupos de usuários", () => {
         nome: "Vendas SP",
         descricao: null,
         permissoes: ["centros_custo"],
+        menus_ocultos: [],
         membros: [11],
       }),
+    );
+  });
+
+  it("escolhe os menus que o grupo esconde", async () => {
+    vi.spyOn(gruposUsuariosService, "listar").mockResolvedValue({ ...dadosDosGrupos, grupos: [] });
+    const criar = vi.spyOn(gruposUsuariosService, "criar").mockResolvedValue(dadosDosGrupos.grupos[0]);
+    const usuario = userEvent.setup();
+
+    comProvedores(<Grupos />);
+
+    await usuario.click(await screen.findByRole("button", { name: /Novo grupo/ }));
+    await usuario.type(screen.getByLabelText("Nome"), "Sem cadastros");
+    await usuario.click(screen.getByLabelText("Motoristas e centros"));
+    await usuario.click(screen.getByRole("button", { name: "Salvar" }));
+
+    await waitFor(() =>
+      expect(criar).toHaveBeenCalledWith(expect.objectContaining({ menus_ocultos: ["cadastros"] })),
     );
   });
 
@@ -181,6 +201,24 @@ describe("Abas do cadastro da frota", () => {
     expect(screen.getByRole("tab", { name: /Histórico de centros/ })).toBeInTheDocument();
     expect(screen.queryByRole("tab", { name: /Grupos de usuários/ })).not.toBeInTheDocument();
     expect(screen.queryByRole("tab", { name: /Motoristas/ })).not.toBeInTheDocument();
+  });
+
+  it("some com a área inteira quando o menu Motoristas e centros está escondido", async () => {
+    const valor = {
+      usuario: { id: 1, name: "Ana", email: "ana@x.com", perfil: "frota", permissoes: ["motoristas", "centros_custo"], menus: ["veiculos", "agenda"] },
+      autenticado: true,
+    } as unknown as AuthContextValor;
+
+    render(
+      <AuthContext.Provider value={valor}>
+        <NotificacoesProvider>
+          <Cadastros />
+        </NotificacoesProvider>
+      </AuthContext.Provider>,
+    );
+
+    expect(screen.getByText(/escondida para o seu acesso na frota/)).toBeInTheDocument();
+    expect(screen.queryByRole("tab")).not.toBeInTheDocument();
   });
 
   it("abre na primeira aba permitida quando falta permissão para Motoristas", async () => {

@@ -112,20 +112,31 @@ interface GrupoApi {
   nome: string;
   descricao: string | null;
   permissoes: string[];
+  menus_ocultos?: string[];
   membros: UsuarioDaFrota[];
 }
 
 function mapearGrupo(g: GrupoApi): GrupoUsuario {
-  return { id: g.id, nome: g.nome, descricao: g.descricao ?? null, permissoes: g.permissoes ?? [], membros: g.membros ?? [] };
+  return {
+    id: g.id,
+    nome: g.nome,
+    descricao: g.descricao ?? null,
+    permissoes: g.permissoes ?? [],
+    menus_ocultos: g.menus_ocultos ?? [],
+    membros: g.membros ?? [],
+  };
 }
 
 export const gruposUsuariosService = {
   async listar(): Promise<GruposDaFrota> {
-    const { data } = await api.get<{ grupos: GrupoApi[]; permissoes: Record<string, string>; usuarios: UsuarioDaFrota[] }>(
-      "/conta/grupos-usuarios",
-    );
+    const { data } = await api.get<{
+      grupos: GrupoApi[];
+      permissoes: Record<string, string>;
+      menus: Record<string, string>;
+      usuarios: UsuarioDaFrota[];
+    }>("/conta/grupos-usuarios");
 
-    return { grupos: data.grupos.map(mapearGrupo), catalogo: data.permissoes, usuarios: data.usuarios };
+    return { grupos: data.grupos.map(mapearGrupo), catalogo: data.permissoes, menus: data.menus, usuarios: data.usuarios };
   },
 
   async criar(payload: GrupoUsuarioPayload): Promise<GrupoUsuario> {

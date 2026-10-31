@@ -21,6 +21,7 @@ import {
   import { Avatar } from "./Avatar";
   import { SeletorDeMycar } from "./SeletorDeMycar";
   import { ehConta, perfilDe } from "../../utils/perfil";
+  import { podeVerMenu } from "../../utils/permissoes";
 
   interface SidebarProps {
     aberta: boolean;
@@ -142,29 +143,31 @@ import {
                   aoNavegar={aoFechar}
                 />
 
-                <SidebarItem
-                  to="/veiculos"
-                  icon={<Car size={19} />}
-                  label={perfil === "frota" ? "Veículos da frota" : "Meus veículos"}
-                  aoNavegar={aoFechar}
-                />
+                {(perfil !== "frota" || podeVerMenu(usuario, "veiculos")) && (
+                  <SidebarItem
+                    to="/veiculos"
+                    icon={<Car size={19} />}
+                    label={perfil === "frota" ? "Veículos da frota" : "Meus veículos"}
+                    aoNavegar={aoFechar}
+                  />
+                )}
 
-                {perfil === "frota" && (
-                  <>
-                    <SidebarItem
-                      to="/agenda"
-                      icon={<CalendarDays size={19} />}
-                      label="Agenda"
-                      aoNavegar={aoFechar}
-                    />
+                {perfil === "frota" && podeVerMenu(usuario, "agenda") && (
+                  <SidebarItem
+                    to="/agenda"
+                    icon={<CalendarDays size={19} />}
+                    label="Agenda"
+                    aoNavegar={aoFechar}
+                  />
+                )}
 
-                    <SidebarItem
-                      to="/frota/cadastros"
-                      icon={<Building2 size={19} />}
-                      label="Motoristas e centros"
-                      aoNavegar={aoFechar}
-                    />
-                  </>
+                {perfil === "frota" && podeVerMenu(usuario, "cadastros") && (
+                  <SidebarItem
+                    to="/frota/cadastros"
+                    icon={<Building2 size={19} />}
+                    label="Motoristas e centros"
+                    aoNavegar={aoFechar}
+                  />
                 )}
 
                 <SidebarItem
