@@ -9,6 +9,8 @@ export interface Usuario {
   oficina?: string | null;
   /** Nome da conta, nos perfis pessoa e frota. */
   conta?: string | null;
+  /** Papel na frota (administrador, gestor, motorista); null fora da frota. */
+  papel?: string | null;
   /** Permissões da frota (papel + grupos); ausente em sessões antigas. Só mostra/esconde telas. */
   permissoes?: string[];
   /** Menus da frota que esta pessoa vê; null fora da frota, ausente em sessões antigas (mostra tudo). */

@@ -18,3 +18,8 @@ export function usePodeVerMenu() {
 
   return (menu: string) => podeVerMenu(usuario, menu);
 }
+
+/** Quem está logado, ou null fora de um AuthProvider (a tela só esconde; o backend barra). */
+export function useUsuarioDaFrota() {
+  return useContext(AuthContext)?.usuario ?? null;
+}

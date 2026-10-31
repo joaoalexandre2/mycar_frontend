@@ -152,3 +152,13 @@ export interface ErrosDeImportacao {
   erros: string[];
   totalDeErros: number;
 }
+
+/** Pessoa da frota e seu papel (administrador, gestor ou motorista). */
+export type PapelDaFrota = "administrador" | "gestor" | "motorista";
+
+export interface PessoaDaFrota {
+  id: number;
+  name: string;
+  email: string;
+  papel: PapelDaFrota;
+}

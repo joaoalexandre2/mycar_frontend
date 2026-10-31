@@ -5,6 +5,8 @@ import type {
   CentroCusto,
   CentroCustoPayload,
   ErrosDeImportacao,
+  PapelDaFrota,
+  PessoaDaFrota,
   FiltroAgenda,
   FiltroTrocasDeCentro,
   GrupoUsuario,
@@ -398,3 +400,25 @@ export class ErroDePlanilha extends Error {
     this.detalhes = detalhes;
   }
 }
+
+// ------------------------------------------------------- pessoas e papéis
+
+export const pessoasFrotaService = {
+  async listar(): Promise<PessoaDaFrota[]> {
+    const { data } = await api.get<PessoaDaFrota[]>("/conta/pessoas");
+
+    return data;
+  },
+
+  async convidar(payload: { nome: string; email: string; papel: "administrador" | "gestor" }): Promise<PessoaDaFrota> {
+    const { data } = await api.post<PessoaDaFrota>("/conta/pessoas", payload);
+
+    return data;
+  },
+
+  async mudarPapel(id: number, papel: PapelDaFrota): Promise<PessoaDaFrota> {
+    const { data } = await api.put<PessoaDaFrota>(`/conta/pessoas/${id}/papel`, { papel });
+
+    return data;
+  },
+};
