@@ -9,6 +9,7 @@ import type {
   PapelDaFrota,
   EventoDeAcesso,
   ListaDePessoasDaFrota,
+  ModeloSalvo,
   PessoaDaFrota,
   FiltroAgenda,
   FiltroTrocasDeCentro,
@@ -133,6 +134,25 @@ function mapearGrupo(g: GrupoApi): GrupoUsuario {
     membros: g.membros ?? [],
   };
 }
+
+/** Modelos de grupo salvos pela frota (os prontos ficam no código, em utils/modelosDeGrupo.ts). */
+export const modelosGrupoService = {
+  async listar(): Promise<ModeloSalvo[]> {
+    const { data } = await api.get<ModeloSalvo[]>("/conta/modelos-grupo");
+
+    return data;
+  },
+
+  async criar(payload: { nome: string; descricao?: string | null; permissoes: string[]; menus_liberados: string[] }): Promise<ModeloSalvo> {
+    const { data } = await api.post<ModeloSalvo>("/conta/modelos-grupo", payload);
+
+    return data;
+  },
+
+  async remover(id: number): Promise<void> {
+    await api.delete(`/conta/modelos-grupo/${id}`);
+  },
+};
 
 export const gruposUsuariosService = {
   async listar(): Promise<GruposDaFrota> {

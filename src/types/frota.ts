@@ -177,6 +177,15 @@ export interface PessoaDaFrota {
   menus: string[];
 }
 
+/** Modelo de grupo que a própria frota salvou para reusar. */
+export interface ModeloSalvo {
+  id: number;
+  nome: string;
+  descricao: string | null;
+  permissoes: string[];
+  menus_liberados: string[];
+}
+
 /** Lista de pessoas com os textos das permissões e dos menus, numa resposta só. */
 export interface ListaDePessoasDaFrota {
   pessoas: PessoaDaFrota[];
@@ -191,8 +200,8 @@ export interface EventoDeAcesso {
   id: number;
   quando: string;
   ator: string | null;
-  alvo_tipo: "grupo" | "pessoa";
+  alvo_tipo: "grupo" | "pessoa" | "modelo";
   alvo_id: number | null;
-  acao: "criou" | "editou" | "removeu" | "convidou" | "mudou_papel";
+  acao: "criou" | "editou" | "removeu" | "convidou" | "mudou_papel" | "salvou";
   detalhes: Record<string, unknown> | null;
 }
