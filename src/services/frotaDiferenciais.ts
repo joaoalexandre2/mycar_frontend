@@ -44,17 +44,35 @@ export const qrService = {
   },
 };
 
+export interface PaginaDeMultas {
+  dados: Multa[];
+  paginaAtual: number;
+  totalPaginas: number;
+  totalRegistros: number;
+}
+
+interface RespostaDeMultas {
+  data: Multa[];
+  meta: { current_page: number; last_page: number; total: number };
+}
+
 /** Multas da frota. */
 export const multasService = {
-  async listar(filtro: { veiculoId?: number; situacao?: string } = {}): Promise<Multa[]> {
-    const { data } = await api.get<Multa[]>("/conta/multas", {
+  async listar(filtro: { veiculoId?: number; situacao?: string; pagina?: number } = {}): Promise<PaginaDeMultas> {
+    const { data } = await api.get<RespostaDeMultas>("/conta/multas", {
       params: {
+        page: filtro.pagina ?? 1,
         ...(filtro.veiculoId ? { veiculo_conta_id: filtro.veiculoId } : {}),
         ...(filtro.situacao ? { situacao: filtro.situacao } : {}),
       },
     });
 
-    return data;
+    return {
+      dados: data.data,
+      paginaAtual: data.meta.current_page,
+      totalPaginas: data.meta.last_page,
+      totalRegistros: data.meta.total,
+    };
   },
 
   async sugerirResponsavel(veiculoId: number, dataHora: string): Promise<SugestaoDeResponsavel> {

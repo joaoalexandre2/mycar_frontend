@@ -1,9 +1,9 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { FileWarning, Plus, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, FileWarning, Plus, Trash2 } from "lucide-react";
 import { Modal } from "../../components/ui/Modal";
 import { contaService } from "../../services/conta/veiculos";
 import { motoristasService } from "../../services/frota";
-import { multasService } from "../../services/frotaDiferenciais";
+import { multasService, type PaginaDeMultas } from "../../services/frotaDiferenciais";
 import { mensagemErro } from "../../services/api";
 import { useConfirmar } from "../../hooks/useNotificacoes";
 import { formatarDataHora } from "../../utils/formatters";
@@ -24,8 +24,9 @@ const SITUACOES: { valor: Multa["situacao"]; texto: string }[] = [
 /** Multas da frota, cada uma com o responsável (a reserva e o motorista da data e hora). */
 export function Multas() {
   const pedirConfirmacao = useConfirmar();
-  const [multas, setMultas] = useState<Multa[] | null>(null);
+  const [multas, setMultas] = useState<PaginaDeMultas | null>(null);
   const [situacao, setSituacao] = useState("");
+  const [pagina, setPagina] = useState(1);
   const [versao, setVersao] = useState(0);
   const [erro, setErro] = useState<string | null>(null);
   const [nova, setNova] = useState(false);
@@ -34,10 +35,15 @@ export function Multas() {
     let ativo = true;
 
     multasService
-      .listar({ situacao: situacao || undefined })
-      .then((lista) => {
+      .listar({ situacao: situacao || undefined, pagina })
+      .then((resultado) => {
         if (!ativo) return;
-        setMultas(lista);
+        // Se a última multa da última página saiu, volta para a página que ainda tem registros.
+        if (resultado.dados.length === 0 && resultado.totalPaginas > 0 && pagina > resultado.totalPaginas) {
+          setPagina(resultado.totalPaginas);
+          return;
+        }
+        setMultas(resultado);
         setErro(null);
       })
       .catch((error) => {
@@ -47,7 +53,7 @@ export function Multas() {
     return () => {
       ativo = false;
     };
-  }, [situacao, versao]);
+  }, [situacao, pagina, versao]);
 
   async function mudarSituacao(multa: Multa, valor: Multa["situacao"]) {
     try {
@@ -77,7 +83,15 @@ export function Multas() {
           <p className="mt-1 text-sm text-gray-500">Cada multa aponta quem estava com o veículo na data e hora da infração.</p>
         </div>
         <div className="flex items-center gap-2">
-          <select aria-label="Filtrar por situação" value={situacao} onChange={(e) => setSituacao(e.target.value)} className={`${classeCampo} w-40`}>
+          <select
+            aria-label="Filtrar por situação"
+            value={situacao}
+            onChange={(e) => {
+              setSituacao(e.target.value);
+              setPagina(1);
+            }}
+            className={`${classeCampo} w-40`}
+          >
             <option value="">Todas</option>
             {SITUACOES.map((s) => (
               <option key={s.valor} value={s.valor}>{s.texto}</option>
@@ -91,46 +105,76 @@ export function Multas() {
 
       {erro && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">{erro}</p>}
 
-      {multas && multas.length === 0 && (
+      {multas && multas.dados.length === 0 && (
         <p className="rounded-lg bg-gray-50 px-4 py-6 text-center text-xs text-gray-500">Nenhuma multa registrada.</p>
       )}
 
-      {multas && multas.length > 0 && (
-        <ul className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white">
-          {multas.map((m) => (
-            <li key={m.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-gray-900">
-                  <FileWarning size={14} className="mr-1 inline text-amber-600" />
-                  {m.descricao}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {formatarDataHora(m.data_hora)} · {m.veiculo ? `${m.veiculo.placa} (${m.veiculo.nome})` : "veículo removido"}
-                </p>
-                <p className="text-xs text-gray-600">
-                  Responsável: {m.motorista ? m.motorista.nome : "não identificado"}
-                  {m.valor !== null && ` · R$ ${Number(m.valor).toFixed(2).replace(".", ",")}`}
-                  {m.pontos !== null && ` · ${m.pontos} pontos`}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <select
-                  aria-label={`Situação da multa de ${formatarDataHora(m.data_hora)}`}
-                  value={m.situacao}
-                  onChange={(e) => void mudarSituacao(m, e.target.value as Multa["situacao"])}
-                  className="h-9 rounded-lg border border-gray-200 bg-white px-2 text-xs text-gray-700"
-                >
-                  {SITUACOES.map((s) => (
-                    <option key={s.valor} value={s.valor}>{s.texto}</option>
-                  ))}
-                </select>
-                <button type="button" onClick={() => void remover(m)} aria-label={`Remover a multa de ${formatarDataHora(m.data_hora)}`} className="flex h-8 w-8 items-center justify-center rounded-lg text-red-500 hover:bg-red-50">
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
+      {multas && multas.dados.length > 0 && (
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+          <ul className="divide-y divide-gray-100">
+            {multas.dados.map((m) => (
+              <li key={m.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-gray-900">
+                    <FileWarning size={14} className="mr-1 inline text-amber-600" />
+                    {m.descricao}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {formatarDataHora(m.data_hora)} · {m.veiculo ? `${m.veiculo.placa} (${m.veiculo.nome})` : "veículo removido"}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    Responsável: {m.motorista ? m.motorista.nome : "não identificado"}
+                    {m.valor !== null && ` · R$ ${Number(m.valor).toFixed(2).replace(".", ",")}`}
+                    {m.pontos !== null && ` · ${m.pontos} pontos`}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <select
+                    aria-label={`Situação da multa de ${formatarDataHora(m.data_hora)}`}
+                    value={m.situacao}
+                    onChange={(e) => void mudarSituacao(m, e.target.value as Multa["situacao"])}
+                    className="h-9 rounded-lg border border-gray-200 bg-white px-2 text-xs text-gray-700"
+                  >
+                    {SITUACOES.map((s) => (
+                      <option key={s.valor} value={s.valor}>{s.texto}</option>
+                    ))}
+                  </select>
+                  <button type="button" onClick={() => void remover(m)} aria-label={`Remover a multa de ${formatarDataHora(m.data_hora)}`} className="flex h-8 w-8 items-center justify-center rounded-lg text-red-500 hover:bg-red-50">
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <div className="flex items-center justify-between border-t border-gray-200 px-5 py-3">
+            <p className="text-xs text-gray-500">
+              Página {multas.paginaAtual} de {multas.totalPaginas} · {multas.totalRegistros} multas
+            </p>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setPagina((atual) => Math.max(1, atual - 1))}
+                disabled={multas.paginaAtual <= 1}
+                className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-xs font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <ChevronLeft size={14} />
+                Anterior
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPagina((atual) => Math.min(multas.totalPaginas, atual + 1))}
+                disabled={multas.paginaAtual >= multas.totalPaginas}
+                className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-3 text-xs font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Próxima
+                <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {nova && (
