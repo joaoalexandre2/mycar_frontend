@@ -66,7 +66,7 @@ export default function RotasConta() {
           element={<Cadastros />}
         />
 
-        {/* Configurações da frota: só administrador e gestor. */}
+        {/* Gestão da frota: só administrador e gestor. */}
         <Route element={<FrotaGestorRoute />}>
           <Route
             path="/frota/configuracoes"

@@ -1,12 +1,12 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Pencil, Plus, Trash2, Users } from "lucide-react";
 import { Modal } from "../../components/ui/Modal";
-import { gruposUsuariosService } from "../../services/frota";
+import { gruposUsuariosService, modelosGrupoService } from "../../services/frota";
 import { mensagemErro } from "../../services/api";
 import { useConfirmar } from "../../hooks/useNotificacoes";
 import { usePodeNaFrota, usePodeVerMenu } from "../../hooks/usePodeNaFrota";
 import { MODELOS_DE_GRUPO, menusParaPermissoes } from "../../utils/modelosDeGrupo";
-import type { GrupoUsuario, GruposDaFrota } from "../../types/frota";
+import type { GrupoUsuario, GruposDaFrota, ModeloSalvo } from "../../types/frota";
 
 const classeCampo =
   "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
@@ -16,6 +16,7 @@ const rotulo = "mb-1.5 block text-xs font-medium text-gray-700";
 export function Grupos() {
   const pedirConfirmacao = useConfirmar();
   const [dados, setDados] = useState<GruposDaFrota | null>(null);
+  const [modelos, setModelos] = useState<ModeloSalvo[]>([]);
   const [erro, setErro] = useState<string | null>(null);
   const [editando, setEditando] = useState<GrupoUsuario | "novo" | null>(null);
   const [versao, setVersao] = useState(0);
@@ -35,10 +36,31 @@ export function Grupos() {
         if (ativo) setErro(mensagemErro(error));
       });
 
+    // Os modelos salvos são um extra: se a lista deles falhar, os grupos seguem normais.
+    modelosGrupoService
+      .listar()
+      .then((lista) => {
+        if (ativo) setModelos(lista);
+      })
+      .catch(() => {
+        if (ativo) setModelos([]);
+      });
+
     return () => {
       ativo = false;
     };
   }, [versao]);
+
+  async function removerModelo(modelo: ModeloSalvo) {
+    if (!(await pedirConfirmacao({ mensagem: `Remover o modelo ${modelo.nome}?`, confirmarTexto: "Remover", perigo: true }))) return;
+
+    try {
+      await modelosGrupoService.remover(modelo.id);
+      carregar();
+    } catch (error) {
+      setErro(mensagemErro(error));
+    }
+  }
 
   async function remover(grupo: GrupoUsuario) {
     if (
@@ -133,14 +155,40 @@ export function Grupos() {
         </ul>
       )}
 
+      {modelos.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold text-gray-700">Modelos salvos pela frota</p>
+          <ul className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white">
+            {modelos.map((m) => (
+              <li key={m.id} className="flex items-center justify-between gap-3 px-5 py-2.5">
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-gray-900">{m.nome}</p>
+                  {m.descricao && <p className="text-xs text-gray-500">{m.descricao}</p>}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void removerModelo(m)}
+                  aria-label={`Remover o modelo ${m.nome}`}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-red-500 hover:bg-red-50"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {editando && dados && (
         <GrupoModal
           grupo={editando === "novo" ? null : editando}
           dados={dados}
+          modelos={modelos}
           onSalvo={() => {
             setEditando(null);
             carregar();
           }}
+          onModeloSalvo={carregar}
           onClose={() => setEditando(null)}
         />
       )}
@@ -155,12 +203,16 @@ function alternar<T>(lista: T[], item: T): T[] {
 function GrupoModal({
   grupo,
   dados,
+  modelos,
   onSalvo,
+  onModeloSalvo,
   onClose,
 }: {
   grupo: GrupoUsuario | null;
   dados: GruposDaFrota;
+  modelos: ModeloSalvo[];
   onSalvo: () => void;
+  onModeloSalvo: () => void;
   onClose: () => void;
 }) {
   const [nome, setNome] = useState(grupo?.nome ?? "");
@@ -168,6 +220,7 @@ function GrupoModal({
   const [permissoes, setPermissoes] = useState<string[]>(grupo?.permissoes ?? []);
   const [menusLiberados, setMenusLiberados] = useState<string[]>(grupo?.menus_liberados ?? []);
   const [membros, setMembros] = useState<number[]>(grupo?.membros.map((m) => m.id) ?? []);
+  const [nomeDoModelo, setNomeDoModelo] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
   // Quem gerencia grupos só concede o que tem: o que não tem aparece desabilitado.
@@ -183,12 +236,33 @@ function GrupoModal({
 
   /** Começa do modelo, só com o que quem edita pode conceder. */
   function aplicarModelo(id: string) {
-    const modelo = MODELOS_DE_GRUPO.find((m) => m.id === id);
-    if (!modelo) return;
+    const salvo = id.startsWith("salvo:") ? modelos.find((m) => `salvo:${m.id}` === id) : undefined;
+    const pronto = salvo ? undefined : MODELOS_DE_GRUPO.find((m) => m.id === id);
 
-    const permitidas = modelo.permissoes.filter((p) => pode(p));
+    const permissoesDoModelo = salvo?.permissoes ?? pronto?.permissoes;
+    const menusDoModelo = salvo?.menus_liberados ?? pronto?.menus;
+    if (!permissoesDoModelo || !menusDoModelo) return;
+
+    const permitidas = permissoesDoModelo.filter((p) => pode(p));
     setPermissoes(permitidas);
-    setMenusLiberados(menusParaPermissoes(permitidas, modelo.menus.filter((m) => podeVer(m))));
+    setMenusLiberados(menusParaPermissoes(permitidas, menusDoModelo.filter((m) => podeVer(m))));
+  }
+
+  async function salvarComoModelo() {
+    setErro(null);
+
+    if (!nomeDoModelo.trim()) {
+      setErro("Dê um nome ao modelo.");
+      return;
+    }
+
+    try {
+      await modelosGrupoService.criar({ nome: nomeDoModelo.trim(), permissoes, menus_liberados: menusLiberados });
+      setNomeDoModelo("");
+      onModeloSalvo();
+    } catch (error) {
+      setErro(mensagemErro(error));
+    }
   }
 
   async function salvar(evento: FormEvent) {
@@ -236,9 +310,18 @@ function GrupoModal({
             <label htmlFor="grp-modelo" className={rotulo}>Começar de um modelo (opcional)</label>
             <select id="grp-modelo" defaultValue="" onChange={(e) => aplicarModelo(e.target.value)} className={classeCampo}>
               <option value="">Escolha...</option>
-              {MODELOS_DE_GRUPO.map((m) => (
-                <option key={m.id} value={m.id}>{m.titulo}</option>
-              ))}
+              <optgroup label="Prontos">
+                {MODELOS_DE_GRUPO.map((m) => (
+                  <option key={m.id} value={m.id}>{m.titulo}</option>
+                ))}
+              </optgroup>
+              {modelos.length > 0 && (
+                <optgroup label="Salvos pela frota">
+                  {modelos.map((m) => (
+                    <option key={m.id} value={`salvo:${m.id}`}>{m.nome}</option>
+                  ))}
+                </optgroup>
+              )}
             </select>
             <p className="mt-1 text-xs text-gray-500">Preenche as permissões e os menus. Você ajusta depois.</p>
           </div>
@@ -312,6 +395,31 @@ function GrupoModal({
 
         {erro && (
           <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{erro}</p>
+        )}
+
+        {!grupo && (
+          <fieldset className="space-y-2 rounded-lg border border-dashed border-gray-300 px-4 py-3">
+            <legend className="px-1 text-xs font-medium text-gray-700">Guardar estas permissões como modelo</legend>
+            <div className="flex gap-2">
+              <input
+                id="grp-nome-modelo"
+                aria-label="Nome do modelo"
+                type="text"
+                value={nomeDoModelo}
+                maxLength={80}
+                placeholder="Ex.: Recepção"
+                onChange={(e) => setNomeDoModelo(e.target.value)}
+                className={classeCampo}
+              />
+              <button
+                type="button"
+                onClick={() => void salvarComoModelo()}
+                className="h-10 shrink-0 rounded-lg border border-gray-200 px-3 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+              >
+                Salvar modelo
+              </button>
+            </div>
+          </fieldset>
         )}
 
         <div className="flex justify-end gap-2">

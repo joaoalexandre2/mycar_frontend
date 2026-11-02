@@ -126,11 +126,14 @@ export function CartaoVeiculo({
   nome,
   consultandoFipe,
   acoes,
+  podeGerir = true,
 }: {
   veiculo: VeiculoConta;
   nome: string;
   consultandoFipe: boolean;
   acoes: AcoesDoVeiculo;
+  /** Quem só consulta a frota (motorista) não vê os botões de gestão: o backend barra mesmo assim. */
+  podeGerir?: boolean;
 }) {
   const temCodigoFipe = Boolean(
     veiculo.fipeMarcaId && veiculo.fipeModeloId && veiculo.fipeAno,
@@ -300,6 +303,7 @@ export function CartaoVeiculo({
           </p>
         )}
 
+        {podeGerir && (
         <div className="mt-auto flex flex-wrap items-center justify-between gap-y-1 border-t border-gray-100 pt-3">
           <div className="flex items-center">
             <Botao titulo="Abastecimentos e consumo" aoClicar={acoes.abastecimentos}>
@@ -337,6 +341,7 @@ export function CartaoVeiculo({
             </Botao>
           </div>
         </div>
+        )}
       </div>
     </article>
   );

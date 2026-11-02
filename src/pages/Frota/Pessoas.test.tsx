@@ -11,9 +11,12 @@ import type { PessoaDaFrota } from "../../types/frota";
 afterEach(() => vi.restoreAllMocks());
 
 const pessoas: PessoaDaFrota[] = [
-  { id: 1, name: "Ana Admin", email: "ana@x.com", papel: "administrador" },
-  { id: 2, name: "Gil Gestor", email: "gil@x.com", papel: "gestor" },
+  { id: 1, name: "Ana Admin", email: "ana@x.com", papel: "administrador", permissoes: [], menus: [] },
+  { id: 2, name: "Gil Gestor", email: "gil@x.com", papel: "gestor", permissoes: [], menus: [] },
 ];
+
+/** A resposta de GET /conta/pessoas: pessoas e os textos do catálogo, numa resposta só. */
+const lista = { pessoas, catalogo: {}, menus: {} };
 
 function comUsuario(papel: string, id = 1) {
   const valor = {
@@ -31,7 +34,7 @@ function comUsuario(papel: string, id = 1) {
 
 describe("Pessoas e papéis", () => {
   it("lista as pessoas e troca o papel de quem não é a própria pessoa", async () => {
-    vi.spyOn(pessoasFrotaService, "listar").mockResolvedValue(pessoas);
+    vi.spyOn(pessoasFrotaService, "listar").mockResolvedValue(lista);
     const mudar = vi.spyOn(pessoasFrotaService, "mudarPapel").mockResolvedValue({ ...pessoas[1], papel: "administrador" });
     const usuario = userEvent.setup();
 
@@ -46,7 +49,7 @@ describe("Pessoas e papéis", () => {
   });
 
   it("convida uma pessoa nova com o papel escolhido", async () => {
-    vi.spyOn(pessoasFrotaService, "listar").mockResolvedValue(pessoas);
+    vi.spyOn(pessoasFrotaService, "listar").mockResolvedValue(lista);
     const convidar = vi.spyOn(pessoasFrotaService, "convidar").mockResolvedValue({
       id: 3, name: "Lia", email: "lia@x.com", papel: "gestor",
     });
@@ -66,7 +69,7 @@ describe("Pessoas e papéis", () => {
 
   it("não mostra a aba de pessoas para quem não é administrador", async () => {
     vi.spyOn(motivosTrocaCentroService, "listar").mockResolvedValue([]);
-    const listar = vi.spyOn(pessoasFrotaService, "listar").mockResolvedValue(pessoas);
+    const listar = vi.spyOn(pessoasFrotaService, "listar").mockResolvedValue(lista);
 
     comUsuario("gestor")(<ConfiguracoesFrota />);
 
@@ -77,7 +80,7 @@ describe("Pessoas e papéis", () => {
 
   it("mostra a aba de pessoas para o administrador", async () => {
     vi.spyOn(motivosTrocaCentroService, "listar").mockResolvedValue([]);
-    vi.spyOn(pessoasFrotaService, "listar").mockResolvedValue(pessoas);
+    vi.spyOn(pessoasFrotaService, "listar").mockResolvedValue(lista);
     const usuario = userEvent.setup();
 
     comUsuario("administrador")(<ConfiguracoesFrota />);

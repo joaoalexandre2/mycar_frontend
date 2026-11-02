@@ -34,3 +34,9 @@ jobs:
 
       - name: Tipos e build
         run: npm run build
+
+      - name: Navegador para os testes de ponta a ponta
+        run: npx playwright install --with-deps chromium
+
+      - name: Testes de ponta a ponta
+        run: npm run test:e2e

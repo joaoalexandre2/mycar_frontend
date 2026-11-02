@@ -181,4 +181,14 @@ describe("CartaoVeiculo: km atual da frota", () => {
     expect(screen.getByRole("button", { name: "corrigir" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "informar" })).not.toBeInTheDocument();
   });
+
+  it("quem só consulta a frota não vê os botões de gestão do veículo", () => {
+    render(
+      <CartaoVeiculo veiculo={base} nome="Strada" consultandoFipe={false} acoes={acoes} podeGerir={false} />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Editar" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Remover" })).not.toBeInTheDocument();
+    expect(screen.getByText("Strada")).toBeInTheDocument();
+  });
 });

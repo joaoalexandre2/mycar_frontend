@@ -11,5 +11,7 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
+    // Os testes de ponta a ponta rodam pelo Playwright (npm run test:e2e), não pelo Vitest.
+    exclude: ["e2e/**", "node_modules/**"],
   },
 });

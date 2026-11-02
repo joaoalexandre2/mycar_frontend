@@ -7,6 +7,9 @@ import type {
   ErrosDeImportacao,
   MotivoTrocaCentro,
   PapelDaFrota,
+  EventoDeAcesso,
+  ListaDePessoasDaFrota,
+  ModeloSalvo,
   PessoaDaFrota,
   FiltroAgenda,
   FiltroTrocasDeCentro,
@@ -131,6 +134,25 @@ function mapearGrupo(g: GrupoApi): GrupoUsuario {
     membros: g.membros ?? [],
   };
 }
+
+/** Modelos de grupo salvos pela frota (os prontos ficam no código, em utils/modelosDeGrupo.ts). */
+export const modelosGrupoService = {
+  async listar(): Promise<ModeloSalvo[]> {
+    const { data } = await api.get<ModeloSalvo[]>("/conta/modelos-grupo");
+
+    return data;
+  },
+
+  async criar(payload: { nome: string; descricao?: string | null; permissoes: string[]; menus_liberados: string[] }): Promise<ModeloSalvo> {
+    const { data } = await api.post<ModeloSalvo>("/conta/modelos-grupo", payload);
+
+    return data;
+  },
+
+  async remover(id: number): Promise<void> {
+    await api.delete(`/conta/modelos-grupo/${id}`);
+  },
+};
 
 export const gruposUsuariosService = {
   async listar(): Promise<GruposDaFrota> {
@@ -407,8 +429,15 @@ export class ErroDePlanilha extends Error {
 // ------------------------------------------------------- pessoas e papéis
 
 export const pessoasFrotaService = {
-  async listar(): Promise<PessoaDaFrota[]> {
-    const { data } = await api.get<PessoaDaFrota[]>("/conta/pessoas");
+  async listar(): Promise<ListaDePessoasDaFrota> {
+    const { data } = await api.get<ListaDePessoasDaFrota>("/conta/pessoas");
+
+    return data;
+  },
+
+  /** Histórico de quem mudou grupos, membros e papéis. Só o administrador lê. */
+  async acessos(): Promise<EventoDeAcesso[]> {
+    const { data } = await api.get<EventoDeAcesso[]>("/conta/acessos-frota");
 
     return data;
   },

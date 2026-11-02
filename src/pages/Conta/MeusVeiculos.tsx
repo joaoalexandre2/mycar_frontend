@@ -221,16 +221,18 @@ export function MeusVeiculos() {
           </p>
         </div>
 
-        <button
-          onClick={() => {
-            setEditando(null);
-            setModalAberto(true);
-          }}
-          className="flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white transition hover:bg-blue-700"
-        >
-          <Plus size={18} />
-          Novo veículo
-        </button>
+        {(!ehFrota || ehAdministradorOuGestor(usuario)) && (
+          <button
+            onClick={() => {
+              setEditando(null);
+              setModalAberto(true);
+            }}
+            className="flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white transition hover:bg-blue-700"
+          >
+            <Plus size={18} />
+            Novo veículo
+          </button>
+        )}
       </div>
 
       <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -310,6 +312,7 @@ export function MeusVeiculos() {
                 veiculo={veiculo}
                 nome={nomeDoVeiculo(veiculo)}
                 consultandoFipe={consultandoId === veiculo.id}
+                podeGerir={!ehFrota || ehAdministradorOuGestor(usuario)}
                 acoes={{
                   atualizarFipe: () => void atualizarFipe(veiculo),
                   fotos: () => setFotografando(veiculo),

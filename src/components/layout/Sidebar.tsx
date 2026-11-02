@@ -175,7 +175,7 @@ import {
                   <SidebarItem
                     to="/frota/configuracoes"
                     icon={<Settings2 size={19} />}
-                    label="Configurações da frota"
+                    label="Gestão da frota"
                     aoNavegar={aoFechar}
                   />
                 )}
