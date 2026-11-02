@@ -1,10 +1,18 @@
 import api from "../api";
 import { dataISO } from "../../utils/formatters";
 import type {
+  AnexoDoServico,
+  NaturezaServico,
   NovoServico,
   ServicosDaConta,
   SituacaoServico,
 } from "../../types/conta";
+
+interface AnexoApi {
+  id: number;
+  nome: string;
+  url: string;
+}
 
 interface ServicosApi {
   tipos: { tipo: string; rotulo: string }[];
@@ -29,7 +37,21 @@ interface ServicosApi {
     dias_restantes: number | null;
     km_restante: number | null;
     situacao: SituacaoServico;
+    natureza: NaturezaServico | null;
+    oficina: string | null;
+    valor_pecas: number | string | null;
+    valor_mao_obra: number | string | null;
+    pecas: {
+      descricao: string;
+      quantidade: number | string;
+      valor_unitario: number | string;
+    }[];
+    anexos: AnexoApi[];
   }[];
+}
+
+function mapearAnexo(item: AnexoApi): AnexoDoServico {
+  return { id: item.id, nome: item.nome, url: item.url };
 }
 
 export function mapearServicos(resposta: ServicosApi): ServicosDaConta {
@@ -56,6 +78,16 @@ export function mapearServicos(resposta: ServicosApi): ServicosDaConta {
       diasRestantes: item.dias_restantes,
       kmRestante: item.km_restante,
       situacao: item.situacao,
+      natureza: item.natureza,
+      oficina: item.oficina,
+      valorPecas: item.valor_pecas === null ? null : Number(item.valor_pecas),
+      valorMaoDeObra: item.valor_mao_obra === null ? null : Number(item.valor_mao_obra),
+      pecas: item.pecas.map((peca) => ({
+        descricao: peca.descricao,
+        quantidade: Number(peca.quantidade),
+        valorUnitario: Number(peca.valor_unitario),
+      })),
+      anexos: item.anexos.map(mapearAnexo),
     })),
   };
 }
@@ -71,8 +103,26 @@ export const servicoService = {
     return mapearServicos(data);
   },
 
+  async atualizar(id: number, servico: NovoServico): Promise<ServicosDaConta> {
+    const { data } = await api.put<ServicosApi>(`/conta/servicos/${id}`, servico);
+    return mapearServicos(data);
+  },
+
   async remover(id: number): Promise<ServicosDaConta> {
     const { data } = await api.delete<ServicosApi>(`/conta/servicos/${id}`);
     return mapearServicos(data);
+  },
+
+  /** Envia a nota fiscal ou recibo do serviço (PDF ou imagem). */
+  async anexar(servicoId: number, arquivo: File): Promise<AnexoDoServico> {
+    const corpo = new FormData();
+    corpo.append("arquivo", arquivo);
+
+    const { data } = await api.post<AnexoApi>(`/conta/servicos/${servicoId}/anexos`, corpo);
+    return mapearAnexo(data);
+  },
+
+  async removerAnexo(anexoId: number): Promise<void> {
+    await api.delete(`/conta/servicos/anexos/${anexoId}`);
   },
 };

@@ -1,30 +1,25 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState } from "react";
 import { useConfirmar } from "../../hooks/useNotificacoes";
 import { Link } from "react-router-dom";
-import { Plus, Trash2, Wrench } from "lucide-react";
+import { Pencil, Plus, Trash2, Wrench } from "lucide-react";
 import { servicoService } from "../../services/conta";
 import { SeletorDeVeiculo } from "../../components/conta/SeletorDeVeiculo";
 import { useVeiculosDaConta } from "../../hooks/useVeiculosDaConta";
 import { mensagemErro } from "../../services/api";
-import { Modal } from "../../components/ui/Modal";
-import { lerInteiroBR, lerNumeroBR } from "../../utils/numero";
 import { Quadro } from "../../components/dashboard/Quadro";
 import { CartaoServico } from "./CartaoServico";
+import { ServicoModal } from "./ServicoModal";
 import {
   formatarData,
   formatarKm,
   formatarMoeda,
-  hojeISO,
 } from "../../utils/formatters";
 import type {
+  NaturezaServico,
   Servico,
   ServicosDaConta,
   SituacaoServico,
-  VeiculoConta,
 } from "../../types/conta";
-
-const classeCampo =
-  "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
 
 const SITUACAO: Record<SituacaoServico, { texto: string; classe: string }> = {
   em_dia: { texto: "Em dia", classe: "bg-emerald-50 text-emerald-700" },
@@ -34,25 +29,10 @@ const SITUACAO: Record<SituacaoServico, { texto: string; classe: string }> = {
   anterior: { texto: "Anterior", classe: "bg-gray-100 text-gray-500" },
 };
 
-/** Sugestões de aviso por tipo (o usuário pode trocar). */
-const SUGESTAO: Record<string, { meses: string; km: string }> = {
-  oleo: { meses: "6", km: "10000" },
-  bateria: { meses: "24", km: "" },
-  palhetas: { meses: "12", km: "" },
-  filtros: { meses: "12", km: "10000" },
-  pneus: { meses: "", km: "40000" },
-  freios: { meses: "", km: "30000" },
-  alinhamento: { meses: "6", km: "10000" },
-  correia: { meses: "", km: "60000" },
+const NATUREZA: Record<NaturezaServico, string> = {
+  preventiva: "Preventiva",
+  corretiva: "Corretiva",
 };
-
-const OPCOES_MESES = [
-  { valor: "", texto: "Sem aviso por prazo" },
-  { valor: "3", texto: "3 meses" },
-  { valor: "6", texto: "6 meses" },
-  { valor: "12", texto: "12 meses" },
-  { valor: "24", texto: "24 meses" },
-];
 
 function textoProxima(item: Servico) {
   const partes: string[] = [];
@@ -93,7 +73,8 @@ export function Servicos() {
   const veiculosDaConta = useVeiculosDaConta();
   const [filtroVeiculo, setFiltroVeiculo] = useState("");
   const [erro, setErro] = useState<string | null>(null);
-  const [modalAberto, setModalAberto] = useState(false);
+  // Modal aberto: { servico: null } para um novo, ou o serviço a editar.
+  const [modal, setModal] = useState<{ servico: Servico | null } | null>(null);
 
   useEffect(() => {
     let ativo = true;
@@ -111,6 +92,13 @@ export function Servicos() {
       ativo = false;
     };
   }, []);
+
+  function recarregar() {
+    servicoService
+      .listar()
+      .then(setDados)
+      .catch((error) => setErro(mensagemErro(error)));
+  }
 
   async function remover(item: Servico) {
     if (!(await pedirConfirmacao({
@@ -159,7 +147,7 @@ export function Servicos() {
         </div>
 
         <button
-          onClick={() => setModalAberto(true)}
+          onClick={() => setModal({ servico: null })}
           disabled={veiculosDaConta.total === 0}
           className="flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
         >
@@ -259,7 +247,7 @@ export function Servicos() {
                       </th>
                     ),
                   )}
-                  <th className="w-12 px-5 py-3" />
+                  <th className="w-24 px-5 py-3" />
                 </tr>
               </thead>
               <tbody>
@@ -282,6 +270,13 @@ export function Servicos() {
                             <p className="text-xs font-semibold text-gray-900">
                               {item.rotulo}
                             </p>
+                            {(item.natureza || item.oficina) && (
+                              <p className="mt-0.5 text-xs text-gray-500">
+                                {[item.natureza && NATUREZA[item.natureza], item.oficina]
+                                  .filter(Boolean)
+                                  .join(" · ")}
+                              </p>
+                            )}
                             {item.valor !== null && (
                               <p className="mt-0.5 text-xs text-gray-500">
                                 {formatarMoeda(item.valor)}
@@ -290,6 +285,11 @@ export function Servicos() {
                             {item.observacoes && (
                               <p className="mt-0.5 text-xs text-gray-500">
                                 {item.observacoes}
+                              </p>
+                            )}
+                            {item.anexos.length > 0 && (
+                              <p className="mt-0.5 text-xs text-gray-500">
+                                {item.anexos.length} anexo(s)
                               </p>
                             )}
                           </div>
@@ -325,15 +325,26 @@ export function Servicos() {
                         </span>
                       </td>
                       <td className="px-5 py-4 text-right">
-                        <button
-                          type="button"
-                          onClick={() => void remover(item)}
-                          aria-label={`Remover serviço ${item.titulo ?? item.rotulo}`}
-                          title="Remover"
-                          className="-m-3 p-3 text-gray-500 transition hover:text-red-600"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                        <div className="flex justify-end gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setModal({ servico: item })}
+                            aria-label={`Editar serviço ${item.titulo ?? item.rotulo}`}
+                            title="Editar"
+                            className="-m-3 p-3 text-gray-500 transition hover:text-blue-600"
+                          >
+                            <Pencil size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void remover(item)}
+                            aria-label={`Remover serviço ${item.titulo ?? item.rotulo}`}
+                            title="Remover"
+                            className="-m-3 p-3 text-gray-500 transition hover:text-red-600"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -344,278 +355,19 @@ export function Servicos() {
         )}
       </div>
 
-      {modalAberto && dados && (
-        <NovoServicoModal
+      {modal && dados && (
+        <ServicoModal
+          servico={modal.servico}
           veiculoInicial={veiculosDaConta.primeiro}
           tipos={dados.tipos}
-          onClose={() => setModalAberto(false)}
+          onClose={() => setModal(null)}
           onSalvo={(novo) => {
             setDados(novo);
-            setModalAberto(false);
+            setModal(null);
           }}
+          onAnexosMudaram={recarregar}
         />
       )}
     </div>
-  );
-}
-
-function NovoServicoModal({
-  veiculoInicial,
-  tipos,
-  onClose,
-  onSalvo,
-}: {
-  veiculoInicial: VeiculoConta | null;
-  tipos: ServicosDaConta["tipos"];
-  onClose: () => void;
-  onSalvo: (dados: ServicosDaConta) => void;
-}) {
-  const [veiculoId, setVeiculoId] = useState(String(veiculoInicial?.id ?? ""));
-  const [tipo, setTipo] = useState("oleo");
-  const [titulo, setTitulo] = useState("");
-  const [realizadoEm, setRealizadoEm] = useState(hojeISO());
-  const [km, setKm] = useState("");
-  const [valor, setValor] = useState("");
-  const [observacoes, setObservacoes] = useState("");
-  const [meses, setMeses] = useState(SUGESTAO.oleo.meses);
-  const [intervaloKm, setIntervaloKm] = useState(SUGESTAO.oleo.km);
-  const [erro, setErro] = useState<string | null>(null);
-  const [salvando, setSalvando] = useState(false);
-
-  function escolherTipo(novo: string) {
-    setTipo(novo);
-    const sugestao = SUGESTAO[novo] ?? { meses: "", km: "" };
-    setMeses(sugestao.meses);
-    setIntervaloKm(sugestao.km);
-  }
-
-  async function salvar(event: FormEvent) {
-    event.preventDefault();
-    setErro(null);
-
-    const kmLido = lerInteiroBR(km);
-    const intervaloLido = lerInteiroBR(intervaloKm);
-    const valorLido = lerNumeroBR(valor);
-
-    if (kmLido.estado === "invalido") {
-      setErro("Km do veículo inválido: use só números, como 52300 ou 52.300.");
-      return;
-    }
-
-    if (intervaloLido.estado === "invalido") {
-      setErro("Intervalo em km inválido: use só números, como 10000 ou 10.000.");
-      return;
-    }
-
-    if (valorLido.estado === "invalido") {
-      setErro("Valor pago inválido: use o formato 1.234,56.");
-      return;
-    }
-
-    const kmNumero = kmLido.estado === "ok" ? kmLido.valor : null;
-    const intervaloNumero =
-      intervaloLido.estado === "ok" ? intervaloLido.valor : null;
-    const valorNumero = valorLido.estado === "ok" ? valorLido.valor : null;
-
-    if (!veiculoId) {
-      setErro("Escolha o veículo.");
-      return;
-    }
-
-    if (tipo === "outro" && !titulo.trim()) {
-      setErro("Informe o nome do serviço.");
-      return;
-    }
-
-    if (intervaloNumero && kmNumero === null) {
-      setErro("Informe o km do veículo hoje para avisar por quilometragem.");
-      return;
-    }
-
-    try {
-      setSalvando(true);
-      onSalvo(
-        await servicoService.registrar({
-          veiculo_conta_id: Number(veiculoId),
-          tipo,
-          titulo: tipo === "outro" ? titulo.trim() : null,
-          realizado_em: realizadoEm,
-          km: kmNumero,
-          valor: valorNumero,
-          observacoes: observacoes.trim() || null,
-          intervalo_meses: meses ? Number(meses) : null,
-          intervalo_km: intervaloNumero,
-        }),
-      );
-    } catch (error) {
-      setErro(mensagemErro(error));
-    } finally {
-      setSalvando(false);
-    }
-  }
-
-  return (
-    <Modal
-      titulo="Novo serviço"
-      icone={<Wrench size={16} className="text-blue-600" />}
-      larguraMax="max-w-xl"
-      onClose={onClose}
-    >
-      <form onSubmit={(e) => void salvar(e)}>
-        <div className="space-y-4 px-6 py-5">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="block text-xs text-gray-500">
-              Veículo
-              <div className="mt-1">
-                <SeletorDeVeiculo
-                  valor={veiculoId}
-                  veiculoEscolhido={veiculoInicial}
-                  aoMudar={(id) => setVeiculoId(id)}
-                />
-              </div>
-            </div>
-
-            <label className="block text-xs text-gray-500">
-              Serviço
-              <select
-                value={tipo}
-                onChange={(e) => escolherTipo(e.target.value)}
-                className={`mt-1 ${classeCampo}`}
-              >
-                {tipos.map((t) => (
-                  <option key={t.tipo} value={t.tipo}>
-                    {t.rotulo}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          {tipo === "outro" && (
-            <label className="block text-xs text-gray-500">
-              Nome do serviço
-              <input
-                type="text"
-                value={titulo}
-                maxLength={80}
-                placeholder="Ex.: Pastilhas de freio"
-                onChange={(e) => setTitulo(e.target.value)}
-                className={`mt-1 ${classeCampo}`}
-              />
-            </label>
-          )}
-
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <label className="block text-xs text-gray-500">
-              Feito em
-              <input
-                type="date"
-                value={realizadoEm}
-                max={hojeISO()}
-                onChange={(e) => setRealizadoEm(e.target.value)}
-                className={`mt-1 ${classeCampo}`}
-                required
-              />
-            </label>
-            <label className="block text-xs text-gray-500">
-              Km do veículo
-              <input
-                type="text"
-                inputMode="numeric"
-                value={km}
-                placeholder="Ex.: 52300"
-                onChange={(e) => setKm(e.target.value)}
-                className={`mt-1 ${classeCampo}`}
-              />
-            </label>
-            <label className="block text-xs text-gray-500">
-              Valor pago (R$)
-              <input
-                type="text"
-                inputMode="decimal"
-                value={valor}
-                onChange={(e) => setValor(e.target.value)}
-                className={`mt-1 ${classeCampo}`}
-              />
-            </label>
-          </div>
-
-          <div className="space-y-3 rounded-lg border border-gray-200 p-4">
-            <p className="text-xs font-medium text-gray-700">
-              Avisar a próxima troca
-            </p>
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <label className="block text-xs text-gray-500">
-                Por prazo
-                <select
-                  value={meses}
-                  onChange={(e) => setMeses(e.target.value)}
-                  className={`mt-1 ${classeCampo}`}
-                >
-                  {OPCOES_MESES.map((o) => (
-                    <option key={o.valor} value={o.valor}>
-                      {o.texto}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="block text-xs text-gray-500">
-                Por quilometragem (a cada)
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={intervaloKm}
-                  placeholder="Ex.: 10000 km"
-                  onChange={(e) => setIntervaloKm(e.target.value)}
-                  className={`mt-1 ${classeCampo}`}
-                />
-              </label>
-            </div>
-
-            <p className="text-xs text-gray-500">
-              Pode usar os dois: avisamos pelo que chegar primeiro, por e-mail,
-              30 dias ou 1.000 km antes.
-            </p>
-          </div>
-
-          <label className="block text-xs text-gray-500">
-            Observações (opcional)
-            <input
-              type="text"
-              value={observacoes}
-              maxLength={255}
-              placeholder="Ex.: óleo 5W30 sintético, oficina do João"
-              onChange={(e) => setObservacoes(e.target.value)}
-              className={`mt-1 ${classeCampo}`}
-            />
-          </label>
-
-          {erro && (
-            <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
-              {erro}
-            </p>
-          )}
-
-          <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="h-9 rounded-lg border border-gray-200 px-4 text-xs font-semibold text-gray-600 hover:bg-gray-50"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={salvando}
-              className="h-9 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
-            >
-              {salvando ? "Salvando..." : "Salvar serviço"}
-            </button>
-          </div>
-        </div>
-      </form>
-    </Modal>
   );
 }

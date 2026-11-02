@@ -542,6 +542,12 @@ describe("serviços da conta", () => {
         dias_restantes: 180,
         km_restante: 500,
         situacao: "vence_em_breve" as const,
+        natureza: "preventiva" as const,
+        oficina: "Oficina do Zé",
+        valor_pecas: "150.00",
+        valor_mao_obra: "100.00",
+        pecas: [{ descricao: "Filtro de óleo", quantidade: "1.00", valor_unitario: "150.00" }],
+        anexos: [{ id: 3, nome: "nota.pdf", url: "/api/servicos/anexos/3?signature=x" }],
       },
     ],
   };
@@ -579,6 +585,34 @@ describe("serviços da conta", () => {
     expect(getSpy).toHaveBeenCalledWith("/conta/servicos");
     expect(postSpy).toHaveBeenCalledWith("/conta/servicos", expect.objectContaining({ tipo: "oleo" }));
     expect(deleteSpy).toHaveBeenCalledWith("/conta/servicos/1");
+  });
+
+  it("converte peças, mão de obra, oficina e anexos", () => {
+    const [servico] = mapearServicos(resposta).servicos;
+
+    expect(servico.natureza).toBe("preventiva");
+    expect(servico.oficina).toBe("Oficina do Zé");
+    expect(servico.valorPecas).toBe(150);
+    expect(servico.valorMaoDeObra).toBe(100);
+    expect(servico.pecas).toEqual([{ descricao: "Filtro de óleo", quantidade: 1, valorUnitario: 150 }]);
+    expect(servico.anexos).toEqual([{ id: 3, nome: "nota.pdf", url: "/api/servicos/anexos/3?signature=x" }]);
+  });
+
+  it("atualiza, anexa e remove nota fiscal nas rotas da conta", async () => {
+    const putSpy = vi.spyOn(api, "put").mockResolvedValueOnce({ data: resposta } as never);
+    const postSpy = vi
+      .spyOn(api, "post")
+      .mockResolvedValueOnce({ data: { id: 9, nome: "nota.pdf", url: "/api/servicos/anexos/9?signature=y" } } as never);
+    const deleteSpy = vi.spyOn(api, "delete").mockResolvedValueOnce({ data: null } as never);
+
+    await servicoService.atualizar(1, { veiculo_conta_id: 7, tipo: "oleo", realizado_em: "2026-03-01", pecas: [] });
+    const anexo = await servicoService.anexar(1, new File(["x"], "nota.pdf", { type: "application/pdf" }));
+    await servicoService.removerAnexo(9);
+
+    expect(putSpy).toHaveBeenCalledWith("/conta/servicos/1", expect.objectContaining({ pecas: [] }));
+    expect(postSpy).toHaveBeenCalledWith("/conta/servicos/1/anexos", expect.any(FormData));
+    expect(anexo).toEqual({ id: 9, nome: "nota.pdf", url: "/api/servicos/anexos/9?signature=y" });
+    expect(deleteSpy).toHaveBeenCalledWith("/conta/servicos/anexos/9");
   });
 });
 
