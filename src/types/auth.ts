@@ -9,6 +9,10 @@ export interface Usuario {
   oficina?: string | null;
   /** Nome da conta, nos perfis pessoa e frota. */
   conta?: string | null;
+  /** Plano comercial da conta da frota (starter, basico, ...); null = sem plano definido. */
+  plano?: string | null;
+  /** Máximo de veículos do plano; null = sem limite. */
+  limite_veiculos?: number | null;
   /** Papel na frota (administrador, gestor, motorista); null fora da frota. */
   papel?: string | null;
   /** Centro de custo do motorista (só para o papel motorista); a reserva sai nele. */

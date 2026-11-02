@@ -31,6 +31,7 @@ import type { VeiculoConta, VeiculoContaPayload } from "../../types/conta";
 import type { TipoVeiculo } from "../../types/veiculo";
 import { SeletorDeTipo } from "../../components/veiculos/SeletorDeTipo";
 import type { CentroCusto } from "../../types/frota";
+import { nomeDoPlano } from "../../utils/plano";
 
 interface DadosForm {
   tipo: TipoVeiculo;
@@ -261,6 +262,11 @@ export function MeusVeiculos() {
                   ? "Falha ao carregar."
                   : `${totalRegistros} veículo(s) encontrado(s)`}
             </p>
+            {ehFrota && usuario?.limite_veiculos != null && (
+              <p className="mt-1 text-xs text-gray-600">
+                Plano {nomeDoPlano(usuario.plano)}: {totalRegistros} de {usuario.limite_veiculos} veículos usados
+              </p>
+            )}
           </div>
 
           <div className="relative w-full sm:w-72">
