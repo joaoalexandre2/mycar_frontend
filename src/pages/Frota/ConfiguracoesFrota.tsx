@@ -1,13 +1,14 @@
 import { useState } from "react";
-import { ListChecks, UserCog, Users } from "lucide-react";
+import { History, ListChecks, UserCog, Users } from "lucide-react";
+import { AcessosHistorico } from "./AcessosHistorico";
 import { Grupos } from "./Grupos";
 import { MotivosTroca } from "./MotivosTroca";
 import { Pessoas } from "./Pessoas";
 import { usePodeNaFrota, useUsuarioDaFrota } from "../../hooks/usePodeNaFrota";
 
-type Aba = "motivos" | "grupos" | "pessoas";
+type Aba = "motivos" | "grupos" | "pessoas" | "acessos";
 
-/** Configurações da frota: motivos de troca, grupos de usuários e papéis. Só administrador e gestor chegam aqui. */
+/** Gestão da frota: motivos de troca, grupos de usuários, papéis e histórico de acessos. Só administrador e gestor chegam aqui. */
 export function ConfiguracoesFrota() {
   const usuario = useUsuarioDaFrota();
   const pode = usePodeNaFrota();
@@ -19,8 +20,9 @@ export function ConfiguracoesFrota() {
       ["motivos", "Motivos de troca", ListChecks, "centros_custo"],
       ["grupos", "Grupos de usuários", Users, "grupos"],
       ["pessoas", "Pessoas e papéis", UserCog, "pessoas"],
+      ["acessos", "Histórico de acessos", History, "pessoas"],
     ] as const
-  ).filter(([chave, , , permissao]) => (chave === "pessoas" ? ehAdministrador : pode(permissao)));
+  ).filter(([chave, , , permissao]) => (chave === "pessoas" || chave === "acessos" ? ehAdministrador : pode(permissao)));
 
   // Sem permissão para a aba escolhida (ou para a inicial), vale a primeira que a pessoa pode ver.
   const atual = abas.some(([chave]) => chave === aba) ? aba : abas[0]?.[0];
@@ -28,7 +30,7 @@ export function ConfiguracoesFrota() {
   return (
     <div className="space-y-6 p-4 sm:p-8">
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Configurações da frota</h2>
+        <h2 className="text-xl font-bold text-gray-900">Gestão da frota</h2>
         <p className="mt-1 text-sm text-gray-500">
           Os motivos das trocas de centro de custo, os grupos de usuários e quem é administrador ou gestor.
         </p>
@@ -58,6 +60,7 @@ export function ConfiguracoesFrota() {
       {atual === "motivos" && <MotivosTroca />}
       {atual === "grupos" && <Grupos />}
       {atual === "pessoas" && <Pessoas />}
+      {atual === "acessos" && <AcessosHistorico />}
     </div>
   );
 }

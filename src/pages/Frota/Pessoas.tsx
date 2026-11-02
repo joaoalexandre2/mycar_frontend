@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { UserPlus } from "lucide-react";
-import { gruposUsuariosService, pessoasFrotaService } from "../../services/frota";
+import { pessoasFrotaService } from "../../services/frota";
 import { mensagemErro } from "../../services/api";
 import { useUsuarioDaFrota } from "../../hooks/usePodeNaFrota";
 import type { PapelDaFrota, PessoaDaFrota } from "../../types/frota";
@@ -26,25 +26,8 @@ export function Pessoas() {
   const [email, setEmail] = useState("");
   const [papelNovo, setPapelNovo] = useState<"administrador" | "gestor">("gestor");
   const [enviando, setEnviando] = useState(false);
-  // Textos do que cada permissão e menu quer dizer (os mesmos da tela de grupos).
+  // Textos do que cada permissão e menu quer dizer (vêm junto da lista).
   const [rotulos, setRotulos] = useState<{ permissoes: Record<string, string>; menus: Record<string, string> }>({ permissoes: {}, menus: {} });
-
-  useEffect(() => {
-    let ativo = true;
-
-    gruposUsuariosService
-      .listar()
-      .then((resposta) => {
-        if (ativo) setRotulos({ permissoes: resposta.catalogo, menus: resposta.menus });
-      })
-      .catch(() => {
-        // Sem os textos, a lista mostra as chaves; o resto da tela segue.
-      });
-
-    return () => {
-      ativo = false;
-    };
-  }, []);
 
   useEffect(() => {
     let ativo = true;
@@ -53,7 +36,8 @@ export function Pessoas() {
       .listar()
       .then((resposta) => {
         if (!ativo) return;
-        setPessoas(resposta);
+        setPessoas(resposta.pessoas);
+        setRotulos({ permissoes: resposta.catalogo, menus: resposta.menus });
         setErro(null);
       })
       .catch((error) => {

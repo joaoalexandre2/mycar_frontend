@@ -172,7 +172,27 @@ export interface PessoaDaFrota {
   email: string;
   papel: PapelDaFrota;
   /** O que a pessoa pode fazer hoje (papel + grupos), como chaves do catálogo. */
-  permissoes?: string[];
+  permissoes: string[];
   /** Menus que ela vê hoje, como chaves. */
-  menus?: string[];
+  menus: string[];
+}
+
+/** Lista de pessoas com os textos das permissões e dos menus, numa resposta só. */
+export interface ListaDePessoasDaFrota {
+  pessoas: PessoaDaFrota[];
+  /** chave => descrição */
+  catalogo: Record<string, string>;
+  /** menu => descrição */
+  menus: Record<string, string>;
+}
+
+/** Uma mudança de acesso na frota (grupo criado, editado ou removido; pessoa convidada ou com papel mudado). */
+export interface EventoDeAcesso {
+  id: number;
+  quando: string;
+  ator: string | null;
+  alvo_tipo: "grupo" | "pessoa";
+  alvo_id: number | null;
+  acao: "criou" | "editou" | "removeu" | "convidou" | "mudou_papel";
+  detalhes: Record<string, unknown> | null;
 }

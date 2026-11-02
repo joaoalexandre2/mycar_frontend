@@ -7,6 +7,8 @@ import type {
   ErrosDeImportacao,
   MotivoTrocaCentro,
   PapelDaFrota,
+  EventoDeAcesso,
+  ListaDePessoasDaFrota,
   PessoaDaFrota,
   FiltroAgenda,
   FiltroTrocasDeCentro,
@@ -407,8 +409,15 @@ export class ErroDePlanilha extends Error {
 // ------------------------------------------------------- pessoas e papéis
 
 export const pessoasFrotaService = {
-  async listar(): Promise<PessoaDaFrota[]> {
-    const { data } = await api.get<PessoaDaFrota[]>("/conta/pessoas");
+  async listar(): Promise<ListaDePessoasDaFrota> {
+    const { data } = await api.get<ListaDePessoasDaFrota>("/conta/pessoas");
+
+    return data;
+  },
+
+  /** Histórico de quem mudou grupos, membros e papéis. Só o administrador lê. */
+  async acessos(): Promise<EventoDeAcesso[]> {
+    const { data } = await api.get<EventoDeAcesso[]>("/conta/acessos-frota");
 
     return data;
   },

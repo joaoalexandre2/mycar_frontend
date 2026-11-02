@@ -113,7 +113,7 @@ describe("títulos do Header na frota", () => {
   it.each([
     ["/agenda", "Agenda de veículos"],
     ["/frota/cadastros", "Motoristas e centros de custo"],
-    ["/frota/configuracoes", "Configurações da frota"],
+    ["/frota/configuracoes", "Gestão da frota"],
   ])("%s tem o próprio título, não o do Início", (rota, titulo) => {
     vi.spyOn(api, "get").mockResolvedValue({ data: [] } as never);
 
@@ -123,7 +123,7 @@ describe("títulos do Header na frota", () => {
   });
 });
 
-describe("menu Configurações da frota", () => {
+describe("menu Gestão da frota", () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });
@@ -137,7 +137,7 @@ describe("menu Configurações da frota", () => {
 
     comUsuario({ ...frota, papel, menus: ["veiculos", "agenda", "cadastros"] }, "/", <Sidebar aberta aoFechar={() => {}} />);
 
-    const link = screen.queryByRole("link", { name: /Configurações da frota/ });
+    const link = screen.queryByRole("link", { name: /Gestão da frota/ });
 
     if (visivel) {
       expect(link).toHaveAttribute("href", "/frota/configuracoes");

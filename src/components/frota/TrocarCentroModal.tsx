@@ -113,7 +113,7 @@ export function TrocarCentroModal({
             ))}
           </select>
           {motivos.length === 0 && (
-            <p className="mt-1 text-xs text-gray-500">Nenhum motivo cadastrado. Cadastre em Configurações da frota &gt; Motivos de troca.</p>
+            <p className="mt-1 text-xs text-gray-500">Nenhum motivo cadastrado. Cadastre em Gestão da frota &gt; Motivos de troca.</p>
           )}
         </div>
 
