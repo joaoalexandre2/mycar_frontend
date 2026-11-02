@@ -10,6 +10,7 @@ import {
     CalendarDays,
     Building2,
     Settings,
+    Settings2,
     ShieldCheck,
     LogOut,
     X,
@@ -21,7 +22,7 @@ import {
   import { Avatar } from "./Avatar";
   import { SeletorDeMycar } from "./SeletorDeMycar";
   import { ehConta, perfilDe } from "../../utils/perfil";
-  import { podeVerMenu } from "../../utils/permissoes";
+  import { ehAdministradorOuGestor, podeVerMenu } from "../../utils/permissoes";
 
   interface SidebarProps {
     aberta: boolean;
@@ -166,6 +167,15 @@ import {
                     to="/frota/cadastros"
                     icon={<Building2 size={19} />}
                     label="Motoristas e centros"
+                    aoNavegar={aoFechar}
+                  />
+                )}
+
+                {perfil === "frota" && ehAdministradorOuGestor(usuario) && (
+                  <SidebarItem
+                    to="/frota/configuracoes"
+                    icon={<Settings2 size={19} />}
+                    label="Configurações da frota"
                     aoNavegar={aoFechar}
                   />
                 )}

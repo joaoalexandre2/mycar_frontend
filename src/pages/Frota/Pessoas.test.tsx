@@ -3,8 +3,8 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NotificacoesProvider } from "../../contexts/NotificacoesProvider";
 import { AuthContext, type AuthContextValor } from "../../contexts/authContextDefinition";
-import { centrosCustoService, motoristasService, pessoasFrotaService } from "../../services/frota";
-import { Cadastros } from "./Cadastros";
+import { motivosTrocaCentroService, pessoasFrotaService } from "../../services/frota";
+import { ConfiguracoesFrota } from "./ConfiguracoesFrota";
 import { Pessoas } from "./Pessoas";
 import type { PessoaDaFrota } from "../../types/frota";
 
@@ -65,24 +65,22 @@ describe("Pessoas e papéis", () => {
   });
 
   it("não mostra a aba de pessoas para quem não é administrador", async () => {
-    vi.spyOn(motoristasService, "listar").mockResolvedValue([]);
-    vi.spyOn(centrosCustoService, "listar").mockResolvedValue([]);
+    vi.spyOn(motivosTrocaCentroService, "listar").mockResolvedValue([]);
     const listar = vi.spyOn(pessoasFrotaService, "listar").mockResolvedValue(pessoas);
 
-    comUsuario("gestor")(<Cadastros />);
+    comUsuario("gestor")(<ConfiguracoesFrota />);
 
-    expect(await screen.findByRole("tab", { name: /Motoristas/ })).toBeInTheDocument();
+    expect(await screen.findByRole("tab", { name: /Motivos de troca/ })).toBeInTheDocument();
     expect(screen.queryByRole("tab", { name: /Pessoas e papéis/ })).not.toBeInTheDocument();
     expect(listar).not.toHaveBeenCalled();
   });
 
   it("mostra a aba de pessoas para o administrador", async () => {
-    vi.spyOn(motoristasService, "listar").mockResolvedValue([]);
-    vi.spyOn(centrosCustoService, "listar").mockResolvedValue([]);
+    vi.spyOn(motivosTrocaCentroService, "listar").mockResolvedValue([]);
     vi.spyOn(pessoasFrotaService, "listar").mockResolvedValue(pessoas);
     const usuario = userEvent.setup();
 
-    comUsuario("administrador")(<Cadastros />);
+    comUsuario("administrador")(<ConfiguracoesFrota />);
 
     await usuario.click(await screen.findByRole("tab", { name: /Pessoas e papéis/ }));
 

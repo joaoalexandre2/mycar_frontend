@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import { AdminRoute } from "../components/auth/AdminRoute";
 import { FrotaRoute } from "../components/auth/FrotaRoute";
+import { FrotaGestorRoute } from "../components/auth/FrotaGestorRoute";
 import { ContaInicio } from "../pages/Conta/ContaInicio";
 import { MeusVeiculos } from "../pages/Conta/MeusVeiculos";
 import { Servicos } from "../pages/Conta/Servicos";
@@ -11,6 +12,7 @@ import { FichaTecnica } from "../pages/Conta/FichaTecnica";
 import { Comparador } from "../pages/Conta/Comparador";
 import { Agenda } from "../pages/Frota/Agenda";
 import { Cadastros } from "../pages/Frota/Cadastros";
+import { ConfiguracoesFrota } from "../pages/Frota/ConfiguracoesFrota";
 import { Configuracoes } from "../pages/Configuracoes/Configuracoes";
 import { Sugestoes } from "../pages/Sugestoes/Sugestoes";
 
@@ -63,6 +65,14 @@ export default function RotasConta() {
           path="/frota/cadastros"
           element={<Cadastros />}
         />
+
+        {/* Configurações da frota: só administrador e gestor. */}
+        <Route element={<FrotaGestorRoute />}>
+          <Route
+            path="/frota/configuracoes"
+            element={<ConfiguracoesFrota />}
+          />
+        </Route>
       </Route>
 
       <Route

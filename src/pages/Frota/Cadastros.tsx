@@ -1,11 +1,8 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Building2, History, ListChecks, Pencil, Plus, Trash2, UserCog, UserRound, Users } from "lucide-react";
+import { Building2, History, Pencil, Plus, Trash2, UserRound } from "lucide-react";
 import { Modal } from "../../components/ui/Modal";
-import { Grupos } from "./Grupos";
 import { HistoricoCentros } from "./HistoricoCentros";
-import { MotivosTroca } from "./MotivosTroca";
-import { Pessoas } from "./Pessoas";
-import { usePodeNaFrota, usePodeVerMenu, useUsuarioDaFrota } from "../../hooks/usePodeNaFrota";
+import { usePodeNaFrota, usePodeVerMenu } from "../../hooks/usePodeNaFrota";
 import { centrosCustoService, motoristasService } from "../../services/frota";
 import { mensagemErro } from "../../services/api";
 import { useConfirmar } from "../../hooks/useNotificacoes";
@@ -17,26 +14,21 @@ const classeCampo =
   "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
 const rotulo = "mb-1.5 block text-xs font-medium text-gray-700";
 
-type Aba = "motoristas" | "centros" | "motivos" | "historico" | "grupos" | "pessoas";
+type Aba = "motoristas" | "centros" | "historico";
 
-/** Motoristas, centros de custo, histórico de trocas, grupos de usuários e pessoas da frota. */
+/** Motoristas, centros de custo e histórico de trocas. As configurações da frota ficam em outro menu. */
 export function Cadastros() {
-  const usuario = useUsuarioDaFrota();
   const pode = usePodeNaFrota();
   const podeVer = usePodeVerMenu();
   const [aba, setAba] = useState<Aba>("motoristas");
-  const ehAdministrador = usuario?.papel === "administrador";
 
   const abas = (
     [
       ["motoristas", "Motoristas", UserRound, "motoristas"],
       ["centros", "Centros de custo", Building2, "centros_custo"],
-      ["motivos", "Motivos de troca", ListChecks, "centros_custo"],
       ["historico", "Histórico de centros", History, "centros_custo"],
-      ["grupos", "Grupos de usuários", Users, "grupos"],
-      ["pessoas", "Pessoas e papéis", UserCog, "pessoas"],
     ] as const
-  ).filter(([chave, , , permissao]) => (chave === "pessoas" ? ehAdministrador : pode(permissao)));
+  ).filter(([, , , permissao]) => pode(permissao));
 
   // Sem permissão para a aba escolhida (ou para a inicial), vale a primeira que a pessoa pode ver.
   const atual = abas.some(([chave]) => chave === aba) ? aba : abas[0]?.[0];
@@ -80,9 +72,6 @@ export function Cadastros() {
       {atual === "motoristas" && <Motoristas />}
       {atual === "centros" && <Centros />}
       {atual === "historico" && <HistoricoCentros />}
-      {atual === "grupos" && <Grupos />}
-      {atual === "pessoas" && <Pessoas />}
-      {atual === "motivos" && <MotivosTroca />}
     </div>
   );
 }

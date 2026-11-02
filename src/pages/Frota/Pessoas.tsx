@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { UserPlus } from "lucide-react";
-import { pessoasFrotaService } from "../../services/frota";
+import { gruposUsuariosService, pessoasFrotaService } from "../../services/frota";
 import { mensagemErro } from "../../services/api";
 import { useUsuarioDaFrota } from "../../hooks/usePodeNaFrota";
 import type { PapelDaFrota, PessoaDaFrota } from "../../types/frota";
@@ -26,6 +26,25 @@ export function Pessoas() {
   const [email, setEmail] = useState("");
   const [papelNovo, setPapelNovo] = useState<"administrador" | "gestor">("gestor");
   const [enviando, setEnviando] = useState(false);
+  // Textos do que cada permissão e menu quer dizer (os mesmos da tela de grupos).
+  const [rotulos, setRotulos] = useState<{ permissoes: Record<string, string>; menus: Record<string, string> }>({ permissoes: {}, menus: {} });
+
+  useEffect(() => {
+    let ativo = true;
+
+    gruposUsuariosService
+      .listar()
+      .then((resposta) => {
+        if (ativo) setRotulos({ permissoes: resposta.catalogo, menus: resposta.menus });
+      })
+      .catch(() => {
+        // Sem os textos, a lista mostra as chaves; o resto da tela segue.
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, []);
 
   useEffect(() => {
     let ativo = true;
@@ -129,6 +148,14 @@ export function Pessoas() {
                     {p.name} {euMesmo && <span className="text-xs font-normal text-gray-500">(você)</span>}
                   </p>
                   <p className="text-xs text-gray-500">{p.email}</p>
+                  <p className="mt-1 text-xs text-gray-600">
+                    {p.papel === "administrador"
+                      ? "Pode tudo, como administrador."
+                      : [
+                          ...(p.permissoes ?? []).map((chave) => rotulos.permissoes[chave] ?? chave),
+                          ...(p.menus ?? []).map((chave) => `vê o menu ${rotulos.menus[chave] ?? chave}`),
+                        ].join(" · ") || "Sem permissões extras."}
+                  </p>
                 </div>
                 <label className="text-xs text-gray-700">
                   <span className="sr-only">Papel de {p.name}</span>

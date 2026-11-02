@@ -3,7 +3,8 @@ import { Camera, Gauge, Pencil, Trash2 } from "lucide-react";
 import { Modal } from "../ui/Modal";
 import { CapturaHodometro } from "./CapturaHodometro";
 import { TrocarCentroModal } from "./TrocarCentroModal";
-import { usePodeNaFrota } from "../../hooks/usePodeNaFrota";
+import { usePodeNaFrota, useUsuarioDaFrota } from "../../hooks/usePodeNaFrota";
+import { ehAdministradorOuGestor } from "../../utils/permissoes";
 import { usosService } from "../../services/frota";
 import { mensagemErro } from "../../services/api";
 import { useConfirmar } from "../../hooks/useNotificacoes";
@@ -89,6 +90,8 @@ export function UsoDetalheModal({
 }) {
   const pedirConfirmacao = useConfirmar();
   const pode = usePodeNaFrota();
+  // Editar e excluir uso são só do administrador e do gestor (o backend barra os demais).
+  const podeEditarUso = ehAdministradorOuGestor(useUsuarioDaFrota());
   const [trocandoCentro, setTrocandoCentro] = useState(false);
   const [km, setKm] = useState("");
   const [foto, setFoto] = useState<Blob | null>(null);
@@ -270,7 +273,7 @@ export function UsoDetalheModal({
 
         <div className="flex flex-wrap justify-between gap-2 border-t border-gray-100 pt-4">
           <div className="flex gap-2">
-            {(uso.status === "agendado" || uso.status === "em_uso") && (
+            {podeEditarUso && (uso.status === "agendado" || uso.status === "em_uso") && (
               <button
                 type="button"
                 onClick={() => onEditar(uso)}
@@ -290,13 +293,15 @@ export function UsoDetalheModal({
             )}
           </div>
 
-          <button
-            type="button"
-            onClick={() => void excluir()}
-            className="flex h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold text-red-600 hover:bg-red-50"
-          >
-            <Trash2 size={13} /> Excluir
-          </button>
+          {podeEditarUso && (
+            <button
+              type="button"
+              onClick={() => void excluir()}
+              className="flex h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold text-red-600 hover:bg-red-50"
+            >
+              <Trash2 size={13} /> Excluir
+            </button>
+          )}
         </div>
       </div>
     </Modal>

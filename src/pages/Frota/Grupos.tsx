@@ -4,6 +4,8 @@ import { Modal } from "../../components/ui/Modal";
 import { gruposUsuariosService } from "../../services/frota";
 import { mensagemErro } from "../../services/api";
 import { useConfirmar } from "../../hooks/useNotificacoes";
+import { usePodeNaFrota, usePodeVerMenu } from "../../hooks/usePodeNaFrota";
+import { MODELOS_DE_GRUPO, menusParaPermissoes } from "../../utils/modelosDeGrupo";
 import type { GrupoUsuario, GruposDaFrota } from "../../types/frota";
 
 const classeCampo =
@@ -168,6 +170,26 @@ function GrupoModal({
   const [membros, setMembros] = useState<number[]>(grupo?.membros.map((m) => m.id) ?? []);
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
+  // Quem gerencia grupos só concede o que tem: o que não tem aparece desabilitado.
+  const pode = usePodeNaFrota();
+  const podeVer = usePodeVerMenu();
+
+  /** Marcar permissão de cadastro já libera o menu Motoristas e centros junto. */
+  function marcarPermissao(chave: string) {
+    const nova = alternar(permissoes, chave);
+    setPermissoes(nova);
+    setMenusLiberados(menusParaPermissoes(nova, menusLiberados));
+  }
+
+  /** Começa do modelo, só com o que quem edita pode conceder. */
+  function aplicarModelo(id: string) {
+    const modelo = MODELOS_DE_GRUPO.find((m) => m.id === id);
+    if (!modelo) return;
+
+    const permitidas = modelo.permissoes.filter((p) => pode(p));
+    setPermissoes(permitidas);
+    setMenusLiberados(menusParaPermissoes(permitidas, modelo.menus.filter((m) => podeVer(m))));
+  }
 
   async function salvar(evento: FormEvent) {
     evento.preventDefault();
@@ -209,14 +231,28 @@ function GrupoModal({
           <input id="grp-desc" type="text" value={descricao} maxLength={255} onChange={(e) => setDescricao(e.target.value)} className={classeCampo} />
         </div>
 
+        {!grupo && (
+          <div>
+            <label htmlFor="grp-modelo" className={rotulo}>Começar de um modelo (opcional)</label>
+            <select id="grp-modelo" defaultValue="" onChange={(e) => aplicarModelo(e.target.value)} className={classeCampo}>
+              <option value="">Escolha...</option>
+              {MODELOS_DE_GRUPO.map((m) => (
+                <option key={m.id} value={m.id}>{m.titulo}</option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-gray-500">Preenche as permissões e os menus. Você ajusta depois.</p>
+          </div>
+        )}
+
         <fieldset className="space-y-2">
           <legend className={rotulo}>O que o grupo pode fazer</legend>
           {Object.entries(dados.catalogo).map(([chave, texto]) => (
-            <label key={chave} className="flex items-start gap-2 text-xs text-gray-700">
+            <label key={chave} className="flex items-start gap-2 text-xs text-gray-700" title={pode(chave) ? undefined : "Você não tem essa permissão, então não pode concedê-la."}>
               <input
                 type="checkbox"
                 checked={permissoes.includes(chave)}
-                onChange={() => setPermissoes((atual) => alternar(atual, chave))}
+                disabled={!pode(chave)}
+                onChange={() => marcarPermissao(chave)}
                 className="mt-0.5"
               />
               {texto}
@@ -226,12 +262,13 @@ function GrupoModal({
 
         <fieldset className="space-y-2">
           <legend className={rotulo}>Liberar estes menus para quem está no grupo</legend>
-          <p className="text-xs text-gray-500">Administrador e gestor veem todos. Os demais veem só o que o grupo libera.</p>
+          <p className="text-xs text-gray-500">Administrador e gestor veem todos. Os demais veem só o que o grupo libera. Marcar uma permissão de cadastro libera Motoristas e centros junto.</p>
           {Object.entries(dados.menus).map(([chave, texto]) => (
             <label key={chave} className="flex items-start gap-2 text-xs text-gray-700">
               <input
                 type="checkbox"
                 checked={menusLiberados.includes(chave)}
+                disabled={!podeVer(chave)}
                 onChange={() => setMenusLiberados((atual) => alternar(atual, chave))}
                 className="mt-0.5"
               />
@@ -259,6 +296,19 @@ function GrupoModal({
             ))}
           </div>
         </fieldset>
+
+        <div className="space-y-1 rounded-lg bg-gray-50 px-4 py-3 text-xs text-gray-700">
+          <p className="font-semibold text-gray-900">Resumo</p>
+          {permissoes.length === 0 && menusLiberados.length === 0 && (
+            <p>Sem permissões extras: quem entrar só reserva os próprios veículos.</p>
+          )}
+          {permissoes.length > 0 && (
+            <p>Quem entrar pode: {permissoes.map((p) => dados.catalogo[p] ?? p).join("; ")}.</p>
+          )}
+          {menusLiberados.length > 0 && (
+            <p>Vê o menu: {menusLiberados.map((m) => dados.menus[m] ?? m).join(", ")}.</p>
+          )}
+        </div>
 
         {erro && (
           <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{erro}</p>

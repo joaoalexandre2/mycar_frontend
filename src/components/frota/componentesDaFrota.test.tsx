@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NotificacoesProvider } from "../../contexts/NotificacoesProvider";
+import { AuthContext, type AuthContextValor } from "../../contexts/authContextDefinition";
 import { CapturaHodometro } from "./CapturaHodometro";
 import { UsoDetalheModal } from "./UsoDetalheModal";
 import { ImportarPlanilhaModal } from "./ImportarPlanilhaModal";
@@ -104,7 +105,7 @@ describe("CapturaHodometro", () => {
 
 // ------------------------------------------------------------- UsoDetalheModal
 
-function detalhe(u: UsoVeiculo, extra: Partial<React.ComponentProps<typeof UsoDetalheModal>> = {}) {
+function detalhe(u: UsoVeiculo, extra: Partial<React.ComponentProps<typeof UsoDetalheModal>> = {}, papel = "gestor") {
   const props = {
     uso: u,
     onAtualizado: vi.fn(),
@@ -113,11 +114,17 @@ function detalhe(u: UsoVeiculo, extra: Partial<React.ComponentProps<typeof UsoDe
     onClose: vi.fn(),
     ...extra,
   };
+  const valor = {
+    usuario: { id: 1, name: "Ana", email: "ana@x.com", perfil: "frota", papel },
+    autenticado: true,
+  } as unknown as AuthContextValor;
 
   render(
-    <NotificacoesProvider>
-      <UsoDetalheModal {...props} />
-    </NotificacoesProvider>,
+    <AuthContext.Provider value={valor}>
+      <NotificacoesProvider>
+        <UsoDetalheModal {...props} />
+      </NotificacoesProvider>
+    </AuthContext.Provider>,
   );
 
   return props;
@@ -246,6 +253,13 @@ describe("UsoDetalheModal", () => {
 
     expect(screen.queryByRole("button", { name: "Cancelar reserva" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Editar/ })).toBeInTheDocument();
+  });
+
+  it("motorista não vê editar nem excluir uso", () => {
+    detalhe(uso({ status: "agendado" }), {}, "motorista");
+
+    expect(screen.queryByRole("button", { name: /Editar/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Excluir/ })).not.toBeInTheDocument();
   });
 });
 
