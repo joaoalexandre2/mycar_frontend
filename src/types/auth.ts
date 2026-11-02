@@ -1,5 +1,5 @@
 /** Os três produtos do MyCar. Sessões antigas, sem perfil, são de oficina. */
-export type Perfil = "oficina" | "pessoa" | "frota";
+export type Perfil = "oficina" | "pessoa" | "frota" | "estetica";
 
 export interface Usuario {
   id: number;

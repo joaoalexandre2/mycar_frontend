@@ -33,6 +33,7 @@ const ROTULO_PERFIL: Record<Perfil, string> = {
   oficina: "Oficina",
   pessoa: "Cuidados com seu carro",
   frota: "Frota",
+  estetica: "Estética Automotiva",
 };
 
 function formatarDataHora(iso: string | null) {
