@@ -2,6 +2,7 @@ import { useRef, useState, type ChangeEvent } from "react";
 import { Camera, Gauge, Pencil, Trash2 } from "lucide-react";
 import { Modal } from "../ui/Modal";
 import { CapturaHodometro } from "./CapturaHodometro";
+import { ChecklistModal } from "./ChecklistModal";
 import { TrocarCentroModal } from "./TrocarCentroModal";
 import { usePodeNaFrota, useUsuarioDaFrota } from "../../hooks/usePodeNaFrota";
 import { ehAdministradorOuGestor } from "../../utils/permissoes";
@@ -12,7 +13,7 @@ import { COR_DO_STATUS, descreverJanela } from "../../utils/agenda";
 import { redimensionar } from "../../utils/imagem";
 import { formatarKm } from "../../utils/formatters";
 import { lerInteiroBR } from "../../utils/numero";
-import { ROTULO_STATUS_USO, type UsoVeiculo } from "../../types/frota";
+import { ROTULO_STATUS_USO, type MomentoDoChecklist, type UsoVeiculo } from "../../types/frota";
 
 /** Foto já registrada de um momento (ver) ou botão para anexar/trocar. */
 function FotoDoMomento({
@@ -93,6 +94,7 @@ export function UsoDetalheModal({
   // Editar e excluir uso são só do administrador e do gestor (o backend barra os demais).
   const podeEditarUso = ehAdministradorOuGestor(useUsuarioDaFrota());
   const [trocandoCentro, setTrocandoCentro] = useState(false);
+  const [checklistDe, setChecklistDe] = useState<MomentoDoChecklist | null>(null);
   const [km, setKm] = useState("");
   const [foto, setFoto] = useState<Blob | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -282,6 +284,15 @@ export function UsoDetalheModal({
                 <Pencil size={13} /> Editar
               </button>
             )}
+            {(uso.status === "agendado" || uso.status === "em_uso") && (
+              <button
+                type="button"
+                onClick={() => setChecklistDe(uso.status === "em_uso" ? "devolucao" : "saida")}
+                className="h-9 rounded-lg border border-gray-200 px-3 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+              >
+                {uso.status === "em_uso" ? "Checklist de devolução" : "Checklist de saída"}
+              </button>
+            )}
             {uso.status === "agendado" && (
               <button
                 type="button"
@@ -305,6 +316,15 @@ export function UsoDetalheModal({
         </div>
       </div>
     </Modal>
+
+    {checklistDe && (
+      <ChecklistModal
+        usoId={uso.id}
+        momento={checklistDe}
+        onSalvo={() => setChecklistDe(null)}
+        onClose={() => setChecklistDe(null)}
+      />
+    )}
 
     {trocandoCentro && (
       <TrocarCentroModal

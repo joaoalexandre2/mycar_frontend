@@ -13,6 +13,9 @@ import { Comparador } from "../pages/Conta/Comparador";
 import { Agenda } from "../pages/Frota/Agenda";
 import { Cadastros } from "../pages/Frota/Cadastros";
 import { ConfiguracoesFrota } from "../pages/Frota/ConfiguracoesFrota";
+import { PainelFrota } from "../pages/Frota/PainelFrota";
+import { Multas } from "../pages/Frota/Multas";
+import { QrVeiculoPagina } from "../pages/Frota/QrVeiculoPagina";
 import { Configuracoes } from "../pages/Configuracoes/Configuracoes";
 import { Sugestoes } from "../pages/Sugestoes/Sugestoes";
 
@@ -66,11 +69,25 @@ export default function RotasConta() {
           element={<Cadastros />}
         />
 
+        {/* QR Code do veículo: quem escaneia cai aqui, com as reservas de hoje. */}
+        <Route
+          path="/qr/:token"
+          element={<QrVeiculoPagina />}
+        />
+
         {/* Gestão da frota: só administrador e gestor. */}
         <Route element={<FrotaGestorRoute />}>
           <Route
             path="/frota/configuracoes"
             element={<ConfiguracoesFrota />}
+          />
+          <Route
+            path="/frota/painel"
+            element={<PainelFrota />}
+          />
+          <Route
+            path="/frota/multas"
+            element={<Multas />}
           />
         </Route>
       </Route>

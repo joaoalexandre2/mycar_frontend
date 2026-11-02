@@ -26,6 +26,8 @@ import { useEffect, useState } from "react";
     "/agenda": { titulo: "Agenda de veículos", subtitulo: "Quem vai usar cada veículo e quando." },
     "/frota/cadastros": { titulo: "Motoristas e centros de custo", subtitulo: "Quem dirige a frota e a que área cada gasto pertence." },
     "/frota/configuracoes": { titulo: "Gestão da frota", subtitulo: "Motivos de troca, grupos de usuários, papéis e histórico de acessos." },
+    "/frota/painel": { titulo: "Painel da frota", subtitulo: "Alertas, checklists e uso dos veículos." },
+    "/frota/multas": { titulo: "Multas da frota", subtitulo: "Quem estava com o veículo em cada infração." },
     "/servicos": { titulo: "Serviços", subtitulo: "Troca de óleo, bateria e avisos da próxima vez." },
     "/pecas": { titulo: "Peças", subtitulo: "Catálogo de peças do seu carro." },
     "/ficha-tecnica": { titulo: "Ficha técnica", subtitulo: "Dados do seu carro e manutenção." },

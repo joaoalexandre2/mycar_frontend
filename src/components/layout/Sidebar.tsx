@@ -11,6 +11,8 @@ import {
     Building2,
     Settings,
     Settings2,
+    Gauge,
+    FileWarning,
     ShieldCheck,
     LogOut,
     X,
@@ -176,6 +178,24 @@ import {
                     to="/frota/configuracoes"
                     icon={<Settings2 size={19} />}
                     label="Gestão da frota"
+                    aoNavegar={aoFechar}
+                  />
+                )}
+
+                {perfil === "frota" && ehAdministradorOuGestor(usuario) && (
+                  <SidebarItem
+                    to="/frota/painel"
+                    icon={<Gauge size={19} />}
+                    label="Painel da frota"
+                    aoNavegar={aoFechar}
+                  />
+                )}
+
+                {perfil === "frota" && ehAdministradorOuGestor(usuario) && (
+                  <SidebarItem
+                    to="/frota/multas"
+                    icon={<FileWarning size={19} />}
+                    label="Multas"
                     aoNavegar={aoFechar}
                   />
                 )}
