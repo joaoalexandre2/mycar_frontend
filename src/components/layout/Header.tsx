@@ -24,6 +24,7 @@ import { useEffect, useState } from "react";
     "/": { titulo: "Início", subtitulo: "Seu carro e o que vence em breve." },
     "/veiculos": { titulo: "Veículos", subtitulo: "Valor, IPVA e licenciamento estimados." },
     "/agenda": { titulo: "Agenda de veículos", subtitulo: "Quem vai usar cada veículo e quando." },
+    "/frota/ocorrencias": { titulo: "Ocorrências da frota", subtitulo: "Acidentes, avarias e problemas, com as fotos antes e depois do reparo." },
     "/frota/cadastros": { titulo: "Motoristas e centros de custo", subtitulo: "Quem dirige a frota e a que área cada gasto pertence." },
     "/frota/configuracoes": { titulo: "Gestão da frota", subtitulo: "Motivos de troca, grupos de usuários, papéis e histórico de acessos." },
     "/frota/painel": { titulo: "Painel da frota", subtitulo: "Alertas, checklists e uso dos veículos." },

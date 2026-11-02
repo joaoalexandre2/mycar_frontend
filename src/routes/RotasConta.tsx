@@ -22,6 +22,7 @@ import { ConfiguracoesFrota } from "../pages/Frota/ConfiguracoesFrota";
 import { PainelFrota } from "../pages/Frota/PainelFrota";
 import { Multas } from "../pages/Frota/Multas";
 import { Financeiro as FinanceiroDaFrota } from "../pages/Frota/Financeiro";
+import { Ocorrencias } from "../pages/Frota/Ocorrencias";
 import { QrVeiculoPagina } from "../pages/Frota/QrVeiculoPagina";
 import { Configuracoes } from "../pages/Configuracoes/Configuracoes";
 import { Sugestoes } from "../pages/Sugestoes/Sugestoes";
@@ -100,6 +101,12 @@ export default function RotasConta() {
         <Route
           path="/agenda"
           element={<Agenda />}
+        />
+
+        {/* Ocorrências: qualquer usuário da frota registra; o motorista só vê as dele. */}
+        <Route
+          path="/frota/ocorrencias"
+          element={<Ocorrencias />}
         />
 
         <Route
