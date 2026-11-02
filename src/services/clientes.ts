@@ -1,7 +1,7 @@
 import api from "./api";
 import { obterItensPorPagina } from "../utils/preferencias";
 import type { Cliente, ClientePayload } from "../types/cliente";
-import { dataISO } from "../utils/formatters";
+import { dataISO, dataISOLocal } from "../utils/formatters";
 
 interface ClienteApi {
   id: number;
@@ -63,7 +63,7 @@ function mapearCliente(cliente: ClienteApi): Cliente {
 }
 
 function hojeCadastro() {
-  return new Date().toISOString().slice(0, 10);
+  return dataISOLocal();
 }
 
 export const clientesService = {

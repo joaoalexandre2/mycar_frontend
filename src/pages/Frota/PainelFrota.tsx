@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { AlertTriangle, CalendarClock, ClipboardCheck, CreditCard, Gauge } from "lucide-react";
 import { painelFrotaService } from "../../services/frotaDiferenciais";
 import { mensagemErro } from "../../services/api";
-import { formatarData, formatarDataHora } from "../../utils/formatters";
+import { dataISOLocal, formatarData, formatarDataHora } from "../../utils/formatters";
 import type { AlertasDaFrota, PainelDeDisponibilidade } from "../../types/frota";
 
 const classeCampo =
@@ -13,11 +13,7 @@ function diaDeHoje(deslocamento = 0): string {
   const data = new Date();
   data.setDate(data.getDate() + deslocamento);
 
-  const ano = data.getFullYear();
-  const mes = String(data.getMonth() + 1).padStart(2, "0");
-  const dia = String(data.getDate()).padStart(2, "0");
-
-  return `${ano}-${mes}-${dia}`;
+  return dataISOLocal(data);
 }
 
 /** Painel da frota: o que vence, checklists com problema e quanto cada veículo está parado ou em uso. */

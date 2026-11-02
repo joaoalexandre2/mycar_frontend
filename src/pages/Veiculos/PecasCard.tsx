@@ -8,7 +8,7 @@ import {
 } from "../../services/pecas";
 import { mensagemErro } from "../../services/api";
 import { ErroDeLista } from "../../components/ui/ErroDeLista";
-import { formatarData } from "../../utils/formatters";
+import { dataISOLocal, formatarData } from "../../utils/formatters";
 
 const FORM_VAZIO = {
   tipo: "",
@@ -175,7 +175,7 @@ export function PecasCard({ veiculoId }: { veiculoId: number }) {
               <input
                 type="date"
                 value={form.usado_em}
-                max={new Date().toISOString().slice(0, 10)}
+                max={dataISOLocal()}
                 onChange={(e) => alterarForm({ usado_em: e.target.value })}
                 className="mt-1 h-9 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
               />
