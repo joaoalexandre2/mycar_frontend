@@ -6,6 +6,7 @@ import { AuthContext, type AuthContextValor } from "../../contexts/authContextDe
 import { TrocarCentroModal } from "../../components/frota/TrocarCentroModal";
 import { centrosCustoService, gruposUsuariosService, motivosTrocaCentroService, usosService } from "../../services/frota";
 import { Cadastros } from "./Cadastros";
+import { ConfiguracoesFrota } from "./ConfiguracoesFrota";
 import { Grupos } from "./Grupos";
 import { HistoricoCentros } from "./HistoricoCentros";
 import type { CentroCusto, GruposDaFrota, TrocaDeCentro, UsoVeiculo } from "../../types/frota";
@@ -78,8 +79,35 @@ describe("Grupos de usuários", () => {
         nome: "Vendas SP",
         descricao: null,
         permissoes: ["centros_custo"],
-        menus_liberados: [],
+        menus_liberados: ["cadastros"],
         membros: [11],
+      }),
+    );
+  });
+
+  it("começa de um modelo e mostra o resumo do que o grupo faz", async () => {
+    vi.spyOn(gruposUsuariosService, "listar").mockResolvedValue({ ...dadosDosGrupos, grupos: [] });
+    const criar = vi.spyOn(gruposUsuariosService, "criar").mockResolvedValue(dadosDosGrupos.grupos[0]);
+    const usuario = userEvent.setup();
+
+    comProvedores(<Grupos />);
+
+    await usuario.click(await screen.findByRole("button", { name: /Novo grupo/ }));
+    await usuario.type(screen.getByLabelText("Nome"), "Vê veículos");
+    await usuario.selectOptions(screen.getByLabelText("Começar de um modelo (opcional)"), "ver-veiculos");
+
+    expect(screen.getByText(/Vê o menu: Veículos da frota/)).toBeInTheDocument();
+    expect(screen.getByLabelText("Veículos da frota")).toBeChecked();
+
+    await usuario.click(screen.getByRole("button", { name: "Salvar" }));
+
+    await waitFor(() =>
+      expect(criar).toHaveBeenCalledWith({
+        nome: "Vê veículos",
+        descricao: null,
+        permissoes: [],
+        menus_liberados: ["veiculos"],
+        membros: [],
       }),
     );
   });
@@ -180,16 +208,16 @@ describe("Trocar centro de custo de um uso", () => {
 });
 
 describe("Abas do cadastro da frota", () => {
-  function comPermissoes(permissoes: string[]) {
+  function comPermissoes(permissoes: string[], Tela: () => React.ReactElement = Cadastros) {
     const valor = {
-      usuario: { id: 1, name: "Ana", email: "ana@x.com", perfil: "frota", permissoes },
+      usuario: { id: 1, name: "Ana", email: "ana@x.com", perfil: "frota", papel: "gestor", permissoes },
       autenticado: true,
     } as unknown as AuthContextValor;
 
     return render(
       <AuthContext.Provider value={valor}>
         <NotificacoesProvider>
-          <Cadastros />
+          <Tela />
         </NotificacoesProvider>
       </AuthContext.Provider>,
     );
@@ -224,12 +252,13 @@ describe("Abas do cadastro da frota", () => {
     expect(screen.queryByRole("tab")).not.toBeInTheDocument();
   });
 
-  it("abre na primeira aba permitida quando falta permissão para Motoristas", async () => {
+  it("abre na primeira aba permitida quando falta permissão para Motivos de troca", async () => {
     vi.spyOn(gruposUsuariosService, "listar").mockResolvedValue(dadosDosGrupos);
 
-    comPermissoes(["grupos"]);
+    comPermissoes(["grupos"], ConfiguracoesFrota);
 
     expect(await screen.findByText("Apoio")).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /Grupos de usuários/ })).toHaveAttribute("aria-selected", "true");
+    expect(screen.queryByRole("tab", { name: /Motivos de troca/ })).not.toBeInTheDocument();
   });
 });

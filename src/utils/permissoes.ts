@@ -11,6 +11,14 @@ export function podeNaFrota(usuario: Usuario | null | undefined, permissao: stri
 }
 
 /**
+ * Se a pessoa é administrador ou gestor da frota: só eles veem as configurações da frota.
+ * Um grupo de usuários não concede isso.
+ */
+export function ehAdministradorOuGestor(usuario: Usuario | null | undefined): boolean {
+  return usuario?.papel === "administrador" || usuario?.papel === "gestor";
+}
+
+/**
  * Se o menu da frota aparece para a pessoa (só aparece se um grupo liberar, ou se for administrador). Só
  * decide o que mostrar: a API barra as rotas. Sessão antiga, sem a lista, mostra tudo.
  */

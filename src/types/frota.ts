@@ -171,4 +171,8 @@ export interface PessoaDaFrota {
   name: string;
   email: string;
   papel: PapelDaFrota;
+  /** O que a pessoa pode fazer hoje (papel + grupos), como chaves do catálogo. */
+  permissoes?: string[];
+  /** Menus que ela vê hoje, como chaves. */
+  menus?: string[];
 }

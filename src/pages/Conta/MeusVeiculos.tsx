@@ -23,6 +23,7 @@ import { CorrigirKmModal } from "../../components/frota/CorrigirKmModal";
 import { mensagemErro } from "../../services/api";
 import { Modal } from "../../components/ui/Modal";
 import { useAuth } from "../../hooks/useAuth";
+import { ehAdministradorOuGestor } from "../../utils/permissoes";
 import { ESTADOS } from "../../utils/estados";
 import { formatarMoeda } from "../../utils/formatters";
 import { limparPlaca, padraoDaPlaca, placaValida, ROTULO_PADRAO } from "../../utils/placa";
@@ -321,7 +322,7 @@ export function MeusVeiculos() {
                     setModalAberto(true);
                   },
                   remover: () => void remover(veiculo),
-                  corrigirKm: ehFrota ? () => setCorrigindoKm(veiculo) : undefined,
+                  corrigirKm: ehFrota && ehAdministradorOuGestor(usuario) ? () => setCorrigindoKm(veiculo) : undefined,
                 }}
               />
             ))}

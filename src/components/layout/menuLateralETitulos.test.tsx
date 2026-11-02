@@ -113,12 +113,37 @@ describe("títulos do Header na frota", () => {
   it.each([
     ["/agenda", "Agenda de veículos"],
     ["/frota/cadastros", "Motoristas e centros de custo"],
+    ["/frota/configuracoes", "Configurações da frota"],
   ])("%s tem o próprio título, não o do Início", (rota, titulo) => {
     vi.spyOn(api, "get").mockResolvedValue({ data: [] } as never);
 
     comUsuario(frota, rota, <Header aoAbrirMenu={() => {}} />);
 
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(titulo);
+  });
+});
+
+describe("menu Configurações da frota", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it.each([
+    ["administrador", true],
+    ["gestor", true],
+    ["motorista", false],
+  ])("papel %s: aparece no menu? %s", (papel, visivel) => {
+    vi.spyOn(api, "get").mockResolvedValue({ data: [] } as never);
+
+    comUsuario({ ...frota, papel, menus: ["veiculos", "agenda", "cadastros"] }, "/", <Sidebar aberta aoFechar={() => {}} />);
+
+    const link = screen.queryByRole("link", { name: /Configurações da frota/ });
+
+    if (visivel) {
+      expect(link).toHaveAttribute("href", "/frota/configuracoes");
+    } else {
+      expect(link).not.toBeInTheDocument();
+    }
   });
 });
 
