@@ -30,6 +30,7 @@ import { useEffect, useState } from "react";
     "/frota/painel": { titulo: "Painel da frota", subtitulo: "Alertas, checklists e uso dos veículos." },
     "/frota/multas": { titulo: "Multas da frota", subtitulo: "Quem estava com o veículo em cada infração." },
     "/frota/financeiro": { titulo: "Financeiro da frota", subtitulo: "Quanto cada veículo, motorista e centro de custo gastou." },
+    "/frota/relatorios": { titulo: "Relatórios da frota", subtitulo: "Utilização, custos, multas e vencimentos, com exportação para o Excel." },
     "/estetica": { titulo: "Pátio", subtitulo: "Do check-in à entrega, com as fotos de cada carro." },
     "/estetica/placas": { titulo: "Histórico por placa", subtitulo: "Serviços, valores e retorno previsto de cada carro." },
     "/estetica/servicos": { titulo: "Serviços e pacotes", subtitulo: "O catálogo que aparece no pátio." },
