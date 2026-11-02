@@ -6,7 +6,7 @@ import type {
   StatusManutencao,
 } from "../types/manutencao";
 import { mapearVeiculo } from "./veiculos";
-import { dataISO, hojeISO } from "../utils/formatters";
+import { dataISO, dataISOLocal, hojeISO } from "../utils/formatters";
 
 interface ManutencaoApi {
   id: number;
@@ -73,7 +73,7 @@ function statusPorData(proximaData: string | null): StatusManutencao {
 
   const limite = new Date(`${hoje}T00:00:00`);
   limite.setDate(limite.getDate() + 30);
-  const limiteIso = limite.toISOString().slice(0, 10);
+  const limiteIso = dataISOLocal(limite);
 
   if (proximaData <= limiteIso) {
     return "proxima";

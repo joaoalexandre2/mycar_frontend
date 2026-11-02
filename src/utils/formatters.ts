@@ -48,8 +48,20 @@ export function formatarKm(km: number | null | undefined) {
   return `${km.toLocaleString("pt-BR")} km`;
 }
 
+/**
+ * Data no formato AAAA-MM-DD, no fuso local. Nunca use toISOString().slice(0, 10) para isso:
+ * ele converte para UTC e, à noite no Brasil, mostra o dia seguinte.
+ */
+export function dataISOLocal(data: Date = new Date()): string {
+  const ano = data.getFullYear();
+  const mes = String(data.getMonth() + 1).padStart(2, "0");
+  const dia = String(data.getDate()).padStart(2, "0");
+
+  return `${ano}-${mes}-${dia}`;
+}
+
 export function hojeISO() {
-  return new Date().toISOString().slice(0, 10);
+  return dataISOLocal();
 }
 
 export function formatarDataHora(valor: string) {
