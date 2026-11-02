@@ -9,6 +9,7 @@ import type { Perfil } from "../../types/auth";
 const ROTULO_DO_NOME: Partial<Record<Perfil, string>> = {
   oficina: "Nome da oficina",
   frota: "Nome da empresa",
+  estetica: "Nome do estabelecimento",
 };
 
 const campo =
