@@ -23,6 +23,11 @@ export const PERFIS: Record<Perfil, InfoPerfil> = {
     descricao:
       "Controle os veículos da sua empresa em um só lugar: valores, vencimentos e manutenção.",
   },
+  estetica: {
+    produto: "MyCar Estética Automotiva",
+    descricao:
+      "Organize o pátio do seu lava-rápido ou estética: fotos de entrada e entrega, serviços e o histórico de cada carro pela placa.",
+  },
 };
 
 /** Nome curto de cada produto, para espaços apertados (menu lateral). */
@@ -30,12 +35,13 @@ export const NOME_CURTO_PERFIL: Record<Perfil, string> = {
   oficina: "Oficina",
   pessoa: "Cuidados com seu carro",
   frota: "Frota",
+  estetica: "Estética",
 };
 
-export const ORDEM_PERFIS: Perfil[] = ["pessoa", "oficina", "frota"];
+export const ORDEM_PERFIS: Perfil[] = ["pessoa", "oficina", "frota", "estetica"];
 
 export function ehPerfil(valor: string | null | undefined): valor is Perfil {
-  return valor === "oficina" || valor === "pessoa" || valor === "frota";
+  return valor === "oficina" || valor === "pessoa" || valor === "frota" || valor === "estetica";
 }
 
 /** Sessões salvas antes dos perfis existirem não têm o campo: são de oficina. */
@@ -45,5 +51,5 @@ export function perfilDe(usuario: Usuario | null | undefined): Perfil {
 
 /** Pessoa e frota usam a mesma base de veículos da própria conta. */
 export function ehConta(perfil: Perfil): boolean {
-  return perfil === "pessoa" || perfil === "frota";
+  return perfil === "pessoa" || perfil === "frota" || perfil === "estetica";
 }

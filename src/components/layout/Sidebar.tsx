@@ -11,6 +11,7 @@ import {
     Building2,
     Settings,
     Settings2,
+    CircleDollarSign,
     Gauge,
     FileWarning,
     ShieldCheck,
@@ -137,7 +138,14 @@ import {
               MENU
             </p>
 
-            {ehConta(perfil) ? (
+            {perfil === "estetica" ? (
+              <>
+                <SidebarItem to="/estetica" icon={<Car size={19} />} label="Pátio" aoNavegar={aoFechar} />
+                <SidebarItem to="/estetica/placas" icon={<ClipboardList size={19} />} label="Histórico por placa" aoNavegar={aoFechar} />
+                <SidebarItem to="/estetica/servicos" icon={<Package size={19} />} label="Serviços e pacotes" aoNavegar={aoFechar} />
+                <SidebarItem to="/estetica/financeiro" icon={<CircleDollarSign size={19} />} label="Financeiro" aoNavegar={aoFechar} />
+              </>
+            ) : ehConta(perfil) ? (
               <>
                 <SidebarItem
                   to="/"

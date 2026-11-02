@@ -16,19 +16,21 @@ describe("perfil", () => {
   it("pessoa e frota são contas; oficina não", () => {
     expect(ehConta("pessoa")).toBe(true);
     expect(ehConta("frota")).toBe(true);
+    expect(ehConta("estetica")).toBe(true);
     expect(ehConta("oficina")).toBe(false);
   });
 
-  it("só aceita os três perfis conhecidos (links como /registrar?perfil=x)", () => {
+  it("só aceita os perfis conhecidos (links como /registrar?perfil=x)", () => {
     expect(ehPerfil("oficina")).toBe(true);
     expect(ehPerfil("pessoa")).toBe(true);
     expect(ehPerfil("frota")).toBe(true);
+    expect(ehPerfil("estetica")).toBe(true);
     expect(ehPerfil("admin")).toBe(false);
     expect(ehPerfil(null)).toBe(false);
   });
 
   it("todo perfil listado no cadastro tem nome de produto e descrição", () => {
-    expect(ORDEM_PERFIS).toHaveLength(3);
+    expect(ORDEM_PERFIS).toHaveLength(4);
 
     for (const perfil of ORDEM_PERFIS) {
       expect(PERFIS[perfil].produto).toMatch(/^MyCar /);

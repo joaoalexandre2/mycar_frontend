@@ -6,6 +6,7 @@ import {
   Car,
   Lock,
   Mail,
+  Sparkles,
   Truck,
   User,
   Wrench,
@@ -19,12 +20,14 @@ const ICONES: Record<Perfil, React.ReactNode> = {
   pessoa: <Car size={20} />,
   oficina: <Wrench size={20} />,
   frota: <Truck size={20} />,
+  estetica: <Sparkles size={20} />,
 };
 
 const CHAMADA: Record<Perfil, string> = {
   pessoa: "Cuide do seu carro",
   oficina: "Cadastre sua oficina",
   frota: "Cadastre sua frota",
+  estetica: "Organize o seu pátio",
 };
 
 export function Register() {
@@ -64,6 +67,7 @@ export function Register() {
         perfil,
         ...(perfil === "oficina" ? { nome_oficina: nomeConta } : {}),
         ...(perfil === "frota" ? { nome_frota: nomeConta } : {}),
+        ...(perfil === "estetica" ? { nome_estetica: nomeConta } : {}),
         name: nome,
         email,
         password: senha,
@@ -166,9 +170,9 @@ export function Register() {
 
   // Passo 2: os dados da conta.
   const nomeDaContaRotulo =
-    perfil === "oficina" ? "Nome da oficina" : "Nome da frota ou empresa";
+    perfil === "oficina" ? "Nome da oficina" : perfil === "estetica" ? "Nome do estabelecimento" : "Nome da frota ou empresa";
   const nomeDaContaExemplo =
-    perfil === "oficina" ? "Ex.: Oficina do João" : "Ex.: Transportes Silva";
+    perfil === "oficina" ? "Ex.: Oficina do João" : perfil === "estetica" ? "Ex.: Lava Jato Brilho" : "Ex.: Transportes Silva";
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-10">
