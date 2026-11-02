@@ -12,6 +12,7 @@ import type {
   ModeloSalvo,
   PessoaDaFrota,
   FiltroAgenda,
+  AlertaDeConflito,
   FiltroTrocasDeCentro,
   GrupoUsuario,
   GrupoUsuarioPayload,
@@ -230,6 +231,15 @@ export interface UsoApi {
   url_foto_chegada: string | null;
   origem: "agenda" | "planilha";
   observacoes: string | null;
+  alerta_conflito?: AlertaDeConflitoApi[];
+}
+
+export interface AlertaDeConflitoApi {
+  uso_id: number;
+  motivo: "veiculo" | "motorista";
+  inicio_previsto: string;
+  motorista: string | null;
+  veiculo: string | null;
 }
 
 /**
@@ -269,6 +279,17 @@ export function mapearUso(item: UsoApi): UsoVeiculo {
     urlFotoChegada: item.url_foto_chegada ? urlDaFoto(item.url_foto_chegada) : null,
     origem: item.origem,
     observacoes: item.observacoes ?? null,
+    ...(item.alerta_conflito ? { alertasDeConflito: item.alerta_conflito.map(mapearAlertaDeConflito) } : {}),
+  };
+}
+
+function mapearAlertaDeConflito(alerta: AlertaDeConflitoApi): AlertaDeConflito {
+  return {
+    usoId: alerta.uso_id,
+    motivo: alerta.motivo,
+    inicioPrevisto: horarioLocal(alerta.inicio_previsto) ?? alerta.inicio_previsto,
+    motorista: alerta.motorista,
+    veiculo: alerta.veiculo,
   };
 }
 
