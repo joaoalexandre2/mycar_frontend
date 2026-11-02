@@ -20,6 +20,7 @@ import { FotosModal } from "./FotosModal";
 import { contaService } from "../../services/conta";
 import { centrosCustoService } from "../../services/frota";
 import { CorrigirKmModal } from "../../components/frota/CorrigirKmModal";
+import { QrVeiculoModal } from "../../components/frota/QrVeiculoModal";
 import { mensagemErro } from "../../services/api";
 import { Modal } from "../../components/ui/Modal";
 import { useAuth } from "../../hooks/useAuth";
@@ -69,6 +70,7 @@ export function MeusVeiculos() {
   const [editando, setEditando] = useState<VeiculoConta | null>(null);
   const [centros, setCentros] = useState<CentroCusto[] | null>(null);
   const [corrigindoKm, setCorrigindoKm] = useState<VeiculoConta | null>(null);
+  const [qrDe, setQrDe] = useState<VeiculoConta | null>(null);
   const [consultandoId, setConsultandoId] = useState<number | null>(null);
   const [abastecendo, setAbastecendo] = useState<VeiculoConta | null>(null);
   const [segurando, setSegurando] = useState<VeiculoConta | null>(null);
@@ -332,6 +334,7 @@ export function MeusVeiculos() {
                   },
                   remover: () => void remover(veiculo),
                   corrigirKm: ehFrota && ehAdministradorOuGestor(usuario) ? () => setCorrigindoKm(veiculo) : undefined,
+                  qrCode: ehFrota && ehAdministradorOuGestor(usuario) ? () => setQrDe(veiculo) : undefined,
                 }}
               />
             ))}
@@ -402,6 +405,8 @@ export function MeusVeiculos() {
           onClose={() => setAbastecendo(null)}
         />
       )}
+
+      {qrDe && <QrVeiculoModal veiculo={qrDe} onClose={() => setQrDe(null)} />}
 
       {corrigindoKm && (
         <CorrigirKmModal

@@ -6,6 +6,7 @@ import {
   FileText,
   Fuel,
   Pencil,
+  QrCode,
   RefreshCw,
   ShieldCheck,
   Trash2,
@@ -28,6 +29,8 @@ export interface AcoesDoVeiculo {
   remover: () => void;
   /** Só na frota: corrige o km atual do veículo. */
   corrigirKm?: () => void;
+  /** Só na frota (administrador e gestor): abre o QR Code do veículo para imprimir. */
+  qrCode?: () => void;
 }
 
 function Botao({
@@ -309,6 +312,11 @@ export function CartaoVeiculo({
             <Botao titulo="Abastecimentos e consumo" aoClicar={acoes.abastecimentos}>
               <Fuel size={16} />
             </Botao>
+            {acoes.qrCode && (
+              <Botao titulo="QR Code do veículo" aoClicar={acoes.qrCode}>
+                <QrCode size={16} />
+              </Botao>
+            )}
             <Botao titulo="Álbum de fotos" aoClicar={acoes.fotos}>
               <Camera size={16} />
             </Botao>
