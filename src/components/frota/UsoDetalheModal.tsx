@@ -8,12 +8,23 @@ import { usePodeNaFrota, useUsuarioDaFrota } from "../../hooks/usePodeNaFrota";
 import { ehAdministradorOuGestor } from "../../utils/permissoes";
 import { usosService } from "../../services/frota";
 import { mensagemErro } from "../../services/api";
-import { useConfirmar } from "../../hooks/useNotificacoes";
+import { useConfirmar, useToast } from "../../hooks/useNotificacoes";
 import { COR_DO_STATUS, descreverJanela } from "../../utils/agenda";
 import { redimensionar } from "../../utils/imagem";
-import { formatarKm } from "../../utils/formatters";
+import { formatarDataHora, formatarKm } from "../../utils/formatters";
 import { lerInteiroBR } from "../../utils/numero";
-import { ROTULO_STATUS_USO, type MomentoDoChecklist, type UsoVeiculo } from "../../types/frota";
+import { ROTULO_STATUS_USO, type AlertaDeConflito, type MomentoDoChecklist, type UsoVeiculo } from "../../types/frota";
+
+/** Texto do aviso de uma reserva que a devolução atrasada atingiu. */
+function descreverConflito(alerta: AlertaDeConflito): string {
+  const quando = formatarDataHora(alerta.inicioPrevisto);
+
+  if (alerta.motivo === "motorista") {
+    return `${alerta.motorista ?? "O motorista"} tem reserva às ${quando} no veículo ${alerta.veiculo ?? "outro"}, que começa antes da volta.`;
+  }
+
+  return `Reserva de ${alerta.motorista ?? "sem motorista"} às ${quando} com este veículo começa antes da volta.`;
+}
 
 /** Foto já registrada de um momento (ver) ou botão para anexar/trocar. */
 function FotoDoMomento({
@@ -90,6 +101,7 @@ export function UsoDetalheModal({
   onClose: () => void;
 }) {
   const pedirConfirmacao = useConfirmar();
+  const toast = useToast();
   const pode = usePodeNaFrota();
   // Editar e excluir uso são só do administrador e do gestor (o backend barra os demais).
   const podeEditarUso = ehAdministradorOuGestor(useUsuarioDaFrota());
@@ -122,10 +134,20 @@ export function UsoDetalheModal({
       setKm("");
       setFoto(null);
       onAtualizado(atualizado);
+      avisarConflitos(atualizado);
     } catch (error) {
       setErro(mensagemErro(error));
     } finally {
       setEnviando(false);
+    }
+  }
+
+  // A devolução atrasada é registrada mesmo assim; quem ficou afetado precisa saber na hora.
+  function avisarConflitos(atualizado: UsoVeiculo) {
+    const alertas = atualizado.alertasDeConflito ?? [];
+
+    if (alertas.length > 0) {
+      toast.aviso(alertas.map(descreverConflito).join(" "));
     }
   }
 

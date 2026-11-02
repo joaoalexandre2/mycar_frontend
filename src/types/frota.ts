@@ -126,6 +126,17 @@ export interface UsoVeiculo {
   urlFotoChegada: string | null;
   origem: "agenda" | "planilha";
   observacoes: string | null;
+  /** Reservas atingidas pela devolução atrasada. Só vem na resposta da chegada. */
+  alertasDeConflito?: AlertaDeConflito[];
+}
+
+/** Reserva que começa antes da volta do carro: do mesmo veículo, ou do mesmo motorista em outro carro. */
+export interface AlertaDeConflito {
+  usoId: number;
+  motivo: "veiculo" | "motorista";
+  inicioPrevisto: string;
+  motorista: string | null;
+  veiculo: string | null;
 }
 
 export interface UsoPayload {

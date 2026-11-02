@@ -35,6 +35,18 @@ describe("horarioLocal", () => {
 });
 
 describe("mapearUso e mapearMotorista", () => {
+  it("guarda os alertas de conflito que a devolução atrasada devolve", () => {
+    const uso = mapearUso({
+      ...usoApi,
+      alerta_conflito: [{ uso_id: 9, motivo: "motorista", inicio_previsto: "2026-11-10T09:00:00-03:00", motorista: "Maria Silva", veiculo: "BBB2B22" }],
+    });
+
+    expect(uso.alertasDeConflito).toEqual([
+      { usoId: 9, motivo: "motorista", inicioPrevisto: "2026-11-10T09:00", motorista: "Maria Silva", veiculo: "BBB2B22" },
+    ]);
+    expect(mapearUso(usoApi)).not.toHaveProperty("alertasDeConflito");
+  });
+
   it("converte o uso para camelCase com horários locais", () => {
     const uso = mapearUso(usoApi);
 

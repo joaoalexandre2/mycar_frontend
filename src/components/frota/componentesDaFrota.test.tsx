@@ -204,6 +204,28 @@ describe("UsoDetalheModal", () => {
     expect(props.onAtualizado).toHaveBeenCalled();
   });
 
+  it("chegada atrasada que invade reserva avisa quem ficou afetado", async () => {
+    vi.spyOn(usosService, "registrarChegada").mockResolvedValue(
+      uso({
+        status: "concluido",
+        kmSaida: 45200,
+        kmChegada: 45310,
+        kmRodados: 110,
+        alertasDeConflito: [
+          { usoId: 9, motivo: "motorista", inicioPrevisto: "2026-11-10T09:00", motorista: "Maria Silva", veiculo: "BBB2B22" },
+          { usoId: 10, motivo: "veiculo", inicioPrevisto: "2026-11-10T10:30", motorista: "Carla", veiculo: null },
+        ],
+      }),
+    );
+    detalhe(uso({ status: "em_uso", kmSaida: 45200 }));
+
+    await userEvent.type(screen.getByLabelText("Km de chegada"), "45310");
+    await userEvent.click(screen.getByRole("button", { name: "Registrar chegada" }));
+
+    expect(await screen.findByText(/Maria Silva tem reserva às .* no veículo BBB2B22, que começa antes da volta\./)).toBeInTheDocument();
+    expect(screen.getByText(/Reserva de Carla às .* com este veículo começa antes da volta\./)).toBeInTheDocument();
+  });
+
   it("concluído mostra os km rodados e os links das fotos, sem pedir saída nem chegada", () => {
     detalhe(
       uso({
