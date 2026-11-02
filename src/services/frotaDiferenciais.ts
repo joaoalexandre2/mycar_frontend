@@ -1,13 +1,14 @@
 import api from "./api";
 import type {
   AlertasDaFrota,
-  ChaveDoItemDoChecklist,
   ChecklistRegistrado,
+  ModeloDeChecklist,
   Multa,
   MomentoDoChecklist,
   PainelDeDisponibilidade,
   ResolucaoDoQr,
   RespostaDeChecklists,
+  SituacaoDoItem,
   SugestaoDeResponsavel,
 } from "../types/frota";
 
@@ -21,11 +22,54 @@ export const checklistService = {
 
   async enviar(
     usoId: number,
-    payload: { momento: MomentoDoChecklist; itens: { item: ChaveDoItemDoChecklist; ok: boolean }[]; observacoes?: string | null },
+    payload: {
+      momento: MomentoDoChecklist;
+      checklist_modelo_id?: number | null;
+      itens: { item: string; ok?: boolean; situacao?: SituacaoDoItem; observacao?: string | null }[];
+      observacoes?: string | null;
+    },
   ): Promise<ChecklistRegistrado> {
     const { data } = await api.post<ChecklistRegistrado>(`/conta/usos/${usoId}/checklist`, payload);
 
     return data;
+  },
+};
+
+/** Modelos de checklist da empresa (só administrador e gestor). */
+export interface ItemDeModelo {
+  chave?: string;
+  rotulo: string;
+  obrigatorio: boolean;
+}
+
+export interface PayloadDeModelo {
+  nome: string;
+  momento: MomentoDoChecklist | "ambos";
+  ativo?: boolean;
+  itens: ItemDeModelo[];
+}
+
+export const checklistModelosService = {
+  async listar(): Promise<ModeloDeChecklist[]> {
+    const { data } = await api.get<ModeloDeChecklist[]>("/conta/checklists/modelos");
+
+    return data;
+  },
+
+  async criar(payload: PayloadDeModelo): Promise<ModeloDeChecklist> {
+    const { data } = await api.post<ModeloDeChecklist>("/conta/checklists/modelos", payload);
+
+    return data;
+  },
+
+  async atualizar(id: number, payload: PayloadDeModelo): Promise<ModeloDeChecklist> {
+    const { data } = await api.put<ModeloDeChecklist>(`/conta/checklists/modelos/${id}`, payload);
+
+    return data;
+  },
+
+  async remover(id: number): Promise<void> {
+    await api.delete(`/conta/checklists/modelos/${id}`);
   },
 };
 

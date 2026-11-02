@@ -234,10 +234,24 @@ export interface ChecklistRegistrado {
   problemas: number;
   observacoes: string | null;
   quando: string;
+  modelo?: { id: number; nome: string } | null;
+}
+
+/** Como o motorista respondeu um item: OK, com problema, ou não se aplica (não conta como problema). */
+export type SituacaoDoItem = "ok" | "problema" | "na";
+
+/** Modelo de checklist da empresa: os itens que o motorista confere. */
+export interface ModeloDeChecklist {
+  id: number;
+  nome: string;
+  momento: MomentoDoChecklist | "ambos";
+  itens: { chave: string; rotulo: string; obrigatorio: boolean }[];
 }
 
 export interface RespostaDeChecklists {
   itens: Record<ChaveDoItemDoChecklist, string>;
+  /** Modelos ativos da empresa. Ausente nas respostas antigas: aí vale o checklist de itens fixos. */
+  modelos?: ModeloDeChecklist[];
   checklists: ChecklistRegistrado[];
 }
 
