@@ -277,15 +277,21 @@ export interface AlertasDaFrota {
   revisoes: { id: number; placa: string; nome: string; data: string }[];
   multas_abertas: { quantidade: number; valor: number };
   checklists_com_problema: { uso_id: number; momento: MomentoDoChecklist; problemas: number; itens: string[]; quando: string }[];
+  /** Total de checklists com problema no período, mesmo quando a lista mostra só os mais recentes. */
+  checklists_com_problema_total: number;
 }
 
 export interface DisponibilidadeDoVeiculo {
   veiculo_id: number;
   placa: string;
   nome: string;
-  horas_usadas: number;
-  utilizacao_pct: number;
-  ociosidade_pct: number;
+  /** Horas com saída e chegada registradas: uso real. */
+  horas_em_uso: number;
+  utilizacao_real_pct: number;
+  /** Horas previstas nas reservas (inclui as que ainda não saíram). */
+  horas_reservadas: number;
+  reserva_pct: number;
+  disponibilidade_pct: number;
   reservas: number;
   km_rodados: number;
   multas: number;
@@ -295,6 +301,7 @@ export interface PainelDeDisponibilidade {
   de: string;
   ate: string;
   horas_periodo: number;
-  utilizacao_media_pct: number;
+  utilizacao_real_media_pct: number;
+  reserva_media_pct: number;
   veiculos: DisponibilidadeDoVeiculo[];
 }

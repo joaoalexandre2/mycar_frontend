@@ -8,11 +8,16 @@ import type { AlertasDaFrota, PainelDeDisponibilidade } from "../../types/frota"
 const classeCampo =
   "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
 
+/** Data de hoje no fuso local, no formato AAAA-MM-DD. (toISOString usa UTC e pode mostrar o dia seguinte.) */
 function diaDeHoje(deslocamento = 0): string {
   const data = new Date();
   data.setDate(data.getDate() + deslocamento);
 
-  return data.toISOString().slice(0, 10);
+  const ano = data.getFullYear();
+  const mes = String(data.getMonth() + 1).padStart(2, "0");
+  const dia = String(data.getDate()).padStart(2, "0");
+
+  return `${ano}-${mes}-${dia}`;
 }
 
 /** Painel da frota: o que vence, checklists com problema e quanto cada veículo está parado ou em uso. */
@@ -126,7 +131,8 @@ export function PainelFrota() {
           {painel && (
             <p className="text-sm text-gray-700">
               <Gauge size={16} className="mr-1 inline text-gray-500" />
-              Utilização média da frota: <span className="font-bold">{painel.utilizacao_media_pct}%</span>
+              Uso real da frota: <span className="font-bold">{painel.utilizacao_real_media_pct}%</span>
+              <span className="ml-3 text-gray-500">· reservada: {painel.reserva_media_pct}%</span>
             </p>
           )}
         </div>
@@ -144,11 +150,11 @@ export function PainelFrota() {
                   <p className="text-xs text-gray-500">{v.nome}</p>
                 </div>
                 <div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100" role="meter" aria-label={`Utilização de ${v.placa}`} aria-valuenow={v.utilizacao_pct} aria-valuemin={0} aria-valuemax={100}>
-                    <div className="h-full rounded-full bg-blue-600" style={{ width: `${v.utilizacao_pct}%` }} />
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100" role="meter" aria-label={`Uso real de ${v.placa}`} aria-valuenow={v.utilizacao_real_pct} aria-valuemin={0} aria-valuemax={100}>
+                    <div className="h-full rounded-full bg-blue-600" style={{ width: `${v.utilizacao_real_pct}%` }} />
                   </div>
                   <p className="mt-1 text-xs text-gray-600">
-                    {v.utilizacao_pct}% em uso · ociosa {v.ociosidade_pct}% · {v.horas_usadas} h reservadas
+                    Uso real {v.utilizacao_real_pct}% ({v.horas_em_uso} h) · reservado {v.reserva_pct}% ({v.horas_reservadas} h) · disponível {v.disponibilidade_pct}%
                   </p>
                 </div>
                 <p className="text-xs text-gray-600">
