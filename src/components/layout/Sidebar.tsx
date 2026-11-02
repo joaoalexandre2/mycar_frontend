@@ -15,6 +15,7 @@ import {
     Gauge,
     FileWarning,
     ShieldCheck,
+    Wallet,
     LogOut,
     X,
   } from "lucide-react";
@@ -204,6 +205,15 @@ import {
                     to="/frota/multas"
                     icon={<FileWarning size={19} />}
                     label="Multas"
+                    aoNavegar={aoFechar}
+                  />
+                )}
+
+                {perfil === "frota" && ehAdministradorOuGestor(usuario) && (
+                  <SidebarItem
+                    to="/frota/financeiro"
+                    icon={<Wallet size={19} />}
+                    label="Financeiro"
                     aoNavegar={aoFechar}
                   />
                 )}

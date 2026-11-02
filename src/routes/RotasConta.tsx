@@ -21,6 +21,7 @@ import { Cadastros } from "../pages/Frota/Cadastros";
 import { ConfiguracoesFrota } from "../pages/Frota/ConfiguracoesFrota";
 import { PainelFrota } from "../pages/Frota/PainelFrota";
 import { Multas } from "../pages/Frota/Multas";
+import { Financeiro as FinanceiroDaFrota } from "../pages/Frota/Financeiro";
 import { QrVeiculoPagina } from "../pages/Frota/QrVeiculoPagina";
 import { Configuracoes } from "../pages/Configuracoes/Configuracoes";
 import { Sugestoes } from "../pages/Sugestoes/Sugestoes";
@@ -125,6 +126,10 @@ export default function RotasConta() {
           <Route
             path="/frota/multas"
             element={<Multas />}
+          />
+          <Route
+            path="/frota/financeiro"
+            element={<FinanceiroDaFrota />}
           />
         </Route>
       </Route>
