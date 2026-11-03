@@ -16,6 +16,7 @@ import {
     FileWarning,
     ShieldCheck,
     Wallet,
+    TriangleAlert,
     LogOut,
     X,
   } from "lucide-react";
@@ -169,6 +170,15 @@ import {
                     to="/agenda"
                     icon={<CalendarDays size={19} />}
                     label="Agenda"
+                    aoNavegar={aoFechar}
+                  />
+                )}
+
+                {perfil === "frota" && (
+                  <SidebarItem
+                    to="/frota/ocorrencias"
+                    icon={<TriangleAlert size={19} />}
+                    label="Ocorrências"
                     aoNavegar={aoFechar}
                   />
                 )}
