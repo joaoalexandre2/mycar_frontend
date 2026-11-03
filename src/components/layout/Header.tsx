@@ -28,6 +28,7 @@ import { useEffect, useState } from "react";
     "/frota/configuracoes": { titulo: "Gestão da frota", subtitulo: "Motivos de troca, grupos de usuários, papéis e histórico de acessos." },
     "/frota/painel": { titulo: "Painel da frota", subtitulo: "Alertas, checklists e uso dos veículos." },
     "/frota/multas": { titulo: "Multas da frota", subtitulo: "Quem estava com o veículo em cada infração." },
+    "/frota/financeiro": { titulo: "Financeiro da frota", subtitulo: "Quanto cada veículo, motorista e centro de custo gastou." },
     "/estetica": { titulo: "Pátio", subtitulo: "Do check-in à entrega, com as fotos de cada carro." },
     "/estetica/placas": { titulo: "Histórico por placa", subtitulo: "Serviços, valores e retorno previsto de cada carro." },
     "/estetica/servicos": { titulo: "Serviços e pacotes", subtitulo: "O catálogo que aparece no pátio." },
