@@ -31,6 +31,7 @@ import { useEffect, useState } from "react";
     "/frota/multas": { titulo: "Multas da frota", subtitulo: "Quem estava com o veículo em cada infração." },
     "/frota/financeiro": { titulo: "Financeiro da frota", subtitulo: "Quanto cada veículo, motorista e centro de custo gastou." },
     "/frota/relatorios": { titulo: "Relatórios da frota", subtitulo: "Utilização, custos, multas e vencimentos, com exportação para o Excel." },
+    "/frota/checklists": { titulo: "Checklists da frota", subtitulo: "Os itens que o motorista confere na saída e na devolução." },
     "/estetica": { titulo: "Pátio", subtitulo: "Do check-in à entrega, com as fotos de cada carro." },
     "/estetica/placas": { titulo: "Histórico por placa", subtitulo: "Serviços, valores e retorno previsto de cada carro." },
     "/estetica/servicos": { titulo: "Serviços e pacotes", subtitulo: "O catálogo que aparece no pátio." },

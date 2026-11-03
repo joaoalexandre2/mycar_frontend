@@ -3,7 +3,7 @@ import { ClipboardCheck } from "lucide-react";
 import { Modal } from "../ui/Modal";
 import { checklistService } from "../../services/frotaDiferenciais";
 import { mensagemErro } from "../../services/api";
-import type { ChaveDoItemDoChecklist, MomentoDoChecklist, RespostaDeChecklists } from "../../types/frota";
+import type { ModeloDeChecklist, MomentoDoChecklist, RespostaDeChecklists, SituacaoDoItem } from "../../types/frota";
 
 const rotulo = "mb-1.5 block text-xs font-medium text-gray-700";
 
@@ -12,7 +12,23 @@ const TEXTO_DO_MOMENTO: Record<MomentoDoChecklist, string> = {
   devolucao: "devolução",
 };
 
-/** Checklist de saída ou de devolução de uma reserva: cada item OK ou com problema. */
+interface ItemDaTela {
+  chave: string;
+  rotulo: string;
+  obrigatorio: boolean;
+}
+
+interface Resposta {
+  situacao: SituacaoDoItem;
+  observacao: string;
+}
+
+/** O modelo do momento: o que é só dele, ou o que vale para os dois. */
+function modeloDoMomento(modelos: ModeloDeChecklist[], momento: MomentoDoChecklist): ModeloDeChecklist | null {
+  return modelos.find((m) => m.momento === momento) ?? modelos.find((m) => m.momento === "ambos") ?? null;
+}
+
+/** Checklist de saída ou de devolução de uma reserva, com os itens da empresa (ou os fixos, nas respostas antigas). */
 export function ChecklistModal({
   usoId,
   momento,
@@ -25,7 +41,7 @@ export function ChecklistModal({
   onClose: () => void;
 }) {
   const [dados, setDados] = useState<RespostaDeChecklists | null>(null);
-  const [respostas, setRespostas] = useState<Partial<Record<ChaveDoItemDoChecklist, boolean>>>({});
+  const [respostas, setRespostas] = useState<Record<string, Resposta>>({});
   const [observacoes, setObservacoes] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
@@ -48,25 +64,68 @@ export function ChecklistModal({
   }, [usoId]);
 
   const jaFeito = dados?.checklists.some((c) => c.momento === momento) ?? false;
-  const chaves = dados ? (Object.keys(dados.itens) as ChaveDoItemDoChecklist[]) : [];
-  const completo = chaves.length > 0 && chaves.every((c) => respostas[c] !== undefined);
+  // Com modelos, a tela segue o modelo e envia a situação. Sem eles (resposta antiga), segue os itens fixos.
+  const modelo = dados?.modelos ? modeloDoMomento(dados.modelos, momento) : null;
+  const itens: ItemDaTela[] = modelo
+    ? modelo.itens
+    : dados
+      ? (Object.entries(dados.itens) as [string, string][]).map(([chave, texto]) => ({ chave, rotulo: texto, obrigatorio: true }))
+      : [];
+  const comModelo = modelo !== null;
+
+  function responder(chave: string, parcial: Partial<Resposta>) {
+    setRespostas((atuais) => {
+      const anterior: Resposta = atuais[chave] ?? { situacao: "ok", observacao: "" };
+
+      return { ...atuais, [chave]: { ...anterior, ...parcial } };
+    });
+  }
 
   async function enviar(evento: FormEvent) {
     evento.preventDefault();
     setErro(null);
 
-    if (!completo) {
+    const faltando = itens.filter((i) => i.obrigatorio && respostas[i.chave] === undefined);
+
+    if (faltando.length > 0) {
       setErro("Marque cada item como OK ou com problema.");
+      return;
+    }
+
+    // Só o checklist do modelo pede a descrição do problema; o formato antigo não pedia.
+    const semDescricao = comModelo
+      ? itens.find((i) => respostas[i.chave]?.situacao === "problema" && respostas[i.chave].observacao.trim() === "")
+      : undefined;
+
+    if (semDescricao) {
+      setErro(`Descreva o problema em "${semDescricao.rotulo}".`);
       return;
     }
 
     try {
       setSalvando(true);
-      await checklistService.enviar(usoId, {
-        momento,
-        itens: chaves.map((item) => ({ item, ok: respostas[item] === true })),
-        observacoes: observacoes.trim() || null,
-      });
+
+      if (modelo) {
+        await checklistService.enviar(usoId, {
+          momento,
+          checklist_modelo_id: modelo.id,
+          itens: itens
+            .filter((i) => respostas[i.chave] !== undefined)
+            .map((i) => ({
+              item: i.chave,
+              situacao: respostas[i.chave].situacao,
+              observacao: respostas[i.chave].situacao === "problema" ? respostas[i.chave].observacao.trim() : null,
+            })),
+          observacoes: observacoes.trim() || null,
+        });
+      } else {
+        await checklistService.enviar(usoId, {
+          momento,
+          itens: itens.map((i) => ({ item: i.chave, ok: respostas[i.chave]?.situacao !== "problema" })),
+          observacoes: observacoes.trim() || null,
+        });
+      }
+
       onSalvo();
     } catch (error) {
       setErro(mensagemErro(error));
@@ -78,6 +137,7 @@ export function ChecklistModal({
   return (
     <Modal
       titulo={`Checklist de ${TEXTO_DO_MOMENTO[momento]}`}
+      subtitulo={modelo?.nome}
       icone={<ClipboardCheck size={16} />}
       onClose={onClose}
       larguraMax="max-w-lg"
@@ -90,19 +150,45 @@ export function ChecklistModal({
 
       {dados && !jaFeito && (
         <form onSubmit={(e) => void enviar(e)} className="space-y-4 px-6 py-5">
-          {chaves.map((chave) => (
-            <fieldset key={chave} className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 pb-3">
-              <legend className="w-full text-xs font-medium text-gray-900">{dados.itens[chave]}</legend>
-              <label className="flex items-center gap-1.5 text-xs text-gray-700">
-                <input type="radio" name={chave} checked={respostas[chave] === true} onChange={() => setRespostas((r) => ({ ...r, [chave]: true }))} />
-                OK
-              </label>
-              <label className="flex items-center gap-1.5 text-xs text-red-700">
-                <input type="radio" name={chave} checked={respostas[chave] === false} onChange={() => setRespostas((r) => ({ ...r, [chave]: false }))} />
-                Problema
-              </label>
-            </fieldset>
-          ))}
+          {itens.map((item) => {
+            const resposta = respostas[item.chave];
+
+            return (
+              <fieldset key={item.chave} className="space-y-2 border-b border-gray-100 pb-3">
+                <legend className="w-full text-xs font-medium text-gray-900">
+                  {item.rotulo}
+                  {item.obrigatorio && <span className="text-red-600"> *</span>}
+                </legend>
+                <div className="flex flex-wrap items-center gap-4">
+                  <label className="flex items-center gap-1.5 text-xs text-gray-700">
+                    <input type="radio" name={item.chave} checked={resposta?.situacao === "ok"} onChange={() => responder(item.chave, { situacao: "ok" })} />
+                    OK
+                  </label>
+                  <label className="flex items-center gap-1.5 text-xs text-red-700">
+                    <input type="radio" name={item.chave} checked={resposta?.situacao === "problema"} onChange={() => responder(item.chave, { situacao: "problema" })} />
+                    Problema
+                  </label>
+                  {comModelo && (
+                    <label className="flex items-center gap-1.5 text-xs text-gray-600">
+                      <input type="radio" name={item.chave} checked={resposta?.situacao === "na"} onChange={() => responder(item.chave, { situacao: "na" })} />
+                      Não se aplica
+                    </label>
+                  )}
+                </div>
+                {comModelo && resposta?.situacao === "problema" && (
+                  <input
+                    type="text"
+                    aria-label={`Descreva o problema em ${item.rotulo}`}
+                    placeholder="Descreva o problema"
+                    maxLength={255}
+                    value={resposta.observacao}
+                    onChange={(e) => responder(item.chave, { observacao: e.target.value })}
+                    className="h-9 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+                  />
+                )}
+              </fieldset>
+            );
+          })}
 
           <div>
             <label htmlFor="checklist-obs" className={rotulo}>Observações (opcional)</label>

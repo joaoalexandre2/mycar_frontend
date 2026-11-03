@@ -91,6 +91,21 @@ export interface TipoServico {
   rotulo: string;
 }
 
+export type NaturezaServico = "preventiva" | "corretiva";
+
+export interface PecaDoServico {
+  descricao: string;
+  quantidade: number;
+  valorUnitario: number;
+}
+
+/** Nota fiscal, recibo ou orçamento do serviço. A url é um link temporário. */
+export interface AnexoDoServico {
+  id: number;
+  nome: string;
+  url: string;
+}
+
 export interface Servico {
   id: number;
   veiculoContaId: number;
@@ -113,6 +128,12 @@ export interface Servico {
   diasRestantes: number | null;
   kmRestante: number | null;
   situacao: SituacaoServico;
+  natureza: NaturezaServico | null;
+  oficina: string | null;
+  valorPecas: number | null;
+  valorMaoDeObra: number | null;
+  pecas: PecaDoServico[];
+  anexos: AnexoDoServico[];
 }
 
 export interface ServicosDaConta {
@@ -130,6 +151,16 @@ export interface NovoServico {
   observacoes?: string | null;
   intervalo_meses?: number | null;
   intervalo_km?: number | null;
+  natureza?: NaturezaServico | null;
+  oficina?: string | null;
+  valor_mao_obra?: number | null;
+  pecas?: NovaPecaDoServico[];
+}
+
+export interface NovaPecaDoServico {
+  descricao: string;
+  quantidade: number;
+  valor_unitario: number;
 }
 
 export type TipoDocumento = "crlv" | "vistoria" | "outro";
