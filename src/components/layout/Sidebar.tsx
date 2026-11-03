@@ -17,6 +17,7 @@ import {
     ShieldCheck,
     Wallet,
     TriangleAlert,
+    FileText,
     LogOut,
     X,
   } from "lucide-react";
@@ -224,6 +225,15 @@ import {
                     to="/frota/financeiro"
                     icon={<Wallet size={19} />}
                     label="Financeiro"
+                    aoNavegar={aoFechar}
+                  />
+                )}
+
+                {perfil === "frota" && ehAdministradorOuGestor(usuario) && (
+                  <SidebarItem
+                    to="/frota/relatorios"
+                    icon={<FileText size={19} />}
+                    label="Relatórios"
                     aoNavegar={aoFechar}
                   />
                 )}
