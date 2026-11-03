@@ -8,12 +8,18 @@ import type {
 interface AbastecimentoApi {
   id: number;
   data: string;
+  hora: string | null;
   km: number;
   litros: string | number;
   valor_total: string | number;
   tanque_cheio: boolean;
   combustivel: string | null;
   posto: string | null;
+  motorista_id: number | null;
+  justificativa: string | null;
+  alertas: { codigo: string; mensagem: string }[] | null;
+  comprovante_url: string | null;
+  hodometro_url: string | null;
   preco_litro: number | null;
   consumo_km_l: number | null;
   custo_por_km: number | null;
@@ -50,6 +56,12 @@ export function mapearAbastecimentos(resposta: AbastecimentosApi): Abastecimento
       precoLitro: item.preco_litro,
       consumoKmL: item.consumo_km_l,
       custoPorKm: item.custo_por_km,
+      hora: item.hora,
+      motoristaId: item.motorista_id,
+      justificativa: item.justificativa,
+      alertas: item.alertas ?? [],
+      comprovanteUrl: item.comprovante_url,
+      hodometroUrl: item.hodometro_url,
     })),
     resumo: {
       consumoMedioKmL: resposta.resumo.consumo_medio_km_l,
@@ -61,6 +73,52 @@ export function mapearAbastecimentos(resposta: AbastecimentosApi): Abastecimento
       quantidade: resposta.resumo.quantidade,
     },
   };
+}
+
+/**
+ * Erros de validação da API por campo (ex.: { km: [...], justificativa: [...] }).
+ * Nulo quando o erro não é de validação.
+ */
+export function errosDeValidacao(error: unknown): Record<string, string[]> | null {
+  const erros = (error as { response?: { status?: number; data?: { errors?: Record<string, string[]> } } })
+    .response?.data?.errors;
+
+  return erros ?? null;
+}
+
+/** Campos do abastecimento em multipart, quando há foto para enviar. */
+function formularioDoAbastecimento(abastecimento: NovoAbastecimento): FormData {
+  const corpo = new FormData();
+
+  corpo.append("data", abastecimento.data);
+  corpo.append("km", String(abastecimento.km));
+  corpo.append("litros", String(abastecimento.litros));
+  corpo.append("valor_total", String(abastecimento.valor_total));
+  corpo.append("tanque_cheio", abastecimento.tanque_cheio ? "1" : "0");
+
+  const opcionais: [string, string | number | null | undefined][] = [
+    ["combustivel", abastecimento.combustivel],
+    ["posto", abastecimento.posto],
+    ["hora", abastecimento.hora],
+    ["motorista_id", abastecimento.motorista_id],
+    ["justificativa", abastecimento.justificativa],
+  ];
+
+  for (const [campo, valor] of opcionais) {
+    if (valor !== null && valor !== undefined && valor !== "") {
+      corpo.append(campo, String(valor));
+    }
+  }
+
+  if (abastecimento.comprovante) {
+    corpo.append("comprovante", abastecimento.comprovante, "comprovante.jpg");
+  }
+
+  if (abastecimento.hodometro) {
+    corpo.append("hodometro", abastecimento.hodometro, "hodometro.jpg");
+  }
+
+  return corpo;
 }
 
 export const abastecimentoService = {
@@ -75,9 +133,12 @@ export const abastecimentoService = {
     veiculoId: number,
     abastecimento: NovoAbastecimento,
   ): Promise<AbastecimentosDoVeiculo> {
+    const temFoto = Boolean(abastecimento.comprovante || abastecimento.hodometro);
+    const corpo = temFoto ? formularioDoAbastecimento(abastecimento) : abastecimento;
+
     const { data } = await api.post<AbastecimentosApi>(
       `/conta/veiculos/${veiculoId}/abastecimentos`,
-      abastecimento,
+      corpo,
     );
     return mapearAbastecimentos(data);
   },

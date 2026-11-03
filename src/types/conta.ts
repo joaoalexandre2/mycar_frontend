@@ -225,6 +225,13 @@ export interface Abastecimento {
   /** Só nos tanques cheios que fecham um intervalo. */
   consumoKmL: number | null;
   custoPorKm: number | null;
+  hora: string | null;
+  motoristaId: number | null;
+  justificativa: string | null;
+  /** Avisos de inconsistência: não bloqueiam o registro, só ficam visíveis para conferir. */
+  alertas: { codigo: string; mensagem: string }[];
+  comprovanteUrl: string | null;
+  hodometroUrl: string | null;
 }
 
 export interface ResumoAbastecimentos {
@@ -255,6 +262,12 @@ export interface NovoAbastecimento {
   tanque_cheio: boolean;
   combustivel?: string | null;
   posto?: string | null;
+  hora?: string | null;
+  motorista_id?: number | null;
+  /** Obrigatória quando o km ou um possível duplicado pedem explicação. */
+  justificativa?: string | null;
+  comprovante?: Blob | null;
+  hodometro?: Blob | null;
 }
 
 export type TipoSeguro = "apolice" | "proposta";

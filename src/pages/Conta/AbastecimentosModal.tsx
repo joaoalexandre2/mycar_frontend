@@ -1,10 +1,12 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { useConfirmar } from "../../hooks/useNotificacoes";
-import { Fuel, Trash2 } from "lucide-react";
-import { abastecimentoService } from "../../services/conta";
+import { Camera, Fuel, Trash2 } from "lucide-react";
+import { abastecimentoService, errosDeValidacao } from "../../services/conta";
+import { motoristasService } from "../../services/frota";
 import { mensagemErro } from "../../services/api";
 import { Modal } from "../../components/ui/Modal";
 import { lerInteiroBR, lerNumeroBR } from "../../utils/numero";
+import { redimensionar } from "../../utils/imagem";
 import { temEstimativas, tipoDe } from "../../utils/tipoVeiculo";
 import { formatarData, formatarKm, formatarMoeda, hojeISO } from "../../utils/formatters";
 import {
@@ -12,6 +14,7 @@ import {
   type AbastecimentosDoVeiculo,
   type VeiculoConta,
 } from "../../types/conta";
+import type { Motorista } from "../../types/frota";
 
 const classeCampo =
   "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
@@ -44,6 +47,16 @@ export function AbastecimentosModal({
   const [cheio, setCheio] = useState(true);
   const [combustivel, setCombustivel] = useState("");
   const [posto, setPosto] = useState("");
+  const [hora, setHora] = useState("");
+  const [motoristaId, setMotoristaId] = useState("");
+  const [motoristas, setMotoristas] = useState<Motorista[]>([]);
+  // Quando o km ou um possível duplicado pedem explicação, o formulário pede a justificativa.
+  const [precisaJustificativa, setPrecisaJustificativa] = useState(false);
+  const [justificativa, setJustificativa] = useState("");
+  const [comprovante, setComprovante] = useState<Blob | null>(null);
+  const [hodometro, setHodometro] = useState<Blob | null>(null);
+  const entradaComprovante = useRef<HTMLInputElement>(null);
+  const entradaHodometro = useRef<HTMLInputElement>(null);
 
   // Tanque cheio: os litros são a capacidade do tanque na ficha do modelo e o
   // campo fica travado. Sem a capacidade na ficha, a pessoa digita os litros.
@@ -67,9 +80,31 @@ export function AbastecimentosModal({
     };
   }, [veiculo.id]);
 
+  useEffect(() => {
+    let ativo = true;
+
+    motoristasService
+      .listar()
+      .then((lista) => {
+        if (ativo) setMotoristas(lista);
+      })
+      .catch(() => {
+        if (ativo) setMotoristas([]);
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, []);
+
   async function registrar(event: FormEvent) {
     event.preventDefault();
     setErro(null);
+
+    if (precisaJustificativa && justificativa.trim().length < 10) {
+      setErro("Explique o caso em pelo menos 10 letras antes de registrar.");
+      return;
+    }
 
     const kmLido = lerInteiroBR(km);
     // Litros costumam vir com casas decimais ("38.5"): ponto não é milhar aqui.
@@ -106,16 +141,54 @@ export function AbastecimentosModal({
         tanque_cheio: cheio,
         combustivel: combustivel || null,
         posto: posto.trim() || null,
+        hora: hora || null,
+        motorista_id: motoristaId ? Number(motoristaId) : null,
+        justificativa: precisaJustificativa ? justificativa.trim() : null,
+        comprovante,
+        hodometro,
       });
       setDados(resposta);
       setKm("");
       setLitros("");
       setValor("");
       setPosto("");
+      setHora("");
+      setMotoristaId("");
+      setJustificativa("");
+      setPrecisaJustificativa(false);
+      setComprovante(null);
+      setHodometro(null);
     } catch (error) {
-      setErro(mensagemErro(error));
+      const erros = errosDeValidacao(error);
+
+      if (erros?.justificativa) {
+        // A API recusou por um dado que pede explicação: mostra o motivo e pede a justificativa.
+        setPrecisaJustificativa(true);
+        const motivos = Object.entries(erros)
+          .filter(([campo]) => campo !== "justificativa")
+          .flatMap(([, mensagens]) => mensagens);
+        setErro([...motivos, erros.justificativa[0]].join(" "));
+      } else {
+        setErro(mensagemErro(error));
+      }
     } finally {
       setSalvando(false);
+    }
+  }
+
+  async function escolherFoto(
+    evento: ChangeEvent<HTMLInputElement>,
+    guardar: (foto: Blob | null) => void,
+  ) {
+    const arquivo = evento.target.files?.[0];
+    evento.target.value = "";
+
+    if (!arquivo) return;
+
+    try {
+      guardar(await redimensionar(arquivo, 1280, 0.8));
+    } catch (error) {
+      setErro(mensagemErro(error));
     }
   }
 
@@ -249,6 +322,33 @@ export function AbastecimentosModal({
             </label>
           </div>
 
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <label className="block text-xs text-gray-500">
+              Hora (opcional)
+              <input
+                type="time"
+                value={hora}
+                onChange={(e) => setHora(e.target.value)}
+                className={`mt-1 ${classeCampo}`}
+              />
+            </label>
+            <label className="block text-xs text-gray-500">
+              Quem abasteceu (opcional)
+              <select
+                value={motoristaId}
+                onChange={(e) => setMotoristaId(e.target.value)}
+                className={`mt-1 ${classeCampo}`}
+              >
+                <option value="">—</option>
+                {motoristas.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.nome}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
           <label className="flex items-center gap-2 text-xs text-gray-600">
             <input
               type="checkbox"
@@ -258,6 +358,55 @@ export function AbastecimentosModal({
             />
             Encheu o tanque (necessário para calcular o consumo)
           </label>
+
+          <div className="flex flex-wrap gap-2">
+            <input
+              ref={entradaComprovante}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              aria-label="Anexar foto do comprovante"
+              onChange={(e) => void escolherFoto(e, setComprovante)}
+            />
+            <input
+              ref={entradaHodometro}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              aria-label="Anexar foto do hodômetro"
+              onChange={(e) => void escolherFoto(e, setHodometro)}
+            />
+            <button
+              type="button"
+              onClick={() => entradaComprovante.current?.click()}
+              className="flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+            >
+              <Camera size={13} /> {comprovante ? "Comprovante anexado" : "Foto do comprovante"}
+            </button>
+            <button
+              type="button"
+              onClick={() => entradaHodometro.current?.click()}
+              className="flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+            >
+              <Camera size={13} /> {hodometro ? "Hodômetro anexado" : "Foto do hodômetro"}
+            </button>
+          </div>
+
+          {precisaJustificativa && (
+            <label className="block text-xs text-gray-700">
+              Justificativa (obrigatória para este registro)
+              <textarea
+                value={justificativa}
+                onChange={(e) => setJustificativa(e.target.value)}
+                rows={2}
+                maxLength={255}
+                placeholder="Ex.: o odômetro foi trocado no painel em maio."
+                className="mt-1 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-700 outline-none focus:border-blue-500"
+              />
+            </label>
+          )}
 
           {litrosTravados && (
             <p className="text-xs text-gray-500">
@@ -309,12 +458,37 @@ export function AbastecimentosModal({
                     {formatarData(item.data)} · {formatarKm(item.km)}
                   </p>
                   <p className="mt-1 text-xs text-gray-500">
+                    {item.hora && `${item.hora} · `}
                     {numero(item.litros, 2, " l")} · {formatarMoeda(item.valorTotal)}
                     {item.precoLitro !== null && ` · ${formatarMoeda(item.precoLitro)}/l`}
                     {item.combustivel && ` · ${item.combustivel}`}
                     {item.posto && ` · ${item.posto}`}
+                    {item.motoristaId && motoristas.find((m) => m.id === item.motoristaId)?.nome && ` · ${motoristas.find((m) => m.id === item.motoristaId)?.nome}`}
                     {!item.tanqueCheio && " · parcial"}
                   </p>
+                  {item.alertas.length > 0 && (
+                    <ul className="mt-1 space-y-0.5">
+                      {item.alertas.map((alerta) => (
+                        <li key={alerta.codigo} className="text-xs text-amber-700">
+                          {alerta.mensagem}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {(item.comprovanteUrl || item.hodometroUrl) && (
+                    <p className="mt-1 flex gap-3 text-xs">
+                      {item.comprovanteUrl && (
+                        <a href={item.comprovanteUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-600 hover:text-blue-700">
+                          Comprovante
+                        </a>
+                      )}
+                      {item.hodometroUrl && (
+                        <a href={item.hodometroUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-600 hover:text-blue-700">
+                          Hodômetro
+                        </a>
+                      )}
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex shrink-0 items-center gap-3">
