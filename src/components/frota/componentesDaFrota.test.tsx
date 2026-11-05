@@ -165,6 +165,25 @@ describe("UsoDetalheModal", () => {
     await waitFor(() => expect(saida).toHaveBeenCalledWith(7, 45200, null, "Visita a clientes"));
   });
 
+  it("mostra ao gestor a trilha das trocas de motivo", async () => {
+    vi.spyOn(usosService, "eventos").mockResolvedValue([
+      { id: 1, acao: "reservou", usuario: "Ana", dados: {}, motivo: null, em: "2026-11-05T10:00:00" },
+      {
+        id: 2,
+        acao: "mudou_motivo",
+        usuario: "Salsicha",
+        dados: { antes: "Visita a clientes", depois: "Entrega em Campinas" },
+        motivo: null,
+        em: "2026-11-05T11:00:00",
+      },
+    ]);
+    detalhe(uso());
+
+    expect(await screen.findByText("Histórico do motivo")).toBeInTheDocument();
+    expect(screen.getByText(/Salsicha: Visita a clientes → Entrega em Campinas/)).toBeInTheDocument();
+    expect(screen.queryByText(/Ana: /)).not.toBeInTheDocument();
+  });
+
   it("deixa alterar o motivo na saída e envia o novo texto", async () => {
     const saida = vi.spyOn(usosService, "registrarSaida").mockResolvedValue(uso({ status: "em_uso" }));
     detalhe(uso());

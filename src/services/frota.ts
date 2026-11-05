@@ -317,6 +317,16 @@ function corpoDeKm(
   return corpo;
 }
 
+/** Um registro da trilha de auditoria de um uso. `dados` muda conforme a ação. */
+export interface EventoDoUso {
+  id: number;
+  acao: string;
+  usuario: string | null;
+  dados: Record<string, unknown> | null;
+  motivo: string | null;
+  em: string;
+}
+
 export const usosService = {
   async listar(filtro: FiltroAgenda): Promise<UsoVeiculo[]> {
     const { data } = await api.get<{ usos: UsoApi[] }>("/conta/usos", {
@@ -379,6 +389,13 @@ export const usosService = {
   },
 
   /** Anexa ou troca a foto de um momento já registrado. */
+  /** Trilha de auditoria do uso (quem fez o quê, e quando). Só o administrador e o gestor veem. */
+  async eventos(id: number): Promise<EventoDoUso[]> {
+    const { data } = await api.get<EventoDoUso[]>(`/conta/usos/${id}/eventos`);
+
+    return data;
+  },
+
   async anexarFoto(id: number, momento: "saida" | "chegada", foto: Blob): Promise<UsoVeiculo> {
     const corpo = new FormData();
     corpo.append("foto", foto, "hodometro.jpg");
