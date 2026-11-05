@@ -106,7 +106,7 @@ import {
           }`}
         >
           {/* Logo */}
-          <div className="flex items-center justify-between gap-3 px-2 pb-8">
+          <div className="flex shrink-0 items-center justify-between gap-3 px-2 pb-8">
             <div className="flex items-center gap-3">
               <div
                 data-logo
@@ -136,8 +136,8 @@ import {
             </button>
           </div>
 
-          {/* Menu */}
-          <nav aria-label="Principal" className="flex flex-col gap-1">
+          {/* Menu: rola sozinho, para o usuário e o botão Sair não saírem da tela em celular baixo */}
+          <nav aria-label="Principal" className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto pr-1">
             <p className="mb-2 px-2 text-xs font-bold tracking-widest text-gray-400">
               MENU
             </p>
@@ -344,7 +344,7 @@ import {
           </nav>
 
           {/* Usuário */}
-          <div className="mt-auto border-t border-gray-800 pt-4">
+          <div className="mt-auto shrink-0 border-t border-gray-800 pt-4">
             <div className="flex items-center gap-3 px-2">
               <Avatar nome={usuario?.name} foto={usuario?.foto} />
 
