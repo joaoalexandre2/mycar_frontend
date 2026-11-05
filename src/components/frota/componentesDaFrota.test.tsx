@@ -8,6 +8,7 @@ import { CapturaHodometro } from "./CapturaHodometro";
 import { UsoDetalheModal } from "./UsoDetalheModal";
 import { ImportarPlanilhaModal } from "./ImportarPlanilhaModal";
 import { ErroDePlanilha, usosService } from "../../services/frota";
+import { lerKmDaFoto } from "../../utils/ocrHodometro";
 import type { UsoVeiculo } from "../../types/frota";
 
 const fotoReduzida = new Blob(["jpeg"], { type: "image/jpeg" });
@@ -15,6 +16,11 @@ const fotoReduzida = new Blob(["jpeg"], { type: "image/jpeg" });
 vi.mock("../../utils/imagem", async (original) => ({
   ...(await original<typeof import("../../utils/imagem")>()),
   redimensionar: vi.fn(async () => fotoReduzida),
+}));
+
+// O OCR de verdade baixa o motor e os dados de idioma; nos testes da tela ele não lê nada.
+vi.mock("../../utils/ocrHodometro", () => ({
+  lerKmDaFoto: vi.fn(async () => null),
 }));
 
 beforeEach(() => {
@@ -182,6 +188,16 @@ describe("UsoDetalheModal", () => {
     expect(await screen.findByText("Histórico do motivo")).toBeInTheDocument();
     expect(screen.getByText(/Salsicha: Visita a clientes → Entrega em Campinas/)).toBeInTheDocument();
     expect(screen.queryByText(/Ana: /)).not.toBeInTheDocument();
+  });
+
+  it("preenche o km lido da foto quando o campo está vazio", async () => {
+    vi.mocked(lerKmDaFoto).mockResolvedValueOnce(45230);
+    detalhe(uso());
+
+    await userEvent.upload(screen.getByTestId("entrada-foto-hodometro"), new File(["p"], "p.jpg", { type: "image/jpeg" }));
+
+    await waitFor(() => expect(screen.getByLabelText("Km de saída")).toHaveValue("45230"));
+    expect(screen.getByRole("status")).toHaveTextContent("Km lido da foto: 45230");
   });
 
   it("deixa alterar o motivo na saída e envia o novo texto", async () => {

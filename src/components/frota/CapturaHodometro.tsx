@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { Camera, Trash2 } from "lucide-react";
 import { redimensionar } from "../../utils/imagem";
+import { lerKmDaFoto } from "../../utils/ocrHodometro";
 import { mensagemErro } from "../../services/api";
 
 /** Maior lado da foto do painel, em pixels: dá para ler o número e sobe rápido no celular. */
@@ -33,6 +34,8 @@ export function CapturaHodometro({
   const entrada = useRef<HTMLInputElement>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [processando, setProcessando] = useState(false);
+  const [lendo, setLendo] = useState(false);
+  const [aviso, setAviso] = useState<string | null>(null);
 
   // A prévia é um link temporário do navegador: libera quando a foto troca ou sai.
   const previa = useMemo(() => (foto ? URL.createObjectURL(foto) : null), [foto]);
@@ -55,14 +58,41 @@ export function CapturaHodometro({
     }
 
     setErro(null);
+    setAviso(null);
     setProcessando(true);
 
     try {
-      onFoto(await redimensionar(arquivo, LADO_MAXIMO, 0.8));
+      const reduzida = await redimensionar(arquivo, LADO_MAXIMO, 0.8);
+
+      onFoto(reduzida);
+      setProcessando(false);
+      await preencherKmDaFoto(reduzida);
     } catch (error) {
       setErro(mensagemErro(error));
     } finally {
       setProcessando(false);
+    }
+  }
+
+  // Lê o km da foto. Preenche o campo se estiver vazio; se já tiver número, só avisa a diferença.
+  async function preencherKmDaFoto(foto: Blob) {
+    setLendo(true);
+
+    try {
+      const lido = await lerKmDaFoto(foto);
+
+      if (lido === null) {
+        setAviso("Não consegui ler o km na foto. Digite o número.");
+      } else if (km.trim() === "") {
+        onKm(String(lido));
+        setAviso(`Km lido da foto: ${lido}. Confira antes de registrar.`);
+      } else if (Number(km.replace(/\D/g, "")) !== lido) {
+        setAviso(`A foto mostra ${lido}. Confira o km digitado.`);
+      }
+    } catch {
+      setAviso("Não consegui ler a foto. Digite o km.");
+    } finally {
+      setLendo(false);
     }
   }
 
@@ -124,6 +154,14 @@ export function CapturaHodometro({
           </div>
         )}
       </div>
+
+      {lendo && <p className="text-xs text-gray-500">Lendo o km da foto...</p>}
+
+      {aviso && !lendo && (
+        <p role="status" className="text-xs text-gray-600">
+          {aviso}
+        </p>
+      )}
 
       {erro && (
         <p role="alert" className="text-xs text-red-600">
