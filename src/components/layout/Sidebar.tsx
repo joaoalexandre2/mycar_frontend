@@ -136,8 +136,8 @@ import {
             </button>
           </div>
 
-          {/* Menu: rola sozinho, para o usuário e o botão Sair não saírem da tela em celular baixo */}
-          <nav aria-label="Principal" className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto pr-1">
+          {/* Menu */}
+          <nav aria-label="Principal" className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
             <p className="mb-2 px-2 text-xs font-bold tracking-widest text-gray-400">
               MENU
             </p>
