@@ -108,6 +108,7 @@ export function UsoDetalheModal({
   const [trocandoCentro, setTrocandoCentro] = useState(false);
   const [checklistDe, setChecklistDe] = useState<MomentoDoChecklist | null>(null);
   const [km, setKm] = useState("");
+  const [motivo, setMotivo] = useState(uso.finalidade ?? "");
   const [foto, setFoto] = useState<Blob | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
@@ -128,7 +129,7 @@ export function UsoDetalheModal({
     try {
       setEnviando(true);
       const atualizado = registrandoSaida
-        ? await usosService.registrarSaida(uso.id, lido.valor, foto)
+        ? await usosService.registrarSaida(uso.id, lido.valor, foto, motivo.trim())
         : await usosService.registrarChegada(uso.id, lido.valor, foto);
 
       setKm("");
@@ -263,10 +264,27 @@ export function UsoDetalheModal({
               {registrandoSaida ? "Registrar a saída" : "Registrar a chegada"}
             </p>
 
-            {uso.finalidade && (
-              <p className="text-xs text-gray-600">
-                <span className="font-semibold text-gray-800">Motivo:</span> {uso.finalidade}
-              </p>
+            {registrandoSaida ? (
+              <div>
+                <label htmlFor="uso-motivo-saida" className="mb-1.5 block text-xs font-medium text-gray-700">
+                  Motivo
+                </label>
+                <input
+                  id="uso-motivo-saida"
+                  type="text"
+                  value={motivo}
+                  onChange={(e) => setMotivo(e.target.value)}
+                  maxLength={160}
+                  placeholder="Ex.: entrega em Campinas"
+                  className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+                />
+              </div>
+            ) : (
+              uso.finalidade && (
+                <p className="text-xs text-gray-600">
+                  <span className="font-semibold text-gray-800">Motivo:</span> {uso.finalidade}
+                </p>
+              )
             )}
 
             <CapturaHodometro

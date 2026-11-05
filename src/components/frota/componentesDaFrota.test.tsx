@@ -137,8 +137,7 @@ describe("UsoDetalheModal", () => {
     expect(screen.getByText("AAA1B25 · Strada")).toBeInTheDocument();
     expect(screen.getByText("Maria Silva")).toBeInTheDocument();
     expect(screen.getByText("Entregas")).toBeInTheDocument();
-    expect(screen.getAllByText("Visita a clientes")).toHaveLength(2);
-    expect(screen.getByText("Motivo:").parentElement).toHaveTextContent("Motivo: Visita a clientes");
+    expect(screen.getByText("Visita a clientes")).toBeInTheDocument();
     expect(screen.getByText("Último km registrado: 45.200 km.")).toBeInTheDocument();
     expect(screen.getByText("Agendado")).toBeInTheDocument();
   });
@@ -152,7 +151,7 @@ describe("UsoDetalheModal", () => {
     await screen.findByAltText("Prévia da foto do hodômetro");
     await userEvent.click(screen.getByRole("button", { name: "Registrar saída" }));
 
-    await waitFor(() => expect(saida).toHaveBeenCalledWith(7, 45200, fotoReduzida));
+    await waitFor(() => expect(saida).toHaveBeenCalledWith(7, 45200, fotoReduzida, "Visita a clientes"));
     expect(props.onAtualizado).toHaveBeenCalledWith(expect.objectContaining({ status: "em_uso" }));
   });
 
@@ -163,7 +162,20 @@ describe("UsoDetalheModal", () => {
     await userEvent.type(screen.getByLabelText("Km de saída"), "45.200");
     await userEvent.click(screen.getByRole("button", { name: "Registrar saída" }));
 
-    await waitFor(() => expect(saida).toHaveBeenCalledWith(7, 45200, null));
+    await waitFor(() => expect(saida).toHaveBeenCalledWith(7, 45200, null, "Visita a clientes"));
+  });
+
+  it("deixa alterar o motivo na saída e envia o novo texto", async () => {
+    const saida = vi.spyOn(usosService, "registrarSaida").mockResolvedValue(uso({ status: "em_uso" }));
+    detalhe(uso());
+
+    const motivo = screen.getByLabelText("Motivo");
+    await userEvent.clear(motivo);
+    await userEvent.type(motivo, "  Entrega em Campinas ");
+    await userEvent.type(screen.getByLabelText("Km de saída"), "45200");
+    await userEvent.click(screen.getByRole("button", { name: "Registrar saída" }));
+
+    await waitFor(() => expect(saida).toHaveBeenCalledWith(7, 45200, null, "Entrega em Campinas"));
   });
 
   it("não envia km inválido e avisa", async () => {

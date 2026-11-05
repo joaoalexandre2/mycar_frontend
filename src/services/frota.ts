@@ -293,14 +293,25 @@ function mapearAlertaDeConflito(alerta: AlertaDeConflitoApi): AlertaDeConflito {
   };
 }
 
-/** Km e, se houver, a foto do hodômetro (já reduzida no navegador). */
-function corpoDeKm(campo: "km_saida" | "km_chegada", km: number, foto?: Blob | null): FormData | Record<string, number> {
+/**
+ * Km e, se houver, a foto do hodômetro (já reduzida no navegador) e o motivo.
+ * Motivo vazio vai como "" e o servidor guarda null.
+ */
+function corpoDeKm(
+  campo: "km_saida" | "km_chegada",
+  km: number,
+  foto?: Blob | null,
+  motivo?: string,
+): FormData | Record<string, string | number> {
+  const extras: Record<string, string> = motivo === undefined ? {} : { finalidade: motivo };
+
   if (!foto) {
-    return { [campo]: km };
+    return { [campo]: km, ...extras };
   }
 
   const corpo = new FormData();
   corpo.append(campo, String(km));
+  if (motivo !== undefined) corpo.append("finalidade", motivo);
   corpo.append("foto", foto, "hodometro.jpg");
 
   return corpo;
@@ -355,8 +366,8 @@ export const usosService = {
     return data.map(mapearTroca);
   },
 
-  async registrarSaida(id: number, km: number, foto?: Blob | null): Promise<UsoVeiculo> {
-    const { data } = await api.post<UsoApi>(`/conta/usos/${id}/saida`, corpoDeKm("km_saida", km, foto));
+  async registrarSaida(id: number, km: number, foto?: Blob | null, motivo?: string): Promise<UsoVeiculo> {
+    const { data } = await api.post<UsoApi>(`/conta/usos/${id}/saida`, corpoDeKm("km_saida", km, foto, motivo));
 
     return mapearUso(data);
   },
