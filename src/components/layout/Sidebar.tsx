@@ -386,7 +386,7 @@ import {
         end={to === "/"}
         onClick={aoNavegar}
         className={({ isActive }) =>
-          `flex h-11 w-full items-center gap-3 rounded-lg px-3 text-sm transition ${
+          `flex h-11 w-full shrink-0 items-center gap-3 rounded-lg px-3 text-sm transition ${
             isActive
               ? "bg-blue-600 text-white"
               : "text-gray-400 hover:bg-gray-800 hover:text-white"
