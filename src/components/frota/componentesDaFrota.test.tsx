@@ -137,7 +137,8 @@ describe("UsoDetalheModal", () => {
     expect(screen.getByText("AAA1B25 · Strada")).toBeInTheDocument();
     expect(screen.getByText("Maria Silva")).toBeInTheDocument();
     expect(screen.getByText("Entregas")).toBeInTheDocument();
-    expect(screen.getByText("Visita a clientes")).toBeInTheDocument();
+    expect(screen.getAllByText("Visita a clientes")).toHaveLength(2);
+    expect(screen.getByText("Motivo:").parentElement).toHaveTextContent("Motivo: Visita a clientes");
     expect(screen.getByText("Último km registrado: 45.200 km.")).toBeInTheDocument();
     expect(screen.getByText("Agendado")).toBeInTheDocument();
   });

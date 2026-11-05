@@ -263,6 +263,12 @@ export function UsoDetalheModal({
               {registrandoSaida ? "Registrar a saída" : "Registrar a chegada"}
             </p>
 
+            {uso.finalidade && (
+              <p className="text-xs text-gray-600">
+                <span className="font-semibold text-gray-800">Motivo:</span> {uso.finalidade}
+              </p>
+            )}
+
             <CapturaHodometro
               rotulo={registrandoSaida ? "Km de saída" : "Km de chegada"}
               km={km}
