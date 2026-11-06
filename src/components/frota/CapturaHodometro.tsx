@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { Camera, Trash2 } from "lucide-react";
 import { redimensionar } from "../../utils/imagem";
-import { lerKmDaFoto } from "../../utils/ocrHodometro";
+import { lerKmDaFoto, recortarImagem, type Retangulo } from "../../utils/ocrHodometro";
 import { mensagemErro } from "../../services/api";
+import { RecorteDoVisor } from "./RecorteDoVisor";
 
 /** Maior lado da foto do painel, em pixels: dá para ler o número e sobe rápido no celular. */
 const LADO_MAXIMO = 1280;
@@ -36,6 +37,7 @@ export function CapturaHodometro({
   const [processando, setProcessando] = useState(false);
   const [lendo, setLendo] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
+  const [recortando, setRecortando] = useState(false);
 
   // A prévia é um link temporário do navegador: libera quando a foto troca ou sai.
   const previa = useMemo(() => (foto ? URL.createObjectURL(foto) : null), [foto]);
@@ -62,15 +64,26 @@ export function CapturaHodometro({
     setProcessando(true);
 
     try {
-      const reduzida = await redimensionar(arquivo, LADO_MAXIMO, 0.8);
-
-      onFoto(reduzida);
-      setProcessando(false);
-      await preencherKmDaFoto(reduzida);
+      onFoto(await redimensionar(arquivo, LADO_MAXIMO, 0.8));
+      // O motorista marca o visor antes da leitura (ver RecorteDoVisor).
+      setRecortando(true);
     } catch (error) {
       setErro(mensagemErro(error));
     } finally {
       setProcessando(false);
+    }
+  }
+
+  // Lê só a área marcada no visor e preenche o km.
+  async function lerVisor(area: Retangulo) {
+    if (!foto) return;
+
+    setRecortando(false);
+
+    try {
+      await preencherKmDaFoto(await recortarImagem(foto, area));
+    } catch {
+      setAviso("Não consegui ler o visor. Digite o km.");
     }
   }
 
@@ -154,6 +167,17 @@ export function CapturaHodometro({
           </div>
         )}
       </div>
+
+      {recortando && foto && (
+        <RecorteDoVisor
+          foto={foto}
+          onLer={(area) => void lerVisor(area)}
+          onDigitar={() => {
+            setRecortando(false);
+            setAviso(null);
+          }}
+        />
+      )}
 
       {lendo && <p className="text-xs text-gray-500">Lendo o km da foto...</p>}
 
