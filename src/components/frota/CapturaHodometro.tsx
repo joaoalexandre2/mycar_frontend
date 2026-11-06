@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { Camera, Trash2 } from "lucide-react";
 import { redimensionar } from "../../utils/imagem";
-import { lerKmDaFoto, recortarImagem, type Retangulo } from "../../utils/ocrHodometro";
+import { lerKmDoVisor, type Retangulo } from "../../utils/ocrHodometro";
 import { mensagemErro } from "../../services/api";
 import { RecorteDoVisor } from "./RecorteDoVisor";
 
@@ -74,28 +74,18 @@ export function CapturaHodometro({
     }
   }
 
-  // Lê só a área marcada no visor e preenche o km.
+  // Lê só a área marcada no visor. Preenche o campo se estiver vazio; se já tiver número, só avisa a diferença.
   async function lerVisor(area: Retangulo) {
     if (!foto) return;
 
     setRecortando(false);
-
-    try {
-      await preencherKmDaFoto(await recortarImagem(foto, area));
-    } catch {
-      setAviso("Não consegui ler o visor. Digite o km.");
-    }
-  }
-
-  // Lê o km da foto. Preenche o campo se estiver vazio; se já tiver número, só avisa a diferença.
-  async function preencherKmDaFoto(foto: Blob) {
     setLendo(true);
 
     try {
-      const lido = await lerKmDaFoto(foto);
+      const lido = await lerKmDoVisor(foto, area);
 
       if (lido === null) {
-        setAviso("Não consegui ler o km na foto. Digite o número.");
+        setAviso("Não consegui ler o km com segurança. Digite o número.");
       } else if (km.trim() === "") {
         onKm(String(lido));
         setAviso(`Km lido da foto: ${lido}. Confira antes de registrar.`);
@@ -103,7 +93,7 @@ export function CapturaHodometro({
         setAviso(`A foto mostra ${lido}. Confira o km digitado.`);
       }
     } catch {
-      setAviso("Não consegui ler a foto. Digite o km.");
+      setAviso("Não consegui ler o visor. Digite o km.");
     } finally {
       setLendo(false);
     }

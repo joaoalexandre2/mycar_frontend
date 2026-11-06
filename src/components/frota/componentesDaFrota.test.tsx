@@ -8,7 +8,7 @@ import { CapturaHodometro } from "./CapturaHodometro";
 import { UsoDetalheModal } from "./UsoDetalheModal";
 import { ImportarPlanilhaModal } from "./ImportarPlanilhaModal";
 import { ErroDePlanilha, usosService } from "../../services/frota";
-import { lerKmDaFoto, recortarImagem } from "../../utils/ocrHodometro";
+import { lerKmDoVisor } from "../../utils/ocrHodometro";
 import type { UsoVeiculo } from "../../types/frota";
 
 const fotoReduzida = new Blob(["jpeg"], { type: "image/jpeg" });
@@ -21,8 +21,7 @@ vi.mock("../../utils/imagem", async (original) => ({
 // O OCR de verdade baixa o motor e os dados de idioma; nos testes da tela ele não lê nada.
 vi.mock("../../utils/ocrHodometro", async (original) => ({
   ...(await original<typeof import("../../utils/ocrHodometro")>()),
-  lerKmDaFoto: vi.fn(async () => null),
-  recortarImagem: vi.fn(async () => fotoReduzida),
+  lerKmDoVisor: vi.fn(async () => null),
 }));
 
 beforeEach(() => {
@@ -193,7 +192,7 @@ describe("UsoDetalheModal", () => {
   });
 
   it("lê só a área marcada no visor e preenche o km quando o campo está vazio", async () => {
-    vi.mocked(lerKmDaFoto).mockResolvedValueOnce(40404);
+    vi.mocked(lerKmDoVisor).mockResolvedValueOnce(40404);
     vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({ left: 0, top: 0, width: 200, height: 100 } as DOMRect);
     detalhe(uso());
 
@@ -207,11 +206,11 @@ describe("UsoDetalheModal", () => {
 
     await waitFor(() => expect(screen.getByLabelText("Km de saída")).toHaveValue("40404"));
     expect(screen.getByRole("status")).toHaveTextContent("Km lido da foto: 40404");
-    expect(recortarImagem).toHaveBeenCalledWith(fotoReduzida, expect.objectContaining({ largura: expect.any(Number), altura: expect.any(Number) }));
+    expect(lerKmDoVisor).toHaveBeenCalledWith(fotoReduzida, expect.objectContaining({ largura: expect.any(Number), altura: expect.any(Number) }));
   });
 
   it("deixa digitar o km sem ler o visor", async () => {
-    const ocr = vi.mocked(lerKmDaFoto);
+    const ocr = vi.mocked(lerKmDoVisor);
     ocr.mockClear();
     detalhe(uso());
 

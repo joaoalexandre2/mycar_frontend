@@ -1,5 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { extrairKm, paraPixelsDaImagem } from "./ocrHodometro";
+import { extrairKm, limiarizar, paraPixelsDaImagem } from "./ocrHodometro";
+
+describe("limiarizar", () => {
+  it("põe em preto o que está escuro e em branco o que está claro", () => {
+    const entrada = new Uint8ClampedArray([10, 20, 30, 255, 240, 250, 245, 255]);
+
+    expect(Array.from(limiarizar(entrada, 110))).toEqual([0, 0, 0, 255, 255, 255, 255, 255]);
+  });
+
+  it("usa a média dos canais RGB", () => {
+    const entrada = new Uint8ClampedArray([200, 200, 0, 255]);
+
+    // média = 133,3: abaixo de 140 vira preto; acima de 120 vira branco
+    expect(Array.from(limiarizar(entrada, 140))).toEqual([0, 0, 0, 255]);
+    expect(Array.from(limiarizar(entrada, 120))).toEqual([255, 255, 255, 255]);
+  });
+});
 
 describe("paraPixelsDaImagem", () => {
   it("converte a seleção da tela para a escala da foto original", () => {
