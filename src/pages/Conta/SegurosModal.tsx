@@ -1,4 +1,5 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
+import { useCarregarLista } from "../../hooks/useCarregarLista";
 import { useConfirmar } from "../../hooks/useNotificacoes";
 import { ShieldCheck, Trash2 } from "lucide-react";
 import { seguroService } from "../../services/conta";
@@ -47,22 +48,11 @@ export function SegurosModal({
   const [vigenciaFim, setVigenciaFim] = useState("");
   const [observacoes, setObservacoes] = useState("");
 
-  useEffect(() => {
-    let ativo = true;
-
-    seguroService
-      .listar(veiculo.id)
-      .then((resposta) => {
-        if (ativo) aplicar(resposta);
-      })
-      .catch((error) => {
-        if (ativo) setErro(mensagemErro(error));
-      });
-
-    return () => {
-      ativo = false;
-    };
-  }, [veiculo.id]);
+  // A falha ao carregar os seguros tem o próprio erro: não some quando o formulário é enviado.
+  const { erro: erroDeCarga, recarregar } = useCarregarLista(`seguros|${veiculo.id}`, async (ativo) => {
+    const resposta = await seguroService.listar(veiculo.id);
+    if (ativo()) aplicar(resposta);
+  });
 
   /**
    * Guarda a resposta do servidor e ajusta o formulário à pergunta "já tem
@@ -355,6 +345,15 @@ export function SegurosModal({
               className={`mt-1 ${classeCampo}`}
             />
           </label>
+
+          {erroDeCarga && (
+            <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
+              <span>{erroDeCarga}</span>
+              <button type="button" onClick={recarregar} className="font-semibold underline">
+                Tentar de novo
+              </button>
+            </div>
+          )}
 
           {erro && (
             <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">

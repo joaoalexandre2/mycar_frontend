@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import { useCarregarLista } from "../../hooks/useCarregarLista";
 import { ImagePlus, Lightbulb, Send, X } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { sugestaoService } from "../../services/sugestoes";
@@ -114,7 +115,8 @@ export function Sugestoes() {
   const [visao, setVisao] = useState<"minhas" | "todas">("minhas");
   const [filtro, setFiltro] = useState<StatusSugestao | "">("");
   const [lista, setLista] = useState<Sugestao[] | null>(null);
-  const [erro, setErro] = useState<string | null>(null);
+  // Erro do formulário (envio, imagens) fica separado do erro de carregar a lista.
+  const [erroDoEnvio, setErroDoEnvio] = useState<string | null>(null);
 
   const [categoria, setCategoria] = useState<CategoriaSugestao>("melhoria");
   const [titulo, setTitulo] = useState("");
@@ -134,40 +136,22 @@ export function Sugestoes() {
 
     if (novas.length === 0) return;
 
-    setErro(null);
+    setErroDoEnvio(null);
     setImagens((atuais) => [...atuais, ...novas].slice(0, LIMITE_IMAGENS));
   }
 
-  useEffect(() => {
-    let ativo = true;
-
-    const carregar =
-      visao === "todas"
-        ? sugestaoService.todas(filtro || undefined)
-        : sugestaoService.minhas();
-
-    carregar
-      .then((dados) => {
-        if (!ativo) return;
-        setErro(null);
-        setLista(dados);
-      })
-      .catch((error) => {
-        if (ativo) setErro(mensagemErro(error));
-      });
-
-    return () => {
-      ativo = false;
-    };
-  }, [visao, filtro]);
+  const { erro: erroDeCarga, recarregar } = useCarregarLista(`${visao}|${filtro}`, async (ativo) => {
+    const dados = visao === "todas" ? await sugestaoService.todas(filtro || undefined) : await sugestaoService.minhas();
+    if (ativo()) setLista(dados);
+  });
 
   async function enviar(event: FormEvent) {
     event.preventDefault();
-    setErro(null);
+    setErroDoEnvio(null);
     setEnviada(false);
 
     if (titulo.trim().length < 4 || descricao.trim().length < 10) {
-      setErro("Escreva um título (mín. 4 letras) e conte a ideia com pelo menos 10 letras.");
+      setErroDoEnvio("Escreva um título (mín. 4 letras) e conte a ideia com pelo menos 10 letras.");
       return;
     }
 
@@ -190,7 +174,7 @@ export function Sugestoes() {
       setEnviada(true);
       if (visao === "minhas") setLista((atual) => [nova, ...(atual ?? [])]);
     } catch (error) {
-      setErro(mensagemErro(error));
+      setErroDoEnvio(mensagemErro(error));
     } finally {
       setEnviando(false);
     }
@@ -323,9 +307,9 @@ export function Sugestoes() {
           </p>
         </div>
 
-        {erro && (
+        {erroDoEnvio && (
           <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
-            {erro}
+            {erroDoEnvio}
           </p>
         )}
         {enviada && (
@@ -395,7 +379,16 @@ export function Sugestoes() {
         </div>
 
         {!lista ? (
-          erro ? null : <p className="p-5 text-xs text-gray-500">Carregando...</p>
+          erroDeCarga ? (
+            <div role="alert" className="flex flex-wrap items-center justify-between gap-3 p-5 text-xs text-red-600">
+              <span>{erroDeCarga}</span>
+              <button type="button" onClick={recarregar} className="font-semibold underline">
+                Tentar de novo
+              </button>
+            </div>
+          ) : (
+            <p className="p-5 text-xs text-gray-500">Carregando...</p>
+          )
         ) : lista.length === 0 ? (
           <p className="p-5 text-xs text-gray-500">
             {visao === "todas"

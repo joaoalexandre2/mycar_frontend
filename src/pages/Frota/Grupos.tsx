@@ -1,6 +1,7 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { Pencil, Plus, Trash2, Users } from "lucide-react";
 import { Modal } from "../../components/ui/Modal";
+import { useCarregarLista } from "../../hooks/useCarregarLista";
 import { gruposUsuariosService, modelosGrupoService } from "../../services/frota";
 import { mensagemErro } from "../../services/api";
 import { useConfirmar } from "../../hooks/useNotificacoes";
@@ -17,48 +18,34 @@ export function Grupos() {
   const pedirConfirmacao = useConfirmar();
   const [dados, setDados] = useState<GruposDaFrota | null>(null);
   const [modelos, setModelos] = useState<ModeloSalvo[]>([]);
-  const [erro, setErro] = useState<string | null>(null);
+  // Erro de uma ação (remover grupo ou modelo) fica separado do erro da carga.
+  const [erroDeAcao, setErroDeAcao] = useState<string | null>(null);
   const [editando, setEditando] = useState<GrupoUsuario | "novo" | null>(null);
-  const [versao, setVersao] = useState(0);
-  const carregar = () => setVersao((v) => v + 1);
+  const { erro: erroDeCarga, recarregar: carregar } = useCarregarLista("grupos", async (ativo) => {
+    const resposta = await gruposUsuariosService.listar();
+    if (!ativo()) return;
+    setDados(resposta);
 
-  useEffect(() => {
-    let ativo = true;
-
-    gruposUsuariosService
-      .listar()
-      .then((resposta) => {
-        if (!ativo) return;
-        setDados(resposta);
-        setErro(null);
-      })
-      .catch((error) => {
-        if (ativo) setErro(mensagemErro(error));
-      });
-
-    // Os modelos salvos são um extra: se a lista deles falhar, os grupos seguem normais.
+    // Os modelos salvos são um extra: não seguram a lista de grupos, e se falharem a tela segue normal.
     modelosGrupoService
       .listar()
       .then((lista) => {
-        if (ativo) setModelos(lista);
+        if (ativo()) setModelos(lista);
       })
       .catch(() => {
-        if (ativo) setModelos([]);
+        if (ativo()) setModelos([]);
       });
-
-    return () => {
-      ativo = false;
-    };
-  }, [versao]);
+  });
 
   async function removerModelo(modelo: ModeloSalvo) {
     if (!(await pedirConfirmacao({ mensagem: `Remover o modelo ${modelo.nome}?`, confirmarTexto: "Remover", perigo: true }))) return;
 
+    setErroDeAcao(null);
     try {
       await modelosGrupoService.remover(modelo.id);
       carregar();
     } catch (error) {
-      setErro(mensagemErro(error));
+      setErroDeAcao(mensagemErro(error));
     }
   }
 
@@ -72,11 +59,12 @@ export function Grupos() {
     )
       return;
 
+    setErroDeAcao(null);
     try {
       await gruposUsuariosService.remover(grupo.id);
       carregar();
     } catch (error) {
-      setErro(mensagemErro(error));
+      setErroDeAcao(mensagemErro(error));
     }
   }
 
@@ -96,10 +84,19 @@ export function Grupos() {
         </button>
       </div>
 
-      {erro && (
+      {erroDeAcao && (
         <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">
-          {erro}
+          {erroDeAcao}
         </p>
+      )}
+
+      {erroDeCarga && (
+        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">
+          <span>{erroDeCarga}</span>
+          <button type="button" onClick={carregar} className="font-semibold underline">
+            Tentar de novo
+          </button>
+        </div>
       )}
 
       {dados && dados.grupos.length === 0 && (

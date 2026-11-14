@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Building2, History, Pencil, Plus, Trash2, UserRound } from "lucide-react";
 import { Modal } from "../../components/ui/Modal";
+import { useCarregarLista } from "../../hooks/useCarregarLista";
 import { HistoricoCentros } from "./HistoricoCentros";
 import { usePodeNaFrota, usePodeVerMenu } from "../../hooks/usePodeNaFrota";
 import { centrosCustoService, motoristasService } from "../../services/frota";
@@ -81,48 +82,36 @@ export function Cadastros() {
 function Motoristas() {
   const pedirConfirmacao = useConfirmar();
   const [lista, setLista] = useState<Motorista[] | null>(null);
-  const [erro, setErro] = useState<string | null>(null);
   const [editando, setEditando] = useState<Motorista | "novo" | null>(null);
-  // Cada ação que muda a lista soma 1 e o efeito abaixo busca de novo.
-  const [versao, setVersao] = useState(0);
-  const carregar = () => setVersao((v) => v + 1);
-
-  useEffect(() => {
-    let ativo = true;
-
-    motoristasService
-      .listar(true)
-      .then((dados) => {
-        if (!ativo) return;
-        setLista(dados);
-        setErro(null);
-      })
-      .catch((error) => {
-        if (ativo) setErro(mensagemErro(error));
-      });
-
-    return () => {
-      ativo = false;
-    };
-  }, [versao]);
+  // Erro de uma ação (desativar, remover) fica separado do erro da carga da lista.
+  const [erroDeAcao, setErroDeAcao] = useState<string | null>(null);
+  const { carregando, erro: erroDeCarga, recarregar: carregar } = useCarregarLista(
+    "motoristas",
+    async (ativo) => {
+      const dados = await motoristasService.listar(true);
+      if (ativo()) setLista(dados);
+    },
+  );
 
   async function alternarAtivo(m: Motorista) {
+    setErroDeAcao(null);
     try {
       await motoristasService.atualizar(m.id, { nome: m.nome, ativo: !m.ativo });
       carregar();
     } catch (error) {
-      setErro(mensagemErro(error));
+      setErroDeAcao(mensagemErro(error));
     }
   }
 
   async function remover(m: Motorista) {
     if (!(await pedirConfirmacao({ mensagem: `Remover o motorista ${m.nome}?`, confirmarTexto: "Remover", perigo: true }))) return;
 
+    setErroDeAcao(null);
     try {
       await motoristasService.remover(m.id);
       carregar();
     } catch (error) {
-      setErro(mensagemErro(error));
+      setErroDeAcao(mensagemErro(error));
     }
   }
 
@@ -138,11 +127,22 @@ function Motoristas() {
         </button>
       </div>
 
-      {erro && (
+      {erroDeAcao && (
         <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">
-          {erro}
+          {erroDeAcao}
         </p>
       )}
+
+      {erroDeCarga && (
+        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">
+          <span>{erroDeCarga}</span>
+          <button type="button" onClick={carregar} className="font-semibold underline">
+            Tentar de novo
+          </button>
+        </div>
+      )}
+
+      {carregando && !erroDeCarga && <p className="text-xs text-gray-500">Carregando...</p>}
 
       {lista && lista.length === 0 && (
         <p className="rounded-lg bg-gray-50 px-4 py-6 text-center text-xs text-gray-500">
@@ -340,48 +340,37 @@ function MotoristaModal({
 function Centros() {
   const pedirConfirmacao = useConfirmar();
   const [lista, setLista] = useState<CentroCusto[] | null>(null);
-  const [erro, setErro] = useState<string | null>(null);
   const [editando, setEditando] = useState<CentroCusto | "novo" | null>(null);
-  const [versao, setVersao] = useState(0);
-  const carregar = () => setVersao((v) => v + 1);
-
-  useEffect(() => {
-    let ativo = true;
-
-    centrosCustoService
-      .listar(true)
-      .then((dados) => {
-        if (!ativo) return;
-        setLista(dados);
-        setErro(null);
-      })
-      .catch((error) => {
-        if (ativo) setErro(mensagemErro(error));
-      });
-
-    return () => {
-      ativo = false;
-    };
-  }, [versao]);
+  // Erro de uma ação (desativar, remover) fica separado do erro da carga da lista.
+  const [erroDeAcao, setErroDeAcao] = useState<string | null>(null);
+  const { carregando, erro: erroDeCarga, recarregar: carregar } = useCarregarLista(
+    "centros",
+    async (ativo) => {
+      const dados = await centrosCustoService.listar(true);
+      if (ativo()) setLista(dados);
+    },
+  );
 
   async function alternarAtivo(c: CentroCusto) {
+    setErroDeAcao(null);
     try {
       await centrosCustoService.atualizar(c.id, { nome: c.nome, codigo: c.codigo, ativo: !c.ativo });
       carregar();
     } catch (error) {
-      setErro(mensagemErro(error));
+      setErroDeAcao(mensagemErro(error));
     }
   }
 
   async function remover(c: CentroCusto) {
     if (!(await pedirConfirmacao({ mensagem: `Remover o centro de custo ${c.nome}?`, confirmarTexto: "Remover", perigo: true }))) return;
 
+    setErroDeAcao(null);
     try {
       await centrosCustoService.remover(c.id);
       carregar();
     } catch (error) {
       // Com histórico, o servidor pede para desativar em vez de apagar.
-      setErro(mensagemErro(error));
+      setErroDeAcao(mensagemErro(error));
     }
   }
 
@@ -397,11 +386,22 @@ function Centros() {
         </button>
       </div>
 
-      {erro && (
+      {erroDeAcao && (
         <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">
-          {erro}
+          {erroDeAcao}
         </p>
       )}
+
+      {erroDeCarga && (
+        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">
+          <span>{erroDeCarga}</span>
+          <button type="button" onClick={carregar} className="font-semibold underline">
+            Tentar de novo
+          </button>
+        </div>
+      )}
+
+      {carregando && !erroDeCarga && <p className="text-xs text-gray-500">Carregando...</p>}
 
       {lista && lista.length === 0 && (
         <p className="rounded-lg bg-gray-50 px-4 py-6 text-center text-xs text-gray-500">

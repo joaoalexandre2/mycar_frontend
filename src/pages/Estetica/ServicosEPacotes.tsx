@@ -1,7 +1,8 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { Package, Plus, Trash2 } from "lucide-react";
 import { catalogoEsteticaService } from "../../services/estetica";
 import { mensagemErro } from "../../services/api";
+import { useCarregarLista } from "../../hooks/useCarregarLista";
 import { useConfirmar } from "../../hooks/useNotificacoes";
 import type { PacoteDaEstetica, ServicoDaEstetica } from "../../types/estetica";
 
@@ -14,37 +15,24 @@ export function ServicosEPacotes() {
   const pedirConfirmacao = useConfirmar();
   const [servicos, setServicos] = useState<ServicoDaEstetica[] | null>(null);
   const [pacotes, setPacotes] = useState<PacoteDaEstetica[] | null>(null);
-  const [erro, setErro] = useState<string | null>(null);
-  const [versao, setVersao] = useState(0);
-  const carregar = () => setVersao((v) => v + 1);
-
-  useEffect(() => {
-    let ativo = true;
-
-    Promise.all([catalogoEsteticaService.servicos(), catalogoEsteticaService.pacotes()])
-      .then(([s, p]) => {
-        if (!ativo) return;
-        setServicos(s);
-        setPacotes(p);
-        setErro(null);
-      })
-      .catch((error) => {
-        if (ativo) setErro(mensagemErro(error));
-      });
-
-    return () => {
-      ativo = false;
-    };
-  }, [versao]);
+  // Erro de uma ação (remover pacote) fica separado do erro da carga do catálogo.
+  const [erroDeAcao, setErroDeAcao] = useState<string | null>(null);
+  const { carregando, erro: erroDeCarga, recarregar: carregar } = useCarregarLista("catalogo", async (ativo) => {
+    const [s, p] = await Promise.all([catalogoEsteticaService.servicos(), catalogoEsteticaService.pacotes()]);
+    if (!ativo()) return;
+    setServicos(s);
+    setPacotes(p);
+  });
 
   async function removerPacote(p: PacoteDaEstetica) {
     if (!(await pedirConfirmacao({ mensagem: `Remover o pacote ${p.nome}?`, confirmarTexto: "Remover", perigo: true }))) return;
 
+    setErroDeAcao(null);
     try {
       await catalogoEsteticaService.removerPacote(p.id);
       carregar();
     } catch (error) {
-      setErro(mensagemErro(error));
+      setErroDeAcao(mensagemErro(error));
     }
   }
 
@@ -74,7 +62,18 @@ export function ServicosEPacotes() {
       <section className="space-y-4">
         <h2 className="text-lg font-bold text-gray-900">Pacotes</h2>
         {servicos && servicos.length > 0 && <NovoPacote servicos={servicos} onSalvo={carregar} />}
-        {erro && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">{erro}</p>}
+        {erroDeAcao && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">{erroDeAcao}</p>}
+
+        {erroDeCarga && (
+          <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">
+            <span>{erroDeCarga}</span>
+            <button type="button" onClick={carregar} className="font-semibold underline">
+              Tentar de novo
+            </button>
+          </div>
+        )}
+
+        {carregando && !erroDeCarga && <p className="text-xs text-gray-500">Carregando...</p>}
         {pacotes && pacotes.length === 0 && <p className="rounded-lg bg-gray-50 px-4 py-6 text-center text-xs text-gray-500">Nenhum pacote cadastrado.</p>}
         {pacotes && pacotes.length > 0 && (
           <ul className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white">

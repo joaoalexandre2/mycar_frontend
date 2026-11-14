@@ -50,6 +50,12 @@ function comProvedores(ui: React.ReactNode) {
   return render(<NotificacoesProvider>{ui}</NotificacoesProvider>);
 }
 
+/** O botão só fica habilitado depois que a lista de grupos carrega. */
+async function botaoNovoGrupo() {
+  await waitFor(() => expect(screen.getByRole("button", { name: /Novo grupo/ })).toBeEnabled());
+  return screen.getByRole("button", { name: /Novo grupo/ });
+}
+
 describe("Grupos de usuários", () => {
   it("lista os grupos com permissões e membros", async () => {
     vi.spyOn(gruposUsuariosService, "listar").mockResolvedValue(dadosDosGrupos);
@@ -68,7 +74,7 @@ describe("Grupos de usuários", () => {
 
     comProvedores(<Grupos />);
 
-    await usuario.click(await screen.findByRole("button", { name: /Novo grupo/ }));
+    await usuario.click(await botaoNovoGrupo());
     await usuario.type(screen.getByLabelText("Nome"), "Vendas SP");
     await usuario.click(screen.getByLabelText("Gerenciar centros de custo"));
     await usuario.click(screen.getByLabelText(/Caio/));
@@ -92,7 +98,7 @@ describe("Grupos de usuários", () => {
 
     comProvedores(<Grupos />);
 
-    await usuario.click(await screen.findByRole("button", { name: /Novo grupo/ }));
+    await usuario.click(await botaoNovoGrupo());
     await usuario.type(screen.getByLabelText("Nome"), "Vê veículos");
     await usuario.selectOptions(screen.getByLabelText("Começar de um modelo (opcional)"), "ver-veiculos");
 
@@ -119,7 +125,7 @@ describe("Grupos de usuários", () => {
 
     comProvedores(<Grupos />);
 
-    await usuario.click(await screen.findByRole("button", { name: /Novo grupo/ }));
+    await usuario.click(await botaoNovoGrupo());
     await usuario.type(screen.getByLabelText("Nome"), "Sem cadastros");
     await usuario.click(screen.getByLabelText("Motoristas e centros"));
     await usuario.click(screen.getByRole("button", { name: "Salvar" }));
@@ -136,7 +142,7 @@ describe("Grupos de usuários", () => {
 
     comProvedores(<Grupos />);
 
-    await usuario.click(await screen.findByRole("button", { name: /Novo grupo/ }));
+    await usuario.click(await botaoNovoGrupo());
     await usuario.click(screen.getByRole("button", { name: "Salvar" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Informe o nome do grupo.");
