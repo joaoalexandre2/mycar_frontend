@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { ArrowRight, Camera, Plus } from "lucide-react";
 import { Modal } from "../../components/ui/Modal";
+import { useCarregarLista } from "../../hooks/useCarregarLista";
 import { FotosModal } from "../../components/estetica/FotosModal";
 import { catalogoEsteticaService, patioService } from "../../services/estetica";
 import { mensagemErro } from "../../services/api";
@@ -28,50 +29,34 @@ const FORMAS: { valor: FormaDePagamento; texto: string }[] = [
 /** Pátio em etapas: cada carro do check-in à entrega, com fotos e cobrança. */
 export function Patio() {
   const [atendimentos, setAtendimentos] = useState<AtendimentoDaEstetica[] | null>(null);
-  const [erro, setErro] = useState<string | null>(null);
-  const [versao, setVersao] = useState(0);
+  // Erro de uma ação (avançar, receber) fica separado do erro da carga do pátio.
+  const [erroDeAcao, setErroDeAcao] = useState<string | null>(null);
   const [novo, setNovo] = useState(false);
   const [fotosDe, setFotosDe] = useState<AtendimentoDaEstetica | null>(null);
-  const carregar = () => setVersao((v) => v + 1);
-
-  useEffect(() => {
-    let ativo = true;
-
-    patioService
-      .listar()
-      .then((lista) => {
-        if (!ativo) return;
-        setAtendimentos(lista);
-        setErro(null);
-      })
-      .catch((error) => {
-        if (ativo) setErro(mensagemErro(error));
-      });
-
-    return () => {
-      ativo = false;
-    };
-  }, [versao]);
+  const { carregando, erro: erroDeCarga, recarregar: carregar } = useCarregarLista("patio", async (ativo) => {
+    const lista = await patioService.listar();
+    if (ativo()) setAtendimentos(lista);
+  });
 
   async function avancar(a: AtendimentoDaEstetica) {
-    setErro(null);
+    setErroDeAcao(null);
 
     try {
       await patioService.avancar(a.id);
       carregar();
     } catch (error) {
-      setErro(mensagemErro(error));
+      setErroDeAcao(mensagemErro(error));
     }
   }
 
   async function receber(a: AtendimentoDaEstetica, forma: FormaDePagamento) {
-    setErro(null);
+    setErroDeAcao(null);
 
     try {
       await patioService.atualizar(a.id, { forma_pagamento: forma, pago: true });
       carregar();
     } catch (error) {
-      setErro(mensagemErro(error));
+      setErroDeAcao(mensagemErro(error));
     }
   }
 
@@ -87,7 +72,18 @@ export function Patio() {
         </button>
       </div>
 
-      {erro && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">{erro}</p>}
+      {erroDeAcao && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">{erroDeAcao}</p>}
+
+      {erroDeCarga && (
+        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">
+          <span>{erroDeCarga}</span>
+          <button type="button" onClick={carregar} className="font-semibold underline">
+            Tentar de novo
+          </button>
+        </div>
+      )}
+
+      {carregando && !erroDeCarga && <p className="text-xs text-gray-500">Carregando...</p>}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         {COLUNAS.map((coluna) => {
