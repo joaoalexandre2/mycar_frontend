@@ -106,7 +106,7 @@ import {
           }`}
         >
           {/* Logo */}
-          <div className="flex items-center justify-between gap-3 px-2 pb-8">
+          <div className="flex shrink-0 items-center justify-between gap-3 px-2 pb-8">
             <div className="flex items-center gap-3">
               <div
                 data-logo
@@ -137,7 +137,7 @@ import {
           </div>
 
           {/* Menu */}
-          <nav aria-label="Principal" className="flex flex-col gap-1">
+          <nav aria-label="Principal" className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
             <p className="mb-2 px-2 text-xs font-bold tracking-widest text-gray-400">
               MENU
             </p>
@@ -344,7 +344,7 @@ import {
           </nav>
 
           {/* Usuário */}
-          <div className="mt-auto border-t border-gray-800 pt-4">
+          <div className="mt-auto shrink-0 border-t border-gray-800 pt-4">
             <div className="flex items-center gap-3 px-2">
               <Avatar nome={usuario?.name} foto={usuario?.foto} />
 
@@ -386,7 +386,7 @@ import {
         end={to === "/"}
         onClick={aoNavegar}
         className={({ isActive }) =>
-          `flex h-11 w-full items-center gap-3 rounded-lg px-3 text-sm transition ${
+          `flex h-11 w-full shrink-0 items-center gap-3 rounded-lg px-3 text-sm transition ${
             isActive
               ? "bg-blue-600 text-white"
               : "text-gray-400 hover:bg-gray-800 hover:text-white"

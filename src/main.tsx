@@ -8,11 +8,14 @@ import '@fontsource/figtree/latin-500.css'
 import '@fontsource/figtree/latin-600.css'
 import '@fontsource/figtree/latin-700.css'
 import { aplicarAparenciaSalva, estiloDoPerfil } from './utils/preferencias'
-import { obterToken, obterUsuarioLogado } from './utils/authStorage'
+import { apagarTokenAntigo, estaLogado, obterUsuarioLogado } from './utils/authStorage'
+
+// Versões antigas guardavam o token no aparelho; ele sai daqui, já que a sessão agora é o cookie.
+apagarTokenAntigo()
 
 // Quem já está logado abre direto no visual escolhido (sem piscar); o login e
 // o cadastro ficam sempre no visual padrão. O resto é cuidado pelo AparenciaDoUsuario.
-if (obterToken()) {
+if (estaLogado()) {
   aplicarAparenciaSalva(estiloDoPerfil(obterUsuarioLogado()))
 }
 

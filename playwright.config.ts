@@ -14,7 +14,20 @@ export default defineConfig({
     baseURL: "http://localhost:5174",
     trace: "retain-on-failure",
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [
+    // Telas com a API simulada: rodam sempre, sem backend.
+    {
+      name: "chromium",
+      testIgnore: /integracao\.spec\.ts/,
+      use: { ...devices["Desktop Chrome"] },
+    },
+    // Telas com a API real: precisam de um backend e de E2E_EMAIL/E2E_SENHA (veja o arquivo).
+    {
+      name: "integracao",
+      testMatch: /integracao\.spec\.ts/,
+      use: { ...devices["Desktop Chrome"] },
+    },
+  ],
   webServer: {
     command: "npm run dev -- --port 5174 --strictPort",
     url: "http://localhost:5174",

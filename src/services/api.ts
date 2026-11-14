@@ -1,9 +1,11 @@
 import axios, { isAxiosError } from "axios";
-import { limparSessao, obterToken } from "../utils/authStorage";
+import { limparSessao } from "../utils/authStorage";
 import { ErroDeUsuario } from "../utils/erros";
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:8000/api",
+  // A sessão vai no cookie HttpOnly: o navegador envia em cada chamada à API.
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -11,12 +13,6 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = obterToken();
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
   // Envio de arquivos (FormData): sem o Content-Type fixo em JSON, o axios manda o
   // formulário de verdade e o navegador acrescenta o "boundary". Com ele, o FormData
   // seria convertido em JSON e os arquivos se perderiam.

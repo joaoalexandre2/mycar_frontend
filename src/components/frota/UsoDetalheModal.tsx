@@ -1,4 +1,4 @@
-import { useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Camera, Gauge, Pencil, Trash2 } from "lucide-react";
 import { Modal } from "../ui/Modal";
 import { CapturaHodometro } from "./CapturaHodometro";
@@ -6,7 +6,7 @@ import { ChecklistModal } from "./ChecklistModal";
 import { TrocarCentroModal } from "./TrocarCentroModal";
 import { usePodeNaFrota, useUsuarioDaFrota } from "../../hooks/usePodeNaFrota";
 import { ehAdministradorOuGestor } from "../../utils/permissoes";
-import { usosService } from "../../services/frota";
+import { usosService, type EventoDoUso } from "../../services/frota";
 import { mensagemErro } from "../../services/api";
 import { useConfirmar, useToast } from "../../hooks/useNotificacoes";
 import { COR_DO_STATUS, descreverJanela } from "../../utils/agenda";
@@ -86,6 +86,27 @@ function FotoDoMomento({
   );
 }
 
+/** Antes e depois do motivo, se o evento mexeu nele; senão null. */
+function trocaDeMotivo(evento: EventoDoUso): { antes: string | null; depois: string | null } | null {
+  const dados = evento.dados ?? {};
+
+  if (evento.acao === "mudou_motivo") {
+    return { antes: (dados.antes as string | null) ?? null, depois: (dados.depois as string | null) ?? null };
+  }
+
+  // Na edição, a trilha guarda só os campos que mudaram.
+  if (evento.acao === "editou") {
+    const antes = (dados.antes as Record<string, unknown> | undefined) ?? {};
+    const depois = (dados.depois as Record<string, unknown> | undefined) ?? {};
+
+    if ("finalidade" in antes || "finalidade" in depois) {
+      return { antes: (antes.finalidade as string | null) ?? null, depois: (depois.finalidade as string | null) ?? null };
+    }
+  }
+
+  return null;
+}
+
 /** Detalhe de um uso, com a saída e a chegada (km e foto do hodômetro). */
 export function UsoDetalheModal({
   uso,
@@ -108,9 +129,41 @@ export function UsoDetalheModal({
   const [trocandoCentro, setTrocandoCentro] = useState(false);
   const [checklistDe, setChecklistDe] = useState<MomentoDoChecklist | null>(null);
   const [km, setKm] = useState("");
+  const [motivo, setMotivo] = useState(uso.finalidade ?? "");
   const [foto, setFoto] = useState<Blob | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+
+  // Só quem corrige usos vê a trilha do motivo (o backend barra os demais).
+  const podeVerHistoricoDoMotivo = pode("usos_corrigir");
+  const [historicoDoMotivo, setHistoricoDoMotivo] = useState<{ evento: EventoDoUso; troca: { antes: string | null; depois: string | null } }[]>([]);
+
+  useEffect(() => {
+    if (!podeVerHistoricoDoMotivo) return;
+
+    let cancelado = false;
+
+    usosService
+      .eventos(uso.id)
+      .then((eventos) => {
+        if (cancelado) return;
+
+        setHistoricoDoMotivo(
+          eventos.flatMap((evento) => {
+            const troca = trocaDeMotivo(evento);
+
+            return troca ? [{ evento, troca }] : [];
+          }),
+        );
+      })
+      .catch(() => {
+        if (!cancelado) setHistoricoDoMotivo([]);
+      });
+
+    return () => {
+      cancelado = true;
+    };
+  }, [uso.id, uso.status, uso.finalidade, podeVerHistoricoDoMotivo]);
 
   const registrandoSaida = uso.status === "agendado";
   const registrandoChegada = uso.status === "em_uso";
@@ -128,7 +181,7 @@ export function UsoDetalheModal({
     try {
       setEnviando(true);
       const atualizado = registrandoSaida
-        ? await usosService.registrarSaida(uso.id, lido.valor, foto)
+        ? await usosService.registrarSaida(uso.id, lido.valor, foto, motivo.trim())
         : await usosService.registrarChegada(uso.id, lido.valor, foto);
 
       setKm("");
@@ -232,6 +285,19 @@ export function UsoDetalheModal({
           )}
         </dl>
 
+        {podeVerHistoricoDoMotivo && historicoDoMotivo.length > 0 && (
+          <div className="space-y-2 rounded-lg bg-gray-50 px-4 py-3 text-xs">
+            <p className="font-semibold uppercase tracking-wide text-gray-500">Histórico do motivo</p>
+            <ul className="space-y-1 text-gray-700">
+              {historicoDoMotivo.map(({ evento, troca }) => (
+                <li key={evento.id}>
+                  {formatarDataHora(evento.em)} · {evento.usuario ?? "—"}: {troca.antes ?? "—"} → {troca.depois ?? "—"}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {(uso.kmSaida !== null || uso.kmChegada !== null) && (
           <div className="space-y-2 rounded-lg bg-gray-50 px-4 py-3 text-xs">
             <div className="grid grid-cols-3 gap-3">
@@ -262,6 +328,29 @@ export function UsoDetalheModal({
             <p className="text-xs font-semibold text-gray-800">
               {registrandoSaida ? "Registrar a saída" : "Registrar a chegada"}
             </p>
+
+            {registrandoSaida ? (
+              <div>
+                <label htmlFor="uso-motivo-saida" className="mb-1.5 block text-xs font-medium text-gray-700">
+                  Motivo
+                </label>
+                <input
+                  id="uso-motivo-saida"
+                  type="text"
+                  value={motivo}
+                  onChange={(e) => setMotivo(e.target.value)}
+                  maxLength={160}
+                  placeholder="Ex.: entrega em Campinas"
+                  className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+                />
+              </div>
+            ) : (
+              uso.finalidade && (
+                <p className="text-xs text-gray-600">
+                  <span className="font-semibold text-gray-800">Motivo:</span> {uso.finalidade}
+                </p>
+              )
+            )}
 
             <CapturaHodometro
               rotulo={registrandoSaida ? "Km de saída" : "Km de chegada"}

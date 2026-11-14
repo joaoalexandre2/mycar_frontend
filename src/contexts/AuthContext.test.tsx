@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import api from "../services/api";
 import { AuthProvider } from "./AuthContext";
 import { useAuth } from "../hooks/useAuth";
-import { obterToken, obterUsuarioLogado } from "../utils/authStorage";
+import { estaLogado, obterUsuarioLogado } from "../utils/authStorage";
 
 function Painel() {
   const { usuario, autenticado, sair } = useAuth();
@@ -21,7 +21,6 @@ describe("AuthProvider", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     localStorage.clear();
-    localStorage.setItem("mycar_token", "token-abc");
     localStorage.setItem(
       "mycar_usuario",
       JSON.stringify({ id: 1, name: "Fulano", email: "f@mycar.local" }),
@@ -45,7 +44,7 @@ describe("AuthProvider", () => {
     await userEvent.click(screen.getByRole("button", { name: "Sair" }));
 
     expect(await screen.findByText("Deslogado")).toBeInTheDocument();
-    expect(obterToken()).toBeNull();
+    expect(estaLogado()).toBe(false);
     expect(obterUsuarioLogado()).toBeNull();
   });
 });

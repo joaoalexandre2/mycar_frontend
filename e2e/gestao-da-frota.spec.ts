@@ -26,9 +26,9 @@ function usuario(papel: Papel, permissoes: string[] = [], menus: string[] = []) 
 
 /** Entra como a pessoa informada e responde a API com dados vazios, exceto o que a tela precisa. */
 async function entrarComo(page: Page, eu: ReturnType<typeof usuario>, extra: Record<string, unknown> = {}) {
-  // A sessão fica no localStorage: token e dados da pessoa, como depois de um login.
+  // A pessoa fica guardada no localStorage, como depois de um login. O token fica no
+  // cookie HttpOnly, que o teste não precisa simular: a API já está mockada.
   await page.addInitScript((sessao) => {
-    localStorage.setItem("mycar_token", "token-de-teste");
     localStorage.setItem("mycar_usuario", JSON.stringify(sessao));
   }, eu);
 

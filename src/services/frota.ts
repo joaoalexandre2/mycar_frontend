@@ -293,17 +293,38 @@ function mapearAlertaDeConflito(alerta: AlertaDeConflitoApi): AlertaDeConflito {
   };
 }
 
-/** Km e, se houver, a foto do hodômetro (já reduzida no navegador). */
-function corpoDeKm(campo: "km_saida" | "km_chegada", km: number, foto?: Blob | null): FormData | Record<string, number> {
+/**
+ * Km e, se houver, a foto do hodômetro (já reduzida no navegador) e o motivo.
+ * Motivo vazio vai como "" e o servidor guarda null.
+ */
+function corpoDeKm(
+  campo: "km_saida" | "km_chegada",
+  km: number,
+  foto?: Blob | null,
+  motivo?: string,
+): FormData | Record<string, string | number> {
+  const extras: Record<string, string> = motivo === undefined ? {} : { finalidade: motivo };
+
   if (!foto) {
-    return { [campo]: km };
+    return { [campo]: km, ...extras };
   }
 
   const corpo = new FormData();
   corpo.append(campo, String(km));
+  if (motivo !== undefined) corpo.append("finalidade", motivo);
   corpo.append("foto", foto, "hodometro.jpg");
 
   return corpo;
+}
+
+/** Um registro da trilha de auditoria de um uso. `dados` muda conforme a ação. */
+export interface EventoDoUso {
+  id: number;
+  acao: string;
+  usuario: string | null;
+  dados: Record<string, unknown> | null;
+  motivo: string | null;
+  em: string;
 }
 
 export const usosService = {
@@ -355,8 +376,8 @@ export const usosService = {
     return data.map(mapearTroca);
   },
 
-  async registrarSaida(id: number, km: number, foto?: Blob | null): Promise<UsoVeiculo> {
-    const { data } = await api.post<UsoApi>(`/conta/usos/${id}/saida`, corpoDeKm("km_saida", km, foto));
+  async registrarSaida(id: number, km: number, foto?: Blob | null, motivo?: string): Promise<UsoVeiculo> {
+    const { data } = await api.post<UsoApi>(`/conta/usos/${id}/saida`, corpoDeKm("km_saida", km, foto, motivo));
 
     return mapearUso(data);
   },
@@ -368,6 +389,13 @@ export const usosService = {
   },
 
   /** Anexa ou troca a foto de um momento já registrado. */
+  /** Trilha de auditoria do uso (quem fez o quê, e quando). Só o administrador e o gestor veem. */
+  async eventos(id: number): Promise<EventoDoUso[]> {
+    const { data } = await api.get<EventoDoUso[]>(`/conta/usos/${id}/eventos`);
+
+    return data;
+  },
+
   async anexarFoto(id: number, momento: "saida" | "chegada", foto: Blob): Promise<UsoVeiculo> {
     const corpo = new FormData();
     corpo.append("foto", foto, "hodometro.jpg");

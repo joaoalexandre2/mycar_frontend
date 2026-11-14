@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NotificacoesProvider } from "../../contexts/NotificacoesProvider";
 import { AuthContext, type AuthContextValor } from "../../contexts/authContextDefinition";
@@ -8,6 +8,7 @@ import { CapturaHodometro } from "./CapturaHodometro";
 import { UsoDetalheModal } from "./UsoDetalheModal";
 import { ImportarPlanilhaModal } from "./ImportarPlanilhaModal";
 import { ErroDePlanilha, usosService } from "../../services/frota";
+import { lerKmDoVisor } from "../../utils/ocrHodometro";
 import type { UsoVeiculo } from "../../types/frota";
 
 const fotoReduzida = new Blob(["jpeg"], { type: "image/jpeg" });
@@ -15,6 +16,12 @@ const fotoReduzida = new Blob(["jpeg"], { type: "image/jpeg" });
 vi.mock("../../utils/imagem", async (original) => ({
   ...(await original<typeof import("../../utils/imagem")>()),
   redimensionar: vi.fn(async () => fotoReduzida),
+}));
+
+// O OCR de verdade baixa o motor e os dados de idioma; nos testes da tela ele não lê nada.
+vi.mock("../../utils/ocrHodometro", async (original) => ({
+  ...(await original<typeof import("../../utils/ocrHodometro")>()),
+  lerKmDoVisor: vi.fn(async () => null),
 }));
 
 beforeEach(() => {
@@ -151,7 +158,7 @@ describe("UsoDetalheModal", () => {
     await screen.findByAltText("Prévia da foto do hodômetro");
     await userEvent.click(screen.getByRole("button", { name: "Registrar saída" }));
 
-    await waitFor(() => expect(saida).toHaveBeenCalledWith(7, 45200, fotoReduzida));
+    await waitFor(() => expect(saida).toHaveBeenCalledWith(7, 45200, fotoReduzida, "Visita a clientes"));
     expect(props.onAtualizado).toHaveBeenCalledWith(expect.objectContaining({ status: "em_uso" }));
   });
 
@@ -162,7 +169,69 @@ describe("UsoDetalheModal", () => {
     await userEvent.type(screen.getByLabelText("Km de saída"), "45.200");
     await userEvent.click(screen.getByRole("button", { name: "Registrar saída" }));
 
-    await waitFor(() => expect(saida).toHaveBeenCalledWith(7, 45200, null));
+    await waitFor(() => expect(saida).toHaveBeenCalledWith(7, 45200, null, "Visita a clientes"));
+  });
+
+  it("mostra ao gestor a trilha das trocas de motivo", async () => {
+    vi.spyOn(usosService, "eventos").mockResolvedValue([
+      { id: 1, acao: "reservou", usuario: "Ana", dados: {}, motivo: null, em: "2026-11-05T10:00:00" },
+      {
+        id: 2,
+        acao: "mudou_motivo",
+        usuario: "Salsicha",
+        dados: { antes: "Visita a clientes", depois: "Entrega em Campinas" },
+        motivo: null,
+        em: "2026-11-05T11:00:00",
+      },
+    ]);
+    detalhe(uso());
+
+    expect(await screen.findByText("Histórico do motivo")).toBeInTheDocument();
+    expect(screen.getByText(/Salsicha: Visita a clientes → Entrega em Campinas/)).toBeInTheDocument();
+    expect(screen.queryByText(/Ana: /)).not.toBeInTheDocument();
+  });
+
+  it("lê só a área marcada no visor e preenche o km quando o campo está vazio", async () => {
+    vi.mocked(lerKmDoVisor).mockResolvedValueOnce(40404);
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({ left: 0, top: 0, width: 200, height: 100 } as DOMRect);
+    detalhe(uso());
+
+    await userEvent.upload(screen.getByTestId("entrada-foto-hodometro"), new File(["p"], "p.jpg", { type: "image/jpeg" }));
+    const imagem = await screen.findByAltText("Foto do painel para marcar o hodômetro");
+
+    fireEvent.pointerDown(imagem, { clientX: 20, clientY: 20 });
+    fireEvent.pointerMove(imagem, { clientX: 180, clientY: 80 });
+    fireEvent.pointerUp(imagem);
+    await userEvent.click(screen.getByRole("button", { name: "Ler o km do visor" }));
+
+    await waitFor(() => expect(screen.getByLabelText("Km de saída")).toHaveValue("40404"));
+    expect(screen.getByRole("status")).toHaveTextContent("Km lido da foto: 40404");
+    expect(lerKmDoVisor).toHaveBeenCalledWith(fotoReduzida, expect.objectContaining({ largura: expect.any(Number), altura: expect.any(Number) }));
+  });
+
+  it("deixa digitar o km sem ler o visor", async () => {
+    const ocr = vi.mocked(lerKmDoVisor);
+    ocr.mockClear();
+    detalhe(uso());
+
+    await userEvent.upload(screen.getByTestId("entrada-foto-hodometro"), new File(["p"], "p.jpg", { type: "image/jpeg" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Digitar o km" }));
+
+    expect(screen.queryByAltText("Foto do painel para marcar o hodômetro")).not.toBeInTheDocument();
+    expect(ocr).not.toHaveBeenCalled();
+  });
+
+  it("deixa alterar o motivo na saída e envia o novo texto", async () => {
+    const saida = vi.spyOn(usosService, "registrarSaida").mockResolvedValue(uso({ status: "em_uso" }));
+    detalhe(uso());
+
+    const motivo = screen.getByLabelText("Motivo");
+    await userEvent.clear(motivo);
+    await userEvent.type(motivo, "  Entrega em Campinas ");
+    await userEvent.type(screen.getByLabelText("Km de saída"), "45200");
+    await userEvent.click(screen.getByRole("button", { name: "Registrar saída" }));
+
+    await waitFor(() => expect(saida).toHaveBeenCalledWith(7, 45200, null, "Entrega em Campinas"));
   });
 
   it("não envia km inválido e avisa", async () => {
