@@ -5,6 +5,7 @@ import { AdminRoute } from "../components/auth/AdminRoute";
 import { FrotaRoute } from "../components/auth/FrotaRoute";
 import { FrotaGestorRoute } from "../components/auth/FrotaGestorRoute";
 import { EsteticaRoute } from "../components/auth/EsteticaRoute";
+import { MenuRoute } from "../components/auth/MenuRoute";
 import { useAuth } from "../hooks/useAuth";
 import { Patio } from "../pages/Estetica/Patio";
 import { ServicosEPacotes } from "../pages/Estetica/ServicosEPacotes";
@@ -73,10 +74,13 @@ export default function RotasConta() {
         />
       </Route>
 
-      <Route
-        path="/veiculos"
-        element={<MeusVeiculos />}
-      />
+      {/* Veículos da frota: quem é da frota só vê se um grupo ou o papel liberar o menu. */}
+      <Route element={<MenuRoute menu="veiculos" />}>
+        <Route
+          path="/veiculos"
+          element={<MeusVeiculos />}
+        />
+      </Route>
 
       <Route
         path="/servicos"
@@ -111,10 +115,13 @@ export default function RotasConta() {
           element={<Ocorrencias />}
         />
 
-        <Route
-          path="/frota/cadastros"
-          element={<Cadastros />}
-        />
+        {/* Motoristas e centros de custo: exige o menu de cadastros. */}
+        <Route element={<MenuRoute menu="cadastros" />}>
+          <Route
+            path="/frota/cadastros"
+            element={<Cadastros />}
+          />
+        </Route>
 
         {/* QR Code do veículo: quem escaneia cai aqui, com as reservas de hoje. */}
         <Route
