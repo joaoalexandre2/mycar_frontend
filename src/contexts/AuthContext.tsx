@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { authService } from "../services/auth";
-import { obterToken, obterUsuarioLogado } from "../utils/authStorage";
+import { estaLogado, obterUsuarioLogado } from "../utils/authStorage";
 import type { LoginPayload, Usuario } from "../types/auth";
 import { AuthContext } from "./authContextDefinition";
 
@@ -14,7 +14,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // novo login. Se falhar, segue com o que está guardado; um token vencido
   // (401) já é tratado pelo interceptor da API.
   useEffect(() => {
-    if (!obterToken()) {
+    if (!estaLogado()) {
       return;
     }
 

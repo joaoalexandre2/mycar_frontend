@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
+  apagarTokenAntigo,
+  estaLogado,
   limparSessao,
-  obterToken,
   obterUsuarioLogado,
   salvarSessao,
 } from "./authStorage";
@@ -18,25 +19,43 @@ describe("authStorage", () => {
     localStorage.clear();
   });
 
-  it("não tem token nem usuário antes de qualquer login", () => {
-    expect(obterToken()).toBeNull();
+  it("não está logado antes de qualquer login", () => {
+    expect(estaLogado()).toBe(false);
     expect(obterUsuarioLogado()).toBeNull();
   });
 
-  it("salvarSessao grava o token e o usuário para leitura posterior", () => {
-    salvarSessao("token-123", usuarioFake);
+  it("salvarSessao grava só o usuário, e a pessoa fica logada", () => {
+    salvarSessao(usuarioFake);
 
-    expect(obterToken()).toBe("token-123");
+    expect(estaLogado()).toBe(true);
     expect(obterUsuarioLogado()).toEqual(usuarioFake);
   });
 
-  it("limparSessao remove o token e o usuário salvos", () => {
-    salvarSessao("token-123", usuarioFake);
+  it("nunca grava o token no aparelho", () => {
+    salvarSessao(usuarioFake);
+
+    const guardado = Object.keys(localStorage).map((chave) => localStorage.getItem(chave) ?? "");
+    expect(guardado.join(" ")).not.toContain("token");
+  });
+
+  it("limparSessao remove o usuário e o token antigo, se existir", () => {
+    salvarSessao(usuarioFake);
+    localStorage.setItem("mycar_token", "token-de-uma-versao-antiga");
 
     limparSessao();
 
-    expect(obterToken()).toBeNull();
-    expect(obterUsuarioLogado()).toBeNull();
+    expect(estaLogado()).toBe(false);
+    expect(localStorage.getItem("mycar_token")).toBeNull();
+  });
+
+  it("apagarTokenAntigo tira o token guardado por versões antigas e mantém a sessão", () => {
+    salvarSessao(usuarioFake);
+    localStorage.setItem("mycar_token", "token-de-uma-versao-antiga");
+
+    apagarTokenAntigo();
+
+    expect(localStorage.getItem("mycar_token")).toBeNull();
+    expect(estaLogado()).toBe(true);
   });
 
   it("obterUsuarioLogado não quebra se o valor salvo estiver corrompido", () => {

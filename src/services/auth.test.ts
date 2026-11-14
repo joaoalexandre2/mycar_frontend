@@ -27,9 +27,9 @@ describe("authService.login", () => {
     vi.clearAllMocks();
   });
 
-  it("chama POST /login e salva o token e o usuário recebidos", async () => {
+  it("chama POST /login e salva só o usuário; o token fica no cookie", async () => {
     const postSpy = vi.spyOn(api, "post").mockResolvedValueOnce({
-      data: { user: usuarioFake, token: "token-abc" },
+      data: { user: usuarioFake },
     } as never);
 
     const usuario = await authService.login({
@@ -41,7 +41,7 @@ describe("authService.login", () => {
       email: "fulano@mycar.local",
       password: "123456",
     });
-    expect(salvarSessao).toHaveBeenCalledWith("token-abc", usuarioFake);
+    expect(salvarSessao).toHaveBeenCalledWith(usuarioFake);
     expect(usuario).toEqual(usuarioFake);
   });
 });

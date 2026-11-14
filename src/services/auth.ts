@@ -11,14 +11,14 @@ export type ProvedorSocial = "google" | "facebook";
 
 interface LoginResposta {
   user: Usuario;
-  token: string;
 }
 
 export const authService = {
   async login(payload: LoginPayload): Promise<Usuario> {
+    // O token chega no cookie HttpOnly; aqui só guardamos os dados da pessoa.
     const { data } = await api.post<LoginResposta>("/login", payload);
 
-    salvarSessao(data.token, data.user);
+    salvarSessao(data.user);
 
     return data.user;
   },
@@ -34,7 +34,7 @@ export const authService = {
   async concluirLoginSocial(codigo: string): Promise<Usuario> {
     const { data } = await api.post<LoginResposta>("/auth/social/trocar", { codigo });
 
-    salvarSessao(data.token, data.user);
+    salvarSessao(data.user);
 
     return data.user;
   },
