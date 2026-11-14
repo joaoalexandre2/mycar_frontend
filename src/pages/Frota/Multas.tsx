@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { ChevronLeft, ChevronRight, FileWarning, Plus, Trash2 } from "lucide-react";
 import { Modal } from "../../components/ui/Modal";
+import { useCarregarLista } from "../../hooks/useCarregarLista";
 import { contaService } from "../../services/conta/veiculos";
 import { motoristasService } from "../../services/frota";
 import { multasService, type PaginaDeMultas } from "../../services/frotaDiferenciais";
@@ -27,51 +28,42 @@ export function Multas() {
   const [multas, setMultas] = useState<PaginaDeMultas | null>(null);
   const [situacao, setSituacao] = useState("");
   const [pagina, setPagina] = useState(1);
-  const [versao, setVersao] = useState(0);
-  const [erro, setErro] = useState<string | null>(null);
+  // Erro de uma ação (mudar situação, remover) fica separado do erro da carga da lista.
+  const [erroDeAcao, setErroDeAcao] = useState<string | null>(null);
   const [nova, setNova] = useState(false);
-
-  useEffect(() => {
-    let ativo = true;
-
-    multasService
-      .listar({ situacao: situacao || undefined, pagina })
-      .then((resultado) => {
-        if (!ativo) return;
-        // Se a última multa da última página saiu, volta para a página que ainda tem registros.
-        if (resultado.dados.length === 0 && resultado.totalPaginas > 0 && pagina > resultado.totalPaginas) {
-          setPagina(resultado.totalPaginas);
-          return;
-        }
-        setMultas(resultado);
-        setErro(null);
-      })
-      .catch((error) => {
-        if (ativo) setErro(mensagemErro(error));
-      });
-
-    return () => {
-      ativo = false;
-    };
-  }, [situacao, pagina, versao]);
+  const { carregando, erro: erroDeCarga, recarregar } = useCarregarLista(
+    `${situacao}|${pagina}`,
+    async (ativo) => {
+      const resultado = await multasService.listar({ situacao: situacao || undefined, pagina });
+      if (!ativo()) return;
+      // Se a última multa da última página saiu, volta para a página que ainda tem registros.
+      if (resultado.dados.length === 0 && resultado.totalPaginas > 0 && pagina > resultado.totalPaginas) {
+        setPagina(resultado.totalPaginas);
+        return;
+      }
+      setMultas(resultado);
+    },
+  );
 
   async function mudarSituacao(multa: Multa, valor: Multa["situacao"]) {
+    setErroDeAcao(null);
     try {
       await multasService.atualizar(multa.id, { situacao: valor });
-      setVersao((v) => v + 1);
+      recarregar();
     } catch (error) {
-      setErro(mensagemErro(error));
+      setErroDeAcao(mensagemErro(error));
     }
   }
 
   async function remover(multa: Multa) {
     if (!(await pedirConfirmacao({ mensagem: `Remover a multa de ${formatarDataHora(multa.data_hora)}?`, confirmarTexto: "Remover", perigo: true }))) return;
 
+    setErroDeAcao(null);
     try {
       await multasService.remover(multa.id);
-      setVersao((v) => v + 1);
+      recarregar();
     } catch (error) {
-      setErro(mensagemErro(error));
+      setErroDeAcao(mensagemErro(error));
     }
   }
 
@@ -103,7 +95,18 @@ export function Multas() {
         </div>
       </div>
 
-      {erro && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">{erro}</p>}
+      {erroDeAcao && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">{erroDeAcao}</p>}
+
+      {erroDeCarga && (
+        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">
+          <span>{erroDeCarga}</span>
+          <button type="button" onClick={recarregar} className="font-semibold underline">
+            Tentar de novo
+          </button>
+        </div>
+      )}
+
+      {carregando && !erroDeCarga && <p className="text-xs text-gray-500">Carregando...</p>}
 
       {multas && multas.dados.length === 0 && (
         <p className="rounded-lg bg-gray-50 px-4 py-6 text-center text-xs text-gray-500">Nenhuma multa registrada.</p>
@@ -181,7 +184,7 @@ export function Multas() {
         <NovaMulta
           onSalva={() => {
             setNova(false);
-            setVersao((v) => v + 1);
+            recarregar();
           }}
           onClose={() => setNova(false)}
         />
