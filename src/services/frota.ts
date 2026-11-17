@@ -396,6 +396,16 @@ export const usosService = {
     return data;
   },
 
+  /** Lê o km da foto do hodômetro com a IA do servidor. Devolve null quando a foto não deixa ler. */
+  async lerHodometro(foto: Blob): Promise<number | null> {
+    const corpo = new FormData();
+    corpo.append("foto", foto, "hodometro.jpg");
+
+    const { data } = await api.post<{ km: number | null }>("/conta/hodometro/leitura", corpo);
+
+    return data.km;
+  },
+
   async anexarFoto(id: number, momento: "saida" | "chegada", foto: Blob): Promise<UsoVeiculo> {
     const corpo = new FormData();
     corpo.append("foto", foto, "hodometro.jpg");

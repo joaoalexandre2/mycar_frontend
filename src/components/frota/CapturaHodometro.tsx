@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { Camera, Trash2 } from "lucide-react";
 import { redimensionar } from "../../utils/imagem";
-import { lerKmDoVisor, type Retangulo } from "../../utils/ocrHodometro";
+import { type Retangulo } from "../../utils/ocrHodometro";
+import { lerKmDoHodometro } from "../../utils/leituraHodometro";
 import { mensagemErro } from "../../services/api";
 import { RecorteDoVisor } from "./RecorteDoVisor";
 
@@ -82,7 +83,7 @@ export function CapturaHodometro({
     setLendo(true);
 
     try {
-      const lido = await lerKmDoVisor(foto, area);
+      const lido = await lerKmDoHodometro(foto, area);
 
       if (lido === null) {
         setAviso("Não consegui ler o km com segurança. Digite o número.");
