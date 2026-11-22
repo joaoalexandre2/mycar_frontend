@@ -5,6 +5,8 @@ import { ocorrenciasService } from "../../services/ocorrencias";
 import { mensagemErro } from "../../services/api";
 import { useConfirmar } from "../../hooks/useNotificacoes";
 import { redimensionar } from "../../utils/imagem";
+import { lerValorEmReais, valorEmReaisParaCampo } from "../../utils/numero";
+import { CampoEmReais } from "./CampoEmReais";
 import { STATUS_DE_OCORRENCIA, TIPOS_DE_OCORRENCIA, type FotoDeOcorrencia, type Ocorrencia, type OcorrenciaPayload, type StatusDeOcorrencia, type TipoDeOcorrencia } from "../../types/ocorrencias";
 import type { VeiculoConta } from "../../types/conta";
 
@@ -30,8 +32,11 @@ export function OcorrenciaModal({ ocorrencia, veiculos, gerencia, onSalva, onClo
   const [local, setLocal] = useState(ocorrencia?.local ?? "");
   const [descricao, setDescricao] = useState(ocorrencia?.descricao ?? "");
   const [status, setStatus] = useState<StatusDeOcorrencia>(ocorrencia?.status ?? "aberta");
-  const [prejuizo, setPrejuizo] = useState(ocorrencia?.prejuizoEstimado != null ? String(ocorrencia.prejuizoEstimado).replace(".", ",") : "");
-  const [gasto, setGasto] = useState(ocorrencia?.valorGasto != null ? String(ocorrencia.valorGasto).replace(".", ",") : "");
+  // O valor do servidor volta ao campo no formato que lerValorEmReais lê de novo ("1500,50").
+  const [prejuizo, setPrejuizo] = useState(valorEmReaisParaCampo(ocorrencia?.prejuizoEstimado));
+  const [gasto, setGasto] = useState(valorEmReaisParaCampo(ocorrencia?.valorGasto));
+  const [erroPrejuizo, setErroPrejuizo] = useState<string | null>(null);
+  const [erroGasto, setErroGasto] = useState<string | null>(null);
   const [fotos, setFotos] = useState<FotoDeOcorrencia[]>(ocorrencia?.fotos ?? []);
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
@@ -39,30 +44,28 @@ export function OcorrenciaModal({ ocorrencia, veiculos, gerencia, onSalva, onClo
   const entradaAntes = useRef<HTMLInputElement>(null);
   const entradaDepois = useRef<HTMLInputElement>(null);
 
-  const valorDoCampo = (texto: string): number | null => {
-    if (!texto.trim()) return null;
-
-    const numero = Number(texto.replace(/\./g, "").replace(",", "."));
-
-    return Number.isFinite(numero) ? numero : NaN;
-  };
-
   async function salvar(evento: FormEvent) {
     evento.preventDefault();
     setErro(null);
-
-    const prejuizoNumero = valorDoCampo(prejuizo);
-    const gastoNumero = valorDoCampo(gasto);
 
     if (!veiculoId || !dataHora || descricao.trim().length < 3) {
       setErro("Informe o veículo, a data e hora e descreva o que aconteceu.");
       return;
     }
 
-    if (Number.isNaN(prejuizoNumero) || Number.isNaN(gastoNumero)) {
-      setErro("Os valores precisam ser números.");
+    const prejuizoLido = lerValorEmReais(prejuizo);
+    const gastoLido = lerValorEmReais(gasto);
+
+    // Só quem gerencia vê e envia os valores; para o motorista eles nem vão no payload.
+    if (gerencia && (prejuizoLido.estado === "invalido" || gastoLido.estado === "invalido")) {
+      setErroPrejuizo(prejuizoLido.estado === "invalido" ? prejuizoLido.mensagem : null);
+      setErroGasto(gastoLido.estado === "invalido" ? gastoLido.mensagem : null);
+      setErro("Corrija os valores destacados.");
       return;
     }
+
+    const prejuizoNumero = prejuizoLido.estado === "ok" ? prejuizoLido.valor : null;
+    const gastoNumero = gastoLido.estado === "ok" ? gastoLido.valor : null;
 
     const payload: OcorrenciaPayload = {
       veiculoId: Number(veiculoId),
@@ -168,14 +171,30 @@ export function OcorrenciaModal({ ocorrencia, veiculos, gerencia, onSalva, onClo
                 ))}
               </select>
             </div>
-            <div>
-              <label htmlFor="ocorrencia-prejuizo" className={rotulo}>Prejuízo estimado (R$)</label>
-              <input id="ocorrencia-prejuizo" type="text" inputMode="decimal" value={prejuizo} onChange={(e) => setPrejuizo(e.target.value)} className={classeCampo} />
-            </div>
-            <div>
-              <label htmlFor="ocorrencia-gasto" className={rotulo}>Valor gasto (R$)</label>
-              <input id="ocorrencia-gasto" type="text" inputMode="decimal" value={gasto} onChange={(e) => setGasto(e.target.value)} className={classeCampo} />
-            </div>
+            <CampoEmReais
+              id="ocorrencia-prejuizo"
+              rotulo="Prejuízo estimado (R$)"
+              valor={prejuizo}
+              onChange={(texto) => {
+                setPrejuizo(texto);
+                setErroPrejuizo(null);
+              }}
+              erro={erroPrejuizo}
+              classeCampo={classeCampo}
+              classeRotulo={rotulo}
+            />
+            <CampoEmReais
+              id="ocorrencia-gasto"
+              rotulo="Valor gasto (R$)"
+              valor={gasto}
+              onChange={(texto) => {
+                setGasto(texto);
+                setErroGasto(null);
+              }}
+              erro={erroGasto}
+              classeCampo={classeCampo}
+              classeRotulo={rotulo}
+            />
             <p className="col-span-3 text-xs text-gray-500">Um valor gasto vira uma despesa de "Reparo e peças" no financeiro.</p>
           </div>
         )}

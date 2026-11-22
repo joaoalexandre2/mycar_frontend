@@ -4,6 +4,8 @@ import { Modal } from "../ui/Modal";
 import { despesasAvulsasService } from "../../services/financeiro";
 import { mensagemErro } from "../../services/api";
 import { dataISOLocal } from "../../utils/formatters";
+import { lerValorEmReais, valorEmReaisParaCampo } from "../../utils/numero";
+import { CampoEmReais } from "./CampoEmReais";
 import type { CategoriaDeDespesa, DespesaAvulsa, DespesaAvulsaPayload } from "../../types/financeiro";
 import type { Motorista } from "../../types/frota";
 import type { VeiculoConta } from "../../types/conta";
@@ -29,7 +31,9 @@ export function DespesaAvulsaModal({ despesa, categorias, veiculos, motoristas, 
   const [motoristaId, setMotoristaId] = useState(String(despesa?.motorista?.id ?? ""));
   const [centroId, setCentroId] = useState(String(despesa?.centroCusto?.id ?? ""));
   const [data, setData] = useState(despesa?.data ?? dataISOLocal());
-  const [valor, setValor] = useState(despesa ? String(despesa.valor).replace(".", ",") : "");
+  // O valor do servidor volta ao campo no formato que lerValorEmReais lê de novo ("1500,50").
+  const [valor, setValor] = useState(valorEmReaisParaCampo(despesa?.valor));
+  const [erroValor, setErroValor] = useState<string | null>(null);
   const [descricao, setDescricao] = useState(despesa?.descricao ?? "");
   const [comprovante, setComprovante] = useState(despesa?.comprovante ?? "");
   const [erro, setErro] = useState<string | null>(null);
@@ -41,8 +45,6 @@ export function DespesaAvulsaModal({ despesa, categorias, veiculos, motoristas, 
     evento.preventDefault();
     setErro(null);
 
-    const valorNumero = Number(valor.replace(/\./g, "").replace(",", "."));
-
     if (!categoriaId) {
       setErro("Escolha a categoria da despesa.");
       return;
@@ -53,10 +55,16 @@ export function DespesaAvulsaModal({ despesa, categorias, veiculos, motoristas, 
       return;
     }
 
-    if (!Number.isFinite(valorNumero) || valorNumero <= 0) {
-      setErro("Informe um valor maior que zero.");
+    // O backend exige valor maior que zero (gt:0); "1500.50" não pode virar 150050.
+    const valorLido = lerValorEmReais(valor);
+
+    if (valorLido.estado !== "ok" || valorLido.valor <= 0) {
+      setErroValor(valorLido.estado === "invalido" ? valorLido.mensagem : "Informe um valor maior que zero.");
+      setErro("Corrija o valor da despesa.");
       return;
     }
+
+    const valorNumero = valorLido.valor;
 
     const payload: DespesaAvulsaPayload = {
       categoriaId: Number(categoriaId),
@@ -99,10 +107,18 @@ export function DespesaAvulsaModal({ despesa, categorias, veiculos, motoristas, 
             <label htmlFor="despesa-data" className={rotulo}>Data</label>
             <input id="despesa-data" type="date" value={data} onChange={(e) => setData(e.target.value)} className={classeCampo} />
           </div>
-          <div>
-            <label htmlFor="despesa-valor" className={rotulo}>Valor (R$)</label>
-            <input id="despesa-valor" type="text" inputMode="decimal" value={valor} onChange={(e) => setValor(e.target.value)} className={classeCampo} />
-          </div>
+          <CampoEmReais
+            id="despesa-valor"
+            rotulo="Valor (R$)"
+            valor={valor}
+            onChange={(texto) => {
+              setValor(texto);
+              setErroValor(null);
+            }}
+            erro={erroValor}
+            classeCampo={classeCampo}
+            classeRotulo={rotulo}
+          />
         </div>
 
         <div>
