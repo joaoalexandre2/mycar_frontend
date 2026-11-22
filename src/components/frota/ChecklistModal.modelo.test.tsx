@@ -35,6 +35,12 @@ describe("ChecklistModal com o modelo da empresa", () => {
     expect(erro).toHaveTextContent('Descreva o problema em "Pneus".');
     expect(erro.closest("[data-rodape-do-modal]")).toContainElement(screen.getByRole("button", { name: "Salvar checklist" }));
     expect(enviar).not.toHaveBeenCalled();
+
+    // O foco vai para o campo de descrição desse item, marcado como inválido.
+    const descricao = screen.getByRole("textbox", { name: "Descreva o problema em Pneus" });
+    expect(descricao).toHaveFocus();
+    expect(descricao).toHaveAttribute("aria-invalid", "true");
+    expect(descricao).toHaveAccessibleDescription('Descreva o problema em "Pneus".');
   });
 
   it("envia a situação de cada item (OK, problema ou não se aplica) e o modelo usado", async () => {

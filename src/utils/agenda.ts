@@ -164,9 +164,14 @@ export function hojeAs(hora: number, agora: Date = new Date()): string {
   return paraCampoDeHorario(d);
 }
 
-/** Classes de cor de cada situação do uso (calendário e lista). */
+/**
+ * Classes de cor de cada situação do uso (calendário e lista). A cor só reforça:
+ * quem mostra o uso escreve também o rótulo do status. "Agendado" fica no sky,
+ * informativo: a escala "blue" é a cor da marca (vermelho por padrão), a mesma
+ * dos botões e próxima à de erro.
+ */
 export const COR_DO_STATUS: Record<StatusUso, string> = {
-  agendado: "border-blue-200 bg-blue-50 text-blue-800",
+  agendado: "border-sky-200 bg-sky-50 text-sky-800",
   em_uso: "border-amber-200 bg-amber-50 text-amber-800",
   concluido: "border-emerald-200 bg-emerald-50 text-emerald-800",
   cancelado: "border-gray-200 bg-gray-50 text-gray-500 line-through",

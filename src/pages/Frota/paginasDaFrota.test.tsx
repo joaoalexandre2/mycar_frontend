@@ -181,7 +181,8 @@ describe("Agenda", () => {
     agenda();
 
     await screen.findByText(/Nenhum uso agendado/);
-    await waitFor(() => expect(screen.getByRole("button", { name: /Reservar veículo/ })).toBeEnabled());
+    // O primeiro é o do topo; a agenda vazia traz outro igual.
+    await waitFor(() => expect(screen.getAllByRole("button", { name: /Reservar veículo/ })[0]).toBeEnabled());
 
     const dia = Number(hoje.slice(8, 10));
     const celula = screen.getAllByRole("gridcell").find((c) => within(c).queryByTitle("Reservar neste dia")?.textContent === String(dia) && c.className.includes("bg-white"))!;
@@ -209,7 +210,9 @@ describe("Agenda", () => {
 
     expect(screen.getByRole("button", { name: "Hoje" })).toHaveClass("h-11", "md:h-9");
     expect(screen.getByRole("button", { name: /Importar planilha/ })).toHaveClass("h-11", "md:h-10");
-    expect(screen.getByRole("button", { name: /Reservar veículo/ })).toHaveClass("h-11", "md:h-10");
+    for (const botao of screen.getAllByRole("button", { name: /Reservar veículo/ })) {
+      expect(botao).toHaveClass("h-11", "md:h-10");
+    }
     expect(screen.getByRole("combobox", { name: "Filtrar por veículo" })).toHaveClass("h-11", "md:h-9");
     expect(screen.getByRole("combobox", { name: "Filtrar por motorista" })).toHaveClass("h-11", "md:h-9");
 
