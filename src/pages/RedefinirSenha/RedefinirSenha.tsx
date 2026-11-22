@@ -4,11 +4,37 @@ import { Car, Lock } from "lucide-react";
 import { authService } from "../../services/auth";
 import { mensagemErro } from "../../services/api";
 
+/**
+ * Textos da tela. O link dos convites (motorista, gestor, administrador) traz
+ * `convite=1`: quem chega por ele está criando a primeira senha, não
+ * redefinindo uma que esqueceu. Sem o marcador, a tela é a de sempre.
+ */
+const TEXTOS = {
+  redefinir: {
+    titulo: "Redefinir senha",
+    apoio: (email: string) => `Escolha uma nova senha para ${email || "sua conta"}.`,
+    rotuloSenha: "Nova senha",
+    rotuloConfirmacao: "Confirmar nova senha",
+    botao: "Redefinir senha",
+    sucesso: "Senha redefinida! Levando você para o login...",
+  },
+  convite: {
+    titulo: "Crie sua senha",
+    apoio: (email: string) =>
+      `Você foi convidado para o MyCar. Escolha a senha que vai usar para entrar com ${email || "o seu e-mail"}.`,
+    rotuloSenha: "Senha",
+    rotuloConfirmacao: "Confirmar senha",
+    botao: "Criar senha",
+    sucesso: "Senha criada! Levando você para o login...",
+  },
+};
+
 export function RedefinirSenha() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const token = params.get("token") ?? "";
   const email = params.get("email") ?? "";
+  const textos = params.get("convite") === "1" ? TEXTOS.convite : TEXTOS.redefinir;
 
   const [senha, setSenha] = useState("");
   const [confirmacao, setConfirmacao] = useState("");
@@ -54,9 +80,9 @@ export function RedefinirSenha() {
           </div>
 
           <div className="text-center">
-            <h1 className="text-xl font-bold text-gray-900">Redefinir senha</h1>
+            <h1 className="text-xl font-bold text-gray-900">{textos.titulo}</h1>
 
-            <p className="mt-1 text-sm text-gray-500">Escolha uma nova senha para {email || "sua conta"}.</p>
+            <p className="mt-1 text-sm text-gray-500">{textos.apoio(email)}</p>
           </div>
         </div>
 
@@ -78,7 +104,7 @@ export function RedefinirSenha() {
             role="status"
             className="rounded-lg bg-green-50 px-3 py-3 text-center text-sm text-green-700"
           >
-            Senha redefinida! Levando você para o login...
+            {textos.sucesso}
           </p>
         ) : (
           <form
@@ -90,7 +116,7 @@ export function RedefinirSenha() {
                 htmlFor="redefinir-senha"
                 className="mb-1 block text-xs font-semibold text-gray-600"
               >
-                Nova senha
+                {textos.rotuloSenha}
               </label>
 
               <div className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 focus-within:border-blue-500">
@@ -119,7 +145,7 @@ export function RedefinirSenha() {
                 htmlFor="redefinir-confirmacao"
                 className="mb-1 block text-xs font-semibold text-gray-600"
               >
-                Confirmar nova senha
+                {textos.rotuloConfirmacao}
               </label>
 
               <div className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 focus-within:border-blue-500">
@@ -156,7 +182,7 @@ export function RedefinirSenha() {
               disabled={enviando}
               className="mt-2 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
             >
-              {enviando ? "Salvando..." : "Redefinir senha"}
+              {enviando ? "Salvando..." : textos.botao}
             </button>
           </form>
         )}
