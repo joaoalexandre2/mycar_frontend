@@ -331,6 +331,27 @@ th {
   --color-blue-900: var(--color-blue-100);
 }
 
+/* Contraste no escuro: textos de erro, aviso e sucesso clareiam para passar de
+   4,5:1 sobre o cartão escuro. Regras sem camada vencem as utilidades do Tailwind. */
+:root.dark .text-red-600,
+:root.dark .text-red-700 {
+  color: #f87171;
+}
+
+:root.dark .text-amber-600,
+:root.dark .text-amber-700 {
+  color: #fbbf24;
+}
+
+:root.dark .text-green-700 {
+  color: #4ade80;
+}
+
+/* Hover dos botões primários escurece no escuro, como no claro. */
+:root.dark .hover\:bg-blue-700:hover {
+  background-color: color-mix(in oklab, var(--color-blue-600) 80%, black);
+}
+
 /* "bg-white" é a superfície dos cards; o texto branco (text-white) continua
    branco para não ficar escuro sobre botões coloridos. */
 :root.dark .bg-white,

@@ -115,6 +115,11 @@ export function CapturaHodometro({
           />
         </label>
         {dica && <p className="mt-1 text-xs text-gray-500">{dica}</p>}
+        {aviso && !lendo && (
+          <p role="status" className="mt-1 text-xs text-gray-600">
+            {aviso}
+          </p>
+        )}
       </div>
 
       <div className="flex items-center gap-3">
@@ -171,12 +176,6 @@ export function CapturaHodometro({
       )}
 
       {lendo && <p className="text-xs text-gray-500">Lendo o km da foto...</p>}
-
-      {aviso && !lendo && (
-        <p role="status" className="text-xs text-gray-600">
-          {aviso}
-        </p>
-      )}
 
       {erro && (
         <p role="alert" className="text-xs text-red-600">

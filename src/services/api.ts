@@ -63,7 +63,7 @@ export function mensagemErro(error: unknown) {
     }
 
     if (error.code === "ERR_NETWORK") {
-      return "Não foi possível conectar ao backend. Confira se o Laravel está rodando em http://localhost:8000.";
+      return "Sem conexão. Os dados digitados continuam aqui. Tente de novo.";
     }
   }
 
