@@ -20,9 +20,28 @@ describe("ChecklistModal", () => {
 
     render(<ChecklistModal usoId={7} momento="saida" onSalvo={() => {}} onClose={() => {}} />);
 
-    await usuario.click(await screen.findByRole("button", { name: "Salvar checklist" }));
-    expect(screen.getByText("Marque cada item como OK ou com problema.")).toBeInTheDocument();
+    const salvar = await screen.findByRole("button", { name: "Salvar checklist" });
+    await usuario.click(salvar);
+
+    const erro = screen.getByRole("alert");
+    expect(erro).toHaveTextContent("Marque cada item como OK ou com problema.");
     expect(enviar).not.toHaveBeenCalled();
+
+    // Erro e botão ficam juntos no rodapé fixo, fora da lista que rola.
+    const rodape = salvar.closest("[data-rodape-do-modal]");
+    expect(rodape).not.toBeNull();
+    expect(rodape).toContainElement(erro);
+    expect(screen.getByRole("button", { name: "Cancelar" }).closest("[data-rodape-do-modal]")).toBe(rodape);
+    expect(screen.getByText("Nível de combustível").closest("form")).toBe((salvar as HTMLButtonElement).form);
+  });
+
+  it("enquanto carrega, não mostra rodapé de salvar", () => {
+    vi.spyOn(checklistService, "listar").mockReturnValue(new Promise(() => {}));
+
+    render(<ChecklistModal usoId={7} momento="saida" onSalvo={() => {}} onClose={() => {}} />);
+
+    expect(screen.getByText("Carregando...")).toBeInTheDocument();
+    expect(screen.getByRole("dialog").querySelector("[data-rodape-do-modal]")).toBeNull();
   });
 
   it("envia cada item com OK ou problema", async () => {
@@ -63,5 +82,6 @@ describe("ChecklistModal", () => {
 
     expect(await screen.findByText("Este checklist de saída já foi feito.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Salvar checklist" })).not.toBeInTheDocument();
+    expect(screen.getByRole("dialog").querySelector("[data-rodape-do-modal]")).toBeNull();
   });
 });

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 import { Gauge } from "lucide-react";
 import { Modal } from "../ui/Modal";
 import { usosService } from "../../services/frota";
@@ -25,6 +25,7 @@ export function CorrigirKmModal({
   const [motivo, setMotivo] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
+  const idFormulario = useId();
 
   async function salvar(evento: FormEvent) {
     evento.preventDefault();
@@ -59,8 +60,36 @@ export function CorrigirKmModal({
       subtitulo={`${veiculo.placa} · hoje: ${formatarKm(veiculo.kmAtual)}`}
       icone={<Gauge size={16} />}
       onClose={onClose}
+      rodape={
+        <div className="space-y-2">
+          {erro && (
+            <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
+              {erro}
+            </p>
+          )}
+
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="h-11 flex-1 rounded-lg border border-gray-200 px-4 text-xs font-semibold text-gray-600 hover:bg-gray-50 sm:flex-none md:h-10"
+            >
+              Cancelar
+            </button>
+            {/* Fora do <form>, mas ligado a ele: o Enter num campo continua enviando. */}
+            <button
+              type="submit"
+              form={idFormulario}
+              disabled={salvando}
+              className="h-11 flex-1 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60 sm:flex-none md:h-10"
+            >
+              {salvando ? "Salvando..." : "Salvar km"}
+            </button>
+          </div>
+        </div>
+      }
     >
-      <form onSubmit={(e) => void salvar(e)} className="space-y-4 px-6 py-5">
+      <form id={idFormulario} onSubmit={(e) => void salvar(e)} className="space-y-4 px-6 py-5">
         <div>
           <label htmlFor="km-atual" className="mb-1.5 block text-xs font-medium text-gray-700">
             Km no hodômetro
@@ -94,21 +123,6 @@ export function CorrigirKmModal({
             className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
           />
           <p className="mt-1.5 text-xs text-gray-500">Fica registrado no histórico, com seu nome e a data.</p>
-        </div>
-
-        {erro && (
-          <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
-            {erro}
-          </p>
-        )}
-
-        <div className="flex justify-end gap-2">
-          <button type="button" onClick={onClose} className="h-10 rounded-lg border border-gray-200 px-4 text-xs font-semibold text-gray-600 hover:bg-gray-50">
-            Cancelar
-          </button>
-          <button type="submit" disabled={salvando} className="h-10 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
-            {salvando ? "Salvando..." : "Salvar km"}
-          </button>
         </div>
       </form>
     </Modal>

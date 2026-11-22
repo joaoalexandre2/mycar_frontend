@@ -7,6 +7,8 @@ import { AuthContext, type AuthContextValor } from "../../contexts/authContextDe
 import { CapturaHodometro } from "./CapturaHodometro";
 import { UsoDetalheModal } from "./UsoDetalheModal";
 import { ImportarPlanilhaModal } from "./ImportarPlanilhaModal";
+import { CorrigirKmModal } from "./CorrigirKmModal";
+import type { VeiculoConta } from "../../types/conta";
 import { ErroDePlanilha, usosService } from "../../services/frota";
 import { lerKmDoVisor } from "../../utils/ocrHodometro";
 import type { UsoVeiculo } from "../../types/frota";
@@ -260,6 +262,39 @@ describe("UsoDetalheModal", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("menor que o último registrado (10000 km)");
   });
 
+  it("o botão de registrar e o erro ficam no rodapé fixo; o km e a foto ficam no corpo", async () => {
+    detalhe(uso());
+
+    const botao = screen.getByRole("button", { name: "Registrar saída" });
+    const rodape = botao.closest("[data-rodape-do-modal]") as HTMLElement;
+
+    expect(rodape).not.toBeNull();
+    expect(botao).toHaveClass("h-11", "md:h-10");
+    expect(rodape).not.toContainElement(screen.getByLabelText("Km de saída"));
+    expect(rodape).not.toContainElement(screen.getByTestId("entrada-foto-hodometro"));
+
+    await userEvent.type(screen.getByLabelText("Km de saída"), "abc");
+    await userEvent.click(botao);
+
+    const erro = await screen.findByRole("alert");
+    expect(rodape).toContainElement(erro);
+    // O que foi digitado continua lá para corrigir.
+    expect(screen.getByLabelText("Km de saída")).toHaveValue("abc");
+  });
+
+  it("sem saída nem chegada a registrar, não há rodapé fixo e o erro fica no corpo", async () => {
+    vi.spyOn(usosService, "remover").mockRejectedValue(new Error("falhou"));
+    detalhe(uso({ status: "concluido", kmSaida: 45200, kmChegada: 45310, kmRodados: 110 }));
+
+    expect(screen.getByRole("dialog").querySelector("[data-rodape-do-modal]")).toBeNull();
+
+    await userEvent.click(screen.getByRole("button", { name: /Excluir/ }));
+    await userEvent.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "Excluir" }));
+
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "AAA1B25 · Strada" }).querySelector("[data-rodape-do-modal]")).toBeNull();
+  });
+
   it("em uso, pede a chegada e lembra com quanto saiu", async () => {
     const chegada = vi.spyOn(usosService, "registrarChegada").mockResolvedValue(uso({ status: "concluido", kmSaida: 45200, kmChegada: 45310, kmRodados: 110 }));
     const props = detalhe(uso({ status: "em_uso", kmSaida: 45200 }));
@@ -442,5 +477,43 @@ describe("ImportarPlanilhaModal", () => {
 
     await waitFor(() => expect(baixar).toHaveBeenCalled());
     expect(clique).toHaveBeenCalled();
+  });
+});
+
+// ------------------------------------------------------------- CorrigirKmModal
+
+describe("CorrigirKmModal", () => {
+  const veiculo = { id: 3, placa: "AAA1B25", kmAtual: 45200 } as unknown as VeiculoConta;
+
+  it("Salvar km fica no rodapé fixo, ligado ao formulário, e envia o km com o motivo", async () => {
+    const corrigir = vi.spyOn(usosService, "corrigirKm").mockResolvedValue({ kmAtual: 45000 });
+    const onSalvo = vi.fn();
+    render(<CorrigirKmModal veiculo={veiculo} onSalvo={onSalvo} onClose={vi.fn()} />);
+
+    const salvar = screen.getByRole("button", { name: "Salvar km" });
+
+    expect(salvar.closest("[data-rodape-do-modal]")).not.toBeNull();
+    expect(salvar).toHaveAttribute("type", "submit");
+    expect((salvar as HTMLButtonElement).form).toBe(screen.getByLabelText("Km no hodômetro").closest("form"));
+
+    await userEvent.clear(screen.getByLabelText("Km no hodômetro"));
+    await userEvent.type(screen.getByLabelText("Km no hodômetro"), "45000");
+    await userEvent.type(screen.getByLabelText("Motivo da correção"), "Hodômetro digitado errado");
+    await userEvent.click(salvar);
+
+    await waitFor(() => expect(corrigir).toHaveBeenCalledWith(3, 45000, "Hodômetro digitado errado"));
+    expect(onSalvo).toHaveBeenCalledWith(45000);
+  });
+
+  it("o erro aparece no rodapé, logo acima do botão", async () => {
+    const corrigir = vi.spyOn(usosService, "corrigirKm");
+    render(<CorrigirKmModal veiculo={veiculo} onSalvo={vi.fn()} onClose={vi.fn()} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Salvar km" }));
+
+    const erro = await screen.findByRole("alert");
+    expect(erro).toHaveTextContent("Explique o motivo da correção");
+    expect(erro.closest("[data-rodape-do-modal]")).toContainElement(screen.getByRole("button", { name: "Salvar km" }));
+    expect(corrigir).not.toHaveBeenCalled();
   });
 });

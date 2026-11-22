@@ -31,7 +31,9 @@ describe("ChecklistModal com o modelo da empresa", () => {
     await usuario.click(screen.getAllByRole("radio", { name: "Problema" })[0]);
     await usuario.click(screen.getByRole("button", { name: "Salvar checklist" }));
 
-    expect(screen.getByText('Descreva o problema em "Pneus".')).toBeInTheDocument();
+    const erro = screen.getByRole("alert");
+    expect(erro).toHaveTextContent('Descreva o problema em "Pneus".');
+    expect(erro.closest("[data-rodape-do-modal]")).toContainElement(screen.getByRole("button", { name: "Salvar checklist" }));
     expect(enviar).not.toHaveBeenCalled();
   });
 
