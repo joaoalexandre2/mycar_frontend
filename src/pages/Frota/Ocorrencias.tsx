@@ -136,7 +136,7 @@ export function Ocorrencias() {
       )}
 
       <section className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-        <table className="w-full text-left text-xs">
+        <table className="tabela-cartoes w-full text-left text-xs">
           <thead className="bg-gray-50 text-gray-500">
             <tr>
               <th className="px-5 py-2 font-medium">Quando</th>
@@ -152,19 +152,21 @@ export function Ocorrencias() {
           <tbody className="divide-y divide-gray-100">
             {lista.map((o) => (
               <tr key={o.id}>
-                <td className="px-5 py-2">{formatarDataHora(o.dataHora)}</td>
-                <td className="px-3 py-2">{o.veiculo?.placa ?? "veículo removido"}</td>
-                <td className="px-3 py-2">{o.tipoRotulo}</td>
-                <td className="px-3 py-2">{o.statusRotulo}</td>
-                <td className="px-3 py-2">{o.motorista?.nome ?? "—"}</td>
-                <td className="px-3 py-2">{o.descricao}</td>
-                {gerencia && <td className="px-3 py-2 text-right">{o.valorGasto !== null ? formatarMoeda(o.valorGasto) : "—"}</td>}
+                <td data-label="Quando" className="px-5 py-2">{formatarDataHora(o.dataHora)}</td>
+                <td data-label="Veículo" className="px-3 py-2">{o.veiculo?.placa ?? "veículo removido"}</td>
+                <td data-label="Tipo" className="px-3 py-2">{o.tipoRotulo}</td>
+                <td data-label="Status" className="px-3 py-2">{o.statusRotulo}</td>
+                <td data-label="Quem registrou" className="px-3 py-2">{o.motorista?.nome ?? "—"}</td>
+                {/* Texto livre: no cartão fica alinhado à esquerda para não virar um bloco torto à direita. */}
+                <td data-label="O que aconteceu" className="px-3 py-2 max-md:text-left!">{o.descricao}</td>
+                {gerencia && <td data-label="Gasto" className="px-3 py-2 text-right">{o.valorGasto !== null ? formatarMoeda(o.valorGasto) : "—"}</td>}
+                {/* Ações sem data-label: no cartão viram a faixa de botões no rodapé, com alvo de 44px. */}
                 <td className="px-5 py-2 text-right">
-                  <button type="button" onClick={() => setEditando(o)} aria-label={`Abrir ocorrência de ${formatarDataHora(o.dataHora)}`} className="mr-1 inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100">
+                  <button type="button" onClick={() => setEditando(o)} aria-label={`Abrir ocorrência de ${formatarDataHora(o.dataHora)}`} className="mr-1 inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 max-md:h-11 max-md:w-11">
                     <Pencil size={14} />
                   </button>
                   {gerencia && (
-                    <button type="button" onClick={() => void remover(o)} aria-label={`Remover ocorrência de ${formatarDataHora(o.dataHora)}`} className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-red-500 hover:bg-red-50">
+                    <button type="button" onClick={() => void remover(o)} aria-label={`Remover ocorrência de ${formatarDataHora(o.dataHora)}`} className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-red-500 hover:bg-red-50 max-md:h-11 max-md:w-11">
                       <Trash2 size={14} />
                     </button>
                   )}

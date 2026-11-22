@@ -175,7 +175,7 @@ export function Financeiro() {
 
           <section className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
             <h3 className="px-5 pt-4 text-sm font-semibold text-gray-900">Por veículo</h3>
-            <table className="mt-3 w-full text-left text-xs">
+            <table className="tabela-cartoes mt-3 w-full text-left text-xs">
               <thead className="bg-gray-50 text-gray-500">
                 <tr>
                   <th className="px-5 py-2 font-medium">Veículo</th>
@@ -190,15 +190,17 @@ export function Financeiro() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {resumo.porVeiculo.map((v) => (
-                  <tr key={v.veiculoId}>
-                    <td className="px-5 py-2"><span className="font-semibold text-gray-900">{v.placa}</span> <span className="text-gray-500">{v.veiculo}</span></td>
-                    <td className="px-3 py-2 text-right">{formatarMoeda(v.combustivel)}</td>
-                    <td className="px-3 py-2 text-right">{formatarMoeda(v.servicos)}</td>
-                    <td className="px-3 py-2 text-right">{formatarMoeda(v.avulsas)}</td>
-                    <td className="px-3 py-2 text-right">{formatarMoeda(v.multas)}</td>
-                    <td className="px-3 py-2 text-right font-semibold">{formatarMoeda(v.total)}</td>
-                    <td className="px-3 py-2 text-right">{v.kmRodados.toLocaleString("pt-BR")}</td>
-                    <td className="px-5 py-2 text-right">{v.custoPorKm === null ? "—" : formatarMoeda(v.custoPorKm)}</td>
+                  // No celular o cartão tem oito linhas; o Total sobe para logo abaixo
+                  // do veículo (só a ordem visual muda, o desktop segue igual).
+                  <tr key={v.veiculoId} className="max-md:flex! max-md:flex-col">
+                    <td data-label="Veículo" className="px-5 py-2 max-md:order-first"><span className="font-semibold text-gray-900">{v.placa}</span> <span className="text-gray-500">{v.veiculo}</span></td>
+                    <td data-label="Combustível" className="px-3 py-2 text-right">{formatarMoeda(v.combustivel)}</td>
+                    <td data-label="Manutenção" className="px-3 py-2 text-right">{formatarMoeda(v.servicos)}</td>
+                    <td data-label="Avulsas" className="px-3 py-2 text-right">{formatarMoeda(v.avulsas)}</td>
+                    <td data-label="Multas" className="px-3 py-2 text-right">{formatarMoeda(v.multas)}</td>
+                    <td data-label="Total" className="px-3 py-2 text-right font-semibold max-md:-order-1">{formatarMoeda(v.total)}</td>
+                    <td data-label="Km" className="px-3 py-2 text-right">{v.kmRodados.toLocaleString("pt-BR")}</td>
+                    <td data-label="Custo/km" className="px-5 py-2 text-right">{v.custoPorKm === null ? "—" : formatarMoeda(v.custoPorKm)}</td>
                   </tr>
                 ))}
                 {resumo.porVeiculo.length === 0 && (
@@ -211,7 +213,7 @@ export function Financeiro() {
           <div className="grid gap-6 lg:grid-cols-2">
             <section className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
               <h3 className="px-5 pt-4 text-sm font-semibold text-gray-900">Por mês</h3>
-              <table className="mt-3 w-full text-left text-xs">
+              <table className="tabela-cartoes mt-3 w-full text-left text-xs">
                 <thead className="bg-gray-50 text-gray-500">
                   <tr>
                     <th className="px-5 py-2 font-medium">Mês</th>
@@ -224,11 +226,11 @@ export function Financeiro() {
                 <tbody className="divide-y divide-gray-100">
                   {resumo.mensal.map((m) => (
                     <tr key={m.mes}>
-                      <td className="px-5 py-2">{rotuloDoMes(m.mes)}</td>
-                      <td className="px-3 py-2 text-right">{formatarMoeda(m.combustivel)}</td>
-                      <td className="px-3 py-2 text-right">{formatarMoeda(m.servicos)}</td>
-                      <td className="px-3 py-2 text-right">{formatarMoeda(m.avulsas + m.multas)}</td>
-                      <td className="px-5 py-2 text-right font-semibold">{formatarMoeda(m.total)}</td>
+                      <td data-label="Mês" className="px-5 py-2">{rotuloDoMes(m.mes)}</td>
+                      <td data-label="Combustível" className="px-3 py-2 text-right">{formatarMoeda(m.combustivel)}</td>
+                      <td data-label="Manutenção" className="px-3 py-2 text-right">{formatarMoeda(m.servicos)}</td>
+                      <td data-label="Avulsas" className="px-3 py-2 text-right">{formatarMoeda(m.avulsas + m.multas)}</td>
+                      <td data-label="Total" className="px-5 py-2 text-right font-semibold">{formatarMoeda(m.total)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -238,7 +240,7 @@ export function Financeiro() {
 
             <section className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
               <h3 className="px-5 pt-4 text-sm font-semibold text-gray-900">Por motorista e por centro de custo</h3>
-              <table className="mt-3 w-full text-left text-xs">
+              <table className="tabela-cartoes mt-3 w-full text-left text-xs">
                 <thead className="bg-gray-50 text-gray-500">
                   <tr>
                     <th className="px-5 py-2 font-medium">Quem</th>
@@ -248,14 +250,14 @@ export function Financeiro() {
                 <tbody className="divide-y divide-gray-100">
                   {resumo.porMotorista.map((m) => (
                     <tr key={`m-${m.motoristaId ?? "x"}`}>
-                      <td className="px-5 py-2">Motorista: {m.nome}</td>
-                      <td className="px-5 py-2 text-right font-semibold">{formatarMoeda(m.total)}</td>
+                      <td data-label="Quem" className="px-5 py-2">Motorista: {m.nome}</td>
+                      <td data-label="Total" className="px-5 py-2 text-right font-semibold">{formatarMoeda(m.total)}</td>
                     </tr>
                   ))}
                   {resumo.porCentro.map((c) => (
                     <tr key={`c-${c.centroCustoId ?? "x"}`}>
-                      <td className="px-5 py-2">Centro: {c.nome}</td>
-                      <td className="px-5 py-2 text-right font-semibold">{formatarMoeda(c.total)}</td>
+                      <td data-label="Quem" className="px-5 py-2">Centro: {c.nome}</td>
+                      <td data-label="Total" className="px-5 py-2 text-right font-semibold">{formatarMoeda(c.total)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -270,7 +272,7 @@ export function Financeiro() {
 
       <section className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
         <h3 className="px-5 pt-4 text-sm font-semibold text-gray-900">Despesas avulsas</h3>
-        <table className="mt-3 w-full text-left text-xs">
+        <table className="tabela-cartoes mt-3 w-full text-left text-xs">
           <thead className="bg-gray-50 text-gray-500">
             <tr>
               <th className="px-5 py-2 font-medium">Data</th>
@@ -284,16 +286,18 @@ export function Financeiro() {
           <tbody className="divide-y divide-gray-100">
             {despesas.map((d) => (
               <tr key={d.id}>
-                <td className="px-5 py-2">{formatarData(d.data)}</td>
-                <td className="px-3 py-2">{d.categoria?.nome ?? "—"}</td>
-                <td className="px-3 py-2">{d.veiculo?.placa ?? "—"}</td>
-                <td className="px-3 py-2">{d.descricao ?? "—"}</td>
-                <td className="px-3 py-2 text-right font-semibold">{formatarMoeda(d.valor)}</td>
+                <td data-label="Data" className="px-5 py-2">{formatarData(d.data)}</td>
+                <td data-label="Categoria" className="px-3 py-2">{d.categoria?.nome ?? "—"}</td>
+                <td data-label="Veículo" className="px-3 py-2">{d.veiculo?.placa ?? "—"}</td>
+                {/* Texto livre: no cartão fica alinhado à esquerda para não virar um bloco torto à direita. */}
+                <td data-label="Descrição" className="px-3 py-2 max-md:text-left!">{d.descricao ?? "—"}</td>
+                <td data-label="Valor" className="px-3 py-2 text-right font-semibold">{formatarMoeda(d.valor)}</td>
+                {/* Ações sem data-label: no cartão viram a faixa de botões no rodapé, com alvo de 44px. */}
                 <td className="px-5 py-2 text-right">
-                  <button type="button" onClick={() => setEditando(d)} aria-label={`Editar despesa de ${formatarData(d.data)}`} className="mr-1 inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100">
+                  <button type="button" onClick={() => setEditando(d)} aria-label={`Editar despesa de ${formatarData(d.data)}`} className="mr-1 inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 max-md:h-11 max-md:w-11">
                     <Pencil size={14} />
                   </button>
-                  <button type="button" onClick={() => void remover(d)} aria-label={`Remover despesa de ${formatarData(d.data)}`} className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-red-500 hover:bg-red-50">
+                  <button type="button" onClick={() => void remover(d)} aria-label={`Remover despesa de ${formatarData(d.data)}`} className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-red-500 hover:bg-red-50 max-md:h-11 max-md:w-11">
                     <Trash2 size={14} />
                   </button>
                 </td>

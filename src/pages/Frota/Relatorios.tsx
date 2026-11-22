@@ -168,7 +168,9 @@ export function Relatorios() {
             <h3 className="text-sm font-semibold text-gray-900">{relatorio.titulo}</h3>
             <span className="text-xs text-gray-500">{relatorio.totalLinhas} registro(s)</span>
           </div>
-          <table className="mt-3 w-full text-left text-xs">
+          {/* No celular cada linha vira um cartão: a primeira coluna do relatório é o
+              título e as demais aparecem rotuladas, na ordem que o servidor manda. */}
+          <table className="tabela-cartoes mt-3 w-full text-left text-xs">
             <thead className="bg-gray-50 text-gray-500">
               <tr>
                 {relatorio.colunas.map((c) => (
@@ -180,7 +182,7 @@ export function Relatorios() {
               {relatorio.linhas.map((linha, indice) => (
                 <tr key={indice}>
                   {relatorio.colunas.map((c) => (
-                    <td key={c.chave} className="px-4 py-2">{celula(c, linha[c.chave] ?? null)}</td>
+                    <td key={c.chave} data-label={c.rotulo} className="px-4 py-2">{celula(c, linha[c.chave] ?? null)}</td>
                   ))}
                 </tr>
               ))}
