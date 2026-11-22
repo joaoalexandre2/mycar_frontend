@@ -183,8 +183,10 @@ export function CartaoVeiculo({
         </div>
       </div>
 
+      {/* No toque a faixa ganha 44px de altura e os links (inline, com
+          padding vertical) ocupam essa altura toda; no mouse fica como antes. */}
       {!veiculo.fotoCapaUrl && veiculo.fotoModelo && (
-        <p className="truncate border-b border-gray-100 px-4 py-1 text-xs text-gray-500">
+        <p className="truncate border-b border-gray-100 px-4 py-1 text-xs text-gray-500 pointer-coarse:py-3.5">
           Foto ilustrativa do modelo ·{" "}
           {veiculo.fotoModelo.autor ? `${veiculo.fotoModelo.autor} · ` : ""}
           {veiculo.fotoModelo.licencaUrl ? (
@@ -192,7 +194,7 @@ export function CartaoVeiculo({
               href={veiculo.fotoModelo.licencaUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="underline"
+              className="py-3.5 underline"
             >
               {veiculo.fotoModelo.licenca}
             </a>
@@ -205,7 +207,7 @@ export function CartaoVeiculo({
               href={veiculo.fotoModelo.pagina}
               target="_blank"
               rel="noopener noreferrer"
-              className="underline"
+              className="py-3.5 underline"
             >
               {veiculo.fotoModelo.fonte}
             </a>
@@ -283,7 +285,7 @@ export function CartaoVeiculo({
               <button
                 type="button"
                 onClick={acoes.corrigirKm}
-                className="ml-2 font-semibold text-blue-600 hover:text-blue-700"
+                className="-my-3.5 ml-1 inline-flex min-h-11 items-center px-1 font-semibold text-blue-600 hover:text-blue-700"
               >
                 {veiculo.kmAtual === null ? "informar" : "corrigir"}
               </button>

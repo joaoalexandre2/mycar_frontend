@@ -163,6 +163,9 @@ describe("CartaoVeiculo: km atual da frota", () => {
       />,
     );
 
+    // Área de toque de 44px; a margem negativa mantém a altura da linha.
+    expect(screen.getByRole("button", { name: "informar" })).toHaveClass("min-h-11", "-my-3.5");
+
     await userEvent.click(screen.getByRole("button", { name: "informar" }));
 
     expect(corrigirKm).toHaveBeenCalledTimes(1);

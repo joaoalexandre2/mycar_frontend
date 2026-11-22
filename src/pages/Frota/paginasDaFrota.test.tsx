@@ -190,6 +190,33 @@ describe("Agenda", () => {
     const dialogo = await screen.findByRole("dialog");
     expect(within(dialogo).getByLabelText("Início")).toHaveValue(`${hoje}T08:00`);
   });
+
+  it("o número do dia diz ao leitor de tela a data da reserva", async () => {
+    simularAgenda({ usos: [] });
+    agenda();
+
+    await screen.findByText(/Nenhum uso agendado/);
+    const [ano, mes, dia] = hoje.split("-");
+
+    expect(screen.getByRole("button", { name: `Reservar em ${dia}/${mes}/${ano}` })).toHaveTextContent(String(Number(dia)));
+  });
+
+  it("no celular os controles têm 44px e o calendário só aparece a partir de lg", async () => {
+    simularAgenda({ usos: [] });
+    agenda();
+
+    await screen.findByText(/Nenhum uso agendado/);
+
+    expect(screen.getByRole("button", { name: "Hoje" })).toHaveClass("h-11", "md:h-9");
+    expect(screen.getByRole("button", { name: /Importar planilha/ })).toHaveClass("h-11", "md:h-10");
+    expect(screen.getByRole("button", { name: /Reservar veículo/ })).toHaveClass("h-11", "md:h-10");
+    expect(screen.getByRole("combobox", { name: "Filtrar por veículo" })).toHaveClass("h-11", "md:h-9");
+    expect(screen.getByRole("combobox", { name: "Filtrar por motorista" })).toHaveClass("h-11", "md:h-9");
+
+    const calendario = screen.getByRole("grid").parentElement!;
+    expect(calendario).toHaveClass("hidden", "lg:block");
+    expect(calendario).not.toHaveClass("md:block");
+  });
 });
 
 // ------------------------------------------------------------------ UsoFormModal

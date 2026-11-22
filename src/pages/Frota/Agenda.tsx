@@ -27,7 +27,7 @@ const SEMANA = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
 const POR_DIA_NO_CALENDARIO = 3;
 
 const classeFiltro =
-  "h-9 rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
+  "h-11 rounded-lg border md:h-9 border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
 
 /** Texto curto de um uso dentro do calendário: hora, placa e quem vai usar. */
 const resumoDoUso = (uso: UsoVeiculo) =>
@@ -152,7 +152,7 @@ export function Agenda() {
           <button
             type="button"
             onClick={() => setImportando(true)}
-            className="flex h-10 items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+            className="flex h-11 items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 text-xs font-semibold text-gray-700 hover:bg-gray-50 md:h-10"
           >
             <FileUp size={15} /> Importar planilha
           </button>
@@ -160,7 +160,7 @@ export function Agenda() {
             type="button"
             onClick={() => setFormulario({ uso: null })}
             disabled={semVeiculos}
-            className="flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+            className="flex h-11 items-center gap-2 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60 md:h-10"
           >
             <Plus size={15} /> Reservar veículo
           </button>
@@ -198,13 +198,13 @@ export function Agenda() {
           <button
             type="button"
             onClick={irParaHoje}
-            className="ml-1 h-9 rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+            className="ml-1 h-11 rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-600 hover:bg-gray-50 md:h-9"
           >
             Hoje
           </button>
         </div>
 
-        <h3 className="min-w-40 text-base font-semibold text-gray-900 capitalize">{rotuloDoMes(ano, mes)}</h3>
+        <h3 className="text-base font-semibold text-gray-900 capitalize md:min-w-40">{rotuloDoMes(ano, mes)}</h3>
 
         <div className="ml-auto flex flex-wrap gap-2">
           <select
@@ -248,8 +248,9 @@ export function Agenda() {
         </p>
       )}
 
-      {/* Calendário (telas largas) */}
-      <div className="hidden overflow-hidden rounded-xl border border-gray-200 bg-white md:block" aria-busy={carregando}>
+      {/* Calendário (a partir de lg: no tablet as 7 colunas ficavam estreitas
+          demais para ler os usos; ele usa a lista por dia) */}
+      <div className="hidden overflow-hidden rounded-xl border border-gray-200 bg-white lg:block" aria-busy={carregando}>
         <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50 text-center text-xs font-bold tracking-wide text-gray-500 uppercase">
           {SEMANA.map((d) => (
             <div key={d} className="py-2">
@@ -273,12 +274,13 @@ export function Agenda() {
                   onClick={() => setFormulario({ uso: null, dia: dia.data })}
                   disabled={semVeiculos}
                   title="Reservar neste dia"
+                  aria-label={`Reservar em ${dia.data.slice(8, 10)}/${dia.data.slice(5, 7)}/${dia.data.slice(0, 4)}`}
                   className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold hover:bg-blue-50 disabled:cursor-default ${
                     dia.data === hoje
                       ? "bg-blue-600 text-white hover:bg-blue-600"
                       : dia.doMes
                         ? "text-gray-700"
-                        : "text-gray-300"
+                        : "text-gray-500"
                   }`}
                 >
                   {Number(dia.data.slice(8, 10))}
@@ -312,8 +314,8 @@ export function Agenda() {
         </div>
       </div>
 
-      {/* Lista por dia (celular) */}
-      <div className="space-y-3 md:hidden">
+      {/* Lista por dia (celular e tablet) */}
+      <div className="space-y-3 lg:hidden">
         {diasDoMes.map((dia) => {
           const doDia = usosDoDia(usos, dia.data);
 
@@ -331,12 +333,12 @@ export function Agenda() {
                     <button
                       type="button"
                       onClick={() => setAberto(uso)}
-                      className={`block w-full rounded-lg border px-3 py-2 text-left text-xs ${COR_DO_STATUS[uso.status]}`}
+                      className={`block w-full rounded-lg border px-3 py-2 text-left text-sm ${COR_DO_STATUS[uso.status]}`}
                     >
                       <span className="font-semibold">
                         {uso.veiculo?.placa} · {uso.motorista ?? "sem motorista"}
                       </span>
-                      <span className="block text-xs opacity-80">
+                      <span className="block">
                         {descreverJanela(uso.inicioPrevisto, uso.fimPrevisto)} · {ROTULO_STATUS_USO[uso.status]}
                       </span>
                     </button>

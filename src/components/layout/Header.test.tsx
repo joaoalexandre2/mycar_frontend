@@ -309,3 +309,45 @@ describe("Header: busca", () => {
     }));
   });
 });
+
+describe("Header: título longo no celular", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("a esquerda encolhe e o título trunca, sem empurrar os botões da direita", async () => {
+    vi.spyOn(api, "get").mockResolvedValue({
+      data: { vencimentos: [], consumo: {}, gasto_mes: {} },
+    } as never);
+    const frota: Usuario = { id: 3, name: "Bia", email: "b@mycar.local", perfil: "frota" };
+
+    render(
+      <AuthContext.Provider
+        value={{
+          usuario: frota,
+          autenticado: true,
+          entrar: async () => {},
+          sair: async () => {},
+          atualizarUsuario: () => {},
+        }}
+      >
+        <NotificacoesProvider>
+          <MemoryRouter initialEntries={["/frota/cadastros"]}>
+            <Header aoAbrirMenu={() => {}} />
+          </MemoryRouter>
+        </NotificacoesProvider>
+      </AuthContext.Provider>,
+    );
+
+    const titulo = screen.getByRole("heading", { level: 1, name: "Motoristas e centros de custo" });
+    expect(titulo).toHaveClass("truncate", "text-lg", "sm:text-[22px]");
+
+    const esquerda = screen.getByRole("button", { name: "Abrir menu" }).parentElement!;
+    expect(esquerda).toHaveClass("min-w-0", "flex-1");
+
+    const direita = screen.getByRole("button", { name: "Despesas" }).parentElement!;
+    expect(direita).toHaveClass("shrink-0");
+
+    await waitFor(() => expect(api.get).toHaveBeenCalled());
+  });
+});

@@ -65,8 +65,10 @@ import { useEffect, useState } from "react";
     }, [titulo]);
 
     return (
-      <header className="print:hidden flex h-[82px] items-center justify-between border-b border-gray-200 bg-white px-4 md:px-8">
-        <div className="flex items-center gap-3">
+      <header className="print:hidden flex h-[82px] items-center justify-between gap-3 border-b border-gray-200 bg-white px-4 md:px-8">
+        {/* A esquerda encolhe (min-w-0) para o título truncar; sem isso o
+            título longo empurrava os botões da direita para fora da tela. */}
+        <div className="flex min-w-0 flex-1 items-center gap-3">
           <button
             type="button"
             onClick={aoAbrirMenu}
@@ -80,17 +82,17 @@ import { useEffect, useState } from "react";
           </button>
 
           <div className="min-w-0">
-            <h1 className="truncate text-[22px] font-bold text-gray-900">
+            <h1 className="truncate text-lg font-bold text-gray-900 sm:text-[22px]">
               {titulo}
             </h1>
 
-            <p className="mt-0.5 hidden text-xs text-gray-500 sm:block">
+            <p className="mt-0.5 hidden truncate text-xs text-gray-500 sm:block">
               {subtitulo}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-3">
           {ehConta(perfilDe(usuario)) && (
             <button
               type="button"
