@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Download, Printer } from "lucide-react";
+import { Alert } from "../../components/ui/Alert";
 import { contaService } from "../../services/conta/veiculos";
 import { motoristasService, centrosCustoService } from "../../services/frota";
 import { categoriasDeDespesaService } from "../../services/financeiro";
@@ -160,7 +161,7 @@ export function Relatorios() {
         </div>
       </div>
 
-      {erro && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">{erro}</p>}
+      {erro && <Alert tone="danger">{erro}</Alert>}
 
       {relatorio && (
         <section className="overflow-x-auto rounded-xl border border-gray-200 bg-white">

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Pencil, Plus, Tags, Trash2 } from "lucide-react";
+import { Alert } from "../../components/ui/Alert";
 import { CategoriasDespesaModal } from "../../components/frota/CategoriasDespesaModal";
 import { DespesaAvulsaModal } from "../../components/frota/DespesaAvulsaModal";
 import { useConfirmar } from "../../hooks/useNotificacoes";
@@ -150,7 +151,7 @@ export function Financeiro() {
         </div>
       </div>
 
-      {erro && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">{erro}</p>}
+      {erro && <Alert tone="danger">{erro}</Alert>}
 
       {resumo && ind && (
         <>

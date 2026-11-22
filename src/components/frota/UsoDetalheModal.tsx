@@ -10,7 +10,10 @@ import { usosService, type EventoDoUso } from "../../services/frota";
 import { isAxiosError } from "axios";
 import { mensagemErro } from "../../services/api";
 import { useConfirmar, useToast } from "../../hooks/useNotificacoes";
-import { COR_DO_STATUS, descreverJanela } from "../../utils/agenda";
+import { descreverJanela } from "../../utils/agenda";
+import { Alert } from "../ui/Alert";
+import { StatusChip } from "../ui/StatusChip";
+import { TOM_DO_STATUS_USO } from "./tomDoStatusUso";
 import { redimensionar } from "../../utils/imagem";
 import { formatarDataHora, formatarKm } from "../../utils/formatters";
 import { lerInteiroBR } from "../../utils/numero";
@@ -307,19 +310,16 @@ export function UsoDetalheModal({
         registrando ? (
           <div className="space-y-2">
             {erro && (
-              <div role="alert" className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
+              <Alert
+                tone="danger"
+                action={
+                  tentativaSemConexao
+                    ? { label: "Tentar de novo", onClick: () => void enviar(tentativaSemConexao), disabled: enviando }
+                    : undefined
+                }
+              >
                 <p>{erro}</p>
-                {tentativaSemConexao && (
-                  <button
-                    type="button"
-                    onClick={() => void enviar(tentativaSemConexao)}
-                    disabled={enviando}
-                    className="h-9 shrink-0 rounded-lg border border-red-200 bg-white px-3 font-semibold text-red-700 hover:bg-red-50 disabled:opacity-60"
-                  >
-                    Tentar de novo
-                  </button>
-                )}
-              </div>
+              </Alert>
             )}
 
             <div className="flex justify-end">
@@ -338,14 +338,10 @@ export function UsoDetalheModal({
     >
       <div className="space-y-5 px-6 py-5">
         <div className="flex flex-wrap items-center gap-2">
-          <span className={`rounded-full border px-2.5 py-0.5 text-xs font-bold uppercase ${COR_DO_STATUS[uso.status]}`}>
+          <StatusChip tone={TOM_DO_STATUS_USO[uso.status]} className={uso.status === "cancelado" ? "line-through" : ""}>
             {ROTULO_STATUS_USO[uso.status]}
-          </span>
-          {uso.origem === "planilha" && (
-            <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-500">
-              Importado da planilha
-            </span>
-          )}
+          </StatusChip>
+          {uso.origem === "planilha" && <StatusChip>Importado da planilha</StatusChip>}
         </div>
 
         <dl className="grid grid-cols-1 gap-x-6 gap-y-3 text-xs sm:grid-cols-2">
@@ -466,9 +462,7 @@ export function UsoDetalheModal({
 
         {/* Registrando, o erro vai para o rodapé, junto do botão. */}
         {erro && !registrando && (
-          <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
-            {erro}
-          </p>
+          <Alert tone="danger">{erro}</Alert>
         )}
 
         <div className="flex flex-wrap justify-between gap-2 border-t border-gray-100 pt-4">

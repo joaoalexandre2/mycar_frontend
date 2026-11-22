@@ -366,6 +366,49 @@ th {
   color: #4ade80;
 }
 
+/* ---------- Tons de mensagem e de status (Alert e StatusChip) ----------
+   Cores opacas, para o contraste não depender do que está atrás. Contraste do
+   texto sobre o fundo do próprio tom (WCAG, mínimo 4,5:1):
+     claro:  neutral 9,20 · info 7,09 · success 7,29 · warning 6,84 · danger 5,91
+     escuro: neutral 9,96 · info 8,89 · success 9,63 · warning 10,42 · danger 8,65
+   A borda é decorativa: o tom sempre vem acompanhado do texto. Não usa a
+   escala "blue" (a cor da marca). */
+:root {
+  --tom-neutral-fundo: #f1f1f7;
+  --tom-neutral-texto: #403f4a;
+  --tom-neutral-borda: #e2e2ec;
+  --tom-info-fundo: #f0f9ff;
+  --tom-info-texto: #075985;
+  --tom-info-borda: #bae6fd;
+  --tom-success-fundo: #ecfdf5;
+  --tom-success-texto: #065f46;
+  --tom-success-borda: #a7f3d0;
+  --tom-warning-fundo: #fffbeb;
+  --tom-warning-texto: #92400e;
+  --tom-warning-borda: #fde68a;
+  --tom-danger-fundo: #fef2f2;
+  --tom-danger-texto: #b91c1c;
+  --tom-danger-borda: #fecaca;
+}
+
+:root.dark {
+  --tom-neutral-fundo: #1e2939;
+  --tom-neutral-texto: #d1d5dc;
+  --tom-neutral-borda: #364153;
+  --tom-info-fundo: #0b2a3f;
+  --tom-info-texto: #7dd3fc;
+  --tom-info-borda: #0c4a6e;
+  --tom-success-fundo: #0b2e24;
+  --tom-success-texto: #6ee7b7;
+  --tom-success-borda: #065f46;
+  --tom-warning-fundo: #33240a;
+  --tom-warning-texto: #fcd34d;
+  --tom-warning-borda: #78350f;
+  --tom-danger-fundo: #3a1218;
+  --tom-danger-texto: #fca5a5;
+  --tom-danger-borda: #7f1d1d;
+}
+
 /* Hover dos botões primários escurece no escuro, como no claro. */
 :root.dark .hover\:bg-blue-700:hover {
   background-color: color-mix(in oklab, var(--color-blue-600) 80%, black);

@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Building2 } from "lucide-react";
+import { Alert } from "../ui/Alert";
 import { Modal } from "../ui/Modal";
 import { LinhaDeTroca } from "./LinhaDeTroca";
 import { centrosCustoService, motivosTrocaCentroService, usosService } from "../../services/frota";
@@ -118,7 +119,7 @@ export function TrocarCentroModal({
         </div>
 
         {erro && (
-          <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{erro}</p>
+          <Alert tone="danger">{erro}</Alert>
         )}
 
         <div className="flex justify-end gap-2">

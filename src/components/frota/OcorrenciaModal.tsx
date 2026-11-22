@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { Camera, Trash2, TriangleAlert } from "lucide-react";
+import { Alert } from "../ui/Alert";
 import { Modal } from "../ui/Modal";
 import { ocorrenciasService } from "../../services/ocorrencias";
 import { mensagemErro } from "../../services/api";
@@ -57,7 +58,7 @@ export function OcorrenciaModal({ ocorrencia, veiculos, gerencia, onSalva, onCri
   const campoVeiculo = useRef<HTMLSelectElement>(null);
   const campoData = useRef<HTMLInputElement>(null);
   const campoDescricao = useRef<HTMLTextAreaElement>(null);
-  const avisoDeSucesso = useRef<HTMLParagraphElement>(null);
+  const avisoDeSucesso = useRef<HTMLDivElement>(null);
 
   // Depois de criar, o botão Salvar pode sumir (o motorista não edita): o foco vai
   // para o aviso, que o leitor de tela lê, em vez de se perder no corpo da página.
@@ -168,9 +169,9 @@ export function OcorrenciaModal({ ocorrencia, veiculos, gerencia, onSalva, onCri
     <Modal titulo={registro ? "Ocorrência" : "Registrar ocorrência"} icone={<TriangleAlert size={16} />} onClose={onClose} larguraMax="max-w-lg">
       <form onSubmit={(e) => void salvar(e)} noValidate className="space-y-4 px-6 py-5">
         {recemCriada && (
-          <p ref={avisoDeSucesso} role="status" tabIndex={-1} className="rounded-lg bg-green-50 px-3 py-2 text-xs text-green-700 outline-none">
+          <Alert ref={avisoDeSucesso} tone="success" tabIndex={-1} className="outline-none">
             Ocorrência registrada. Agora você pode anexar as fotos de antes e depois.
-          </p>
+          </Alert>
         )}
 
         {/* O motorista não edita ocorrência já registrada (a rota de edição é só da gestão): depois de criar, os dados ficam só para leitura. */}
@@ -318,7 +319,7 @@ export function OcorrenciaModal({ ocorrencia, veiculos, gerencia, onSalva, onCri
           </section>
         )}
 
-        {erro && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{erro}</p>}
+        {erro && <Alert tone="danger">{erro}</Alert>}
 
         <div className="flex justify-end gap-2">
           {recemCriada ? (

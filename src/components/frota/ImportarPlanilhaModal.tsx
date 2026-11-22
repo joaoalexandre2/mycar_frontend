@@ -1,6 +1,7 @@
 import { useState, type ChangeEvent } from "react";
 import { Download, FileUp } from "lucide-react";
 import { Modal } from "../ui/Modal";
+import { Alert } from "../ui/Alert";
 import { ErroDePlanilha, usosService } from "../../services/frota";
 import { mensagemErro } from "../../services/api";
 import { formatarKm } from "../../utils/formatters";
@@ -132,13 +133,13 @@ export function ImportarPlanilhaModal({
         </label>
 
         {erro && (
-          <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-red-600">
+          <Alert tone="danger">
             {erro}
-          </p>
+          </Alert>
         )}
 
         {problemas && (
-          <div role="alert" className="rounded-lg bg-red-50 px-3 py-3 text-red-700">
+          <Alert tone="danger">
             <p className="font-semibold">{problemas.mensagem}</p>
             <ul className="mt-2 max-h-48 list-disc space-y-1 overflow-y-auto pl-4">
               {problemas.erros.map((linha) => (
@@ -150,11 +151,11 @@ export function ImportarPlanilhaModal({
                 ... e mais {problemas.totalDeErros - problemas.erros.length}. Corrija os primeiros e confira de novo.
               </p>
             )}
-          </div>
+          </Alert>
         )}
 
         {resumo && (
-          <div className="rounded-lg bg-emerald-50 px-3 py-3 text-emerald-800">
+          <Alert tone="success">
             <p className="font-semibold">
               {importado ? "Planilha importada." : "Tudo certo na conferência. Nada foi gravado ainda."}
             </p>
@@ -164,7 +165,7 @@ export function ImportarPlanilhaModal({
             </p>
             {resumo.motoristasNovos.length > 0 && <p>Motoristas novos: {resumo.motoristasNovos.join(", ")}.</p>}
             {resumo.centrosNovos.length > 0 && <p>Centros de custo novos: {resumo.centrosNovos.join(", ")}.</p>}
-          </div>
+          </Alert>
         )}
 
         <div className="flex justify-end gap-2">

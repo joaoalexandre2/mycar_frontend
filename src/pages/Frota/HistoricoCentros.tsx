@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { LinhaDeTroca } from "../../components/frota/LinhaDeTroca";
+import { Alert } from "../../components/ui/Alert";
 import { centrosCustoService } from "../../services/frota";
 import { mensagemErro } from "../../services/api";
 import type { CentroCusto, TrocaDeCentro } from "../../types/frota";
@@ -80,7 +81,7 @@ export function HistoricoCentros() {
       </div>
 
       {erro && (
-        <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">{erro}</p>
+        <Alert tone="danger">{erro}</Alert>
       )}
 
       {trocas && trocas.length === 0 && (

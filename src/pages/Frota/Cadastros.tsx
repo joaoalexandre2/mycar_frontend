@@ -1,5 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Building2, History, Pencil, Plus, Send, Trash2, UserRound } from "lucide-react";
+import { Alert } from "../../components/ui/Alert";
+import { StatusChip } from "../../components/ui/StatusChip";
 import { Modal } from "../../components/ui/Modal";
 import { useCarregarLista } from "../../hooks/useCarregarLista";
 import { HistoricoCentros } from "./HistoricoCentros";
@@ -130,24 +132,21 @@ function Motoristas() {
       </div>
 
       {erroDeAcao && (
-        <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">
+        <Alert tone="danger">
           {erroDeAcao}
-        </p>
+        </Alert>
       )}
 
       {confirmacao && (
-        <p role="status" className="rounded-lg bg-green-50 px-4 py-3 text-xs text-green-700">
+        <Alert tone="success">
           {confirmacao}
-        </p>
+        </Alert>
       )}
 
       {erroDeCarga && (
-        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">
-          <span>{erroDeCarga}</span>
-          <button type="button" onClick={carregar} className="font-semibold underline">
-            Tentar de novo
-          </button>
-        </div>
+        <Alert tone="danger" action={{ label: "Tentar de novo", onClick: carregar }}>
+          {erroDeCarga}
+        </Alert>
       )}
 
       {carregando && !erroDeCarga && <p className="text-xs text-gray-500">Carregando...</p>}
@@ -171,8 +170,16 @@ function Motoristas() {
                     {[m.telefone, m.cnhNumero ? `CNH ${m.cnhNumero}` : null].filter(Boolean).join(" · ") || "Sem contato"}
                     {m.cnhValidade && ` · validade ${formatarData(m.cnhValidade)}`}
                   </p>
-                  {cnh === "vencida" && <p className="text-xs font-semibold text-red-600">CNH vencida</p>}
-                  {cnh === "vence_em_breve" && <p className="text-xs font-semibold text-amber-600">CNH vence em breve</p>}
+                  {cnh === "vencida" && (
+                    <p className="mt-1">
+                      <StatusChip tone="danger">CNH vencida</StatusChip>
+                    </p>
+                  )}
+                  {cnh === "vence_em_breve" && (
+                    <p className="mt-1">
+                      <StatusChip tone="warning">CNH vence em breve</StatusChip>
+                    </p>
+                  )}
                   {m.acesso && (
                     <p className={`mt-1 text-xs font-medium ${ESTILO_ACESSO[m.acesso]}`}>
                       {ROTULO_ACESSO[m.acesso]}
@@ -329,7 +336,7 @@ function AcessoMotoristaModal({
         </div>
 
         {erro && (
-          <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{erro}</p>
+          <Alert tone="danger">{erro}</Alert>
         )}
 
         <div className="flex justify-end gap-2">
@@ -452,7 +459,7 @@ function MotoristaModal({
         </div>
 
         {erro && (
-          <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{erro}</p>
+          <Alert tone="danger">{erro}</Alert>
         )}
 
         <div className="flex justify-end gap-2">
@@ -520,18 +527,15 @@ function Centros() {
       </div>
 
       {erroDeAcao && (
-        <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">
+        <Alert tone="danger">
           {erroDeAcao}
-        </p>
+        </Alert>
       )}
 
       {erroDeCarga && (
-        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">
-          <span>{erroDeCarga}</span>
-          <button type="button" onClick={carregar} className="font-semibold underline">
-            Tentar de novo
-          </button>
-        </div>
+        <Alert tone="danger" action={{ label: "Tentar de novo", onClick: carregar }}>
+          {erroDeCarga}
+        </Alert>
       )}
 
       {carregando && !erroDeCarga && <p className="text-xs text-gray-500">Carregando...</p>}
@@ -636,7 +640,7 @@ function CentroModal({
         </div>
 
         {erro && (
-          <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{erro}</p>
+          <Alert tone="danger">{erro}</Alert>
         )}
 
         <div className="flex justify-end gap-2">

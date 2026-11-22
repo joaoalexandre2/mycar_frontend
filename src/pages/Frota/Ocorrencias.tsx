@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Pencil, Plus, Trash2 } from "lucide-react";
+import { Alert } from "../../components/ui/Alert";
 import { OcorrenciaModal } from "../../components/frota/OcorrenciaModal";
 import { useConfirmar } from "../../hooks/useNotificacoes";
 import { useUsuarioDaFrota } from "../../hooks/usePodeNaFrota";
@@ -124,7 +125,7 @@ export function Ocorrencias() {
         </button>
       </div>
 
-      {erro && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">{erro}</p>}
+      {erro && <Alert tone="danger">{erro}</Alert>}
 
       {resumo && (
         <section aria-label="Resumo" className="grid grid-cols-2 gap-3 lg:grid-cols-4">

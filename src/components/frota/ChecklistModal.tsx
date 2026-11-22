@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { ClipboardCheck } from "lucide-react";
 import { Modal } from "../ui/Modal";
+import { Alert } from "../ui/Alert";
 import { checklistService } from "../../services/frotaDiferenciais";
 import { mensagemErro } from "../../services/api";
 import type { ModeloDeChecklist, MomentoDoChecklist, RespostaDeChecklists, SituacaoDoItem } from "../../types/frota";
@@ -178,7 +179,11 @@ export function ChecklistModal({
         // Só com o formulário na tela: carregando, já feito ou com erro de carga não há o que salvar.
         mostrandoFormulario ? (
           <div className="space-y-2">
-            {erro && <p id={idErro} role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{erro}</p>}
+            {erro && (
+              <Alert id={idErro} tone="danger">
+                {erro}
+              </Alert>
+            )}
 
             <div className="flex justify-end gap-2">
               <button
@@ -289,11 +294,10 @@ export function ChecklistModal({
       )}
 
       {erro && !dados && (
-        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 px-6 py-5 text-xs text-red-600">
-          <span>{erro}</span>
-          <button type="button" onClick={tentarCarregarDeNovo} className="h-11 font-semibold underline md:h-auto">
-            Tentar de novo
-          </button>
+        <div className="px-6 py-5">
+          <Alert tone="danger" action={{ label: "Tentar de novo", onClick: tentarCarregarDeNovo }}>
+            {erro}
+          </Alert>
         </div>
       )}
     </Modal>

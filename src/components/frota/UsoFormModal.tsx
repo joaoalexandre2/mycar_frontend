@@ -1,5 +1,6 @@
 import { useId, useState, type FormEvent } from "react";
 import { CalendarPlus } from "lucide-react";
+import { Alert } from "../ui/Alert";
 import { Modal } from "../ui/Modal";
 import { usosService } from "../../services/frota";
 import { mensagemErro } from "../../services/api";
@@ -113,9 +114,9 @@ export function UsoFormModal({
       rodape={
         <div className="space-y-2">
           {erro && (
-            <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
+            <Alert tone="danger">
               {erro}
-            </p>
+            </Alert>
           )}
 
           <div className="flex justify-end gap-2">

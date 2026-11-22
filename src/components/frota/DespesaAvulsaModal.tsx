@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Receipt } from "lucide-react";
+import { Alert } from "../ui/Alert";
 import { Modal } from "../ui/Modal";
 import { despesasAvulsasService } from "../../services/financeiro";
 import { mensagemErro } from "../../services/api";
@@ -173,7 +174,7 @@ export function DespesaAvulsaModal({ despesa, categorias, veiculos, motoristas, 
           </div>
         </div>
 
-        {erro && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{erro}</p>}
+        {erro && <Alert tone="danger">{erro}</Alert>}
 
         <div className="flex justify-end gap-2">
           <button type="button" onClick={onClose} className="h-10 rounded-lg border border-gray-200 px-4 text-xs font-semibold text-gray-600 hover:bg-gray-50">

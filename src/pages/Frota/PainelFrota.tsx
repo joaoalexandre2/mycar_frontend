@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { AlertTriangle, CalendarClock, ClipboardCheck, CreditCard, Gauge } from "lucide-react";
+import { Alert } from "../../components/ui/Alert";
 import { painelFrotaService } from "../../services/frotaDiferenciais";
 import { mensagemErro } from "../../services/api";
 import { dataISOLocal, formatarData, formatarDataHora } from "../../utils/formatters";
@@ -65,7 +66,7 @@ export function PainelFrota() {
         <p className="mt-1 text-sm text-gray-500">O que precisa de atenção e como os veículos estão sendo usados.</p>
       </div>
 
-      {erro && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">{erro}</p>}
+      {erro && <Alert tone="danger">{erro}</Alert>}
 
       {alertas && (
         <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
