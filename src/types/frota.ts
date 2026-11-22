@@ -81,7 +81,21 @@ export interface Motorista {
   ativo: boolean;
   /** Centro de custo a que o motorista está amarrado; as reservas dele saem nele. */
   centroCustoId: number | null;
+  /**
+   * Estado do login do motorista. null/ausente = desconhecido (servidor antigo,
+   * que ainda não manda o campo): a tela não mostra estado nem botão.
+   */
+  acesso?: EstadoAcessoMotorista | null;
+  /** E-mail do login já criado (para reenviar o convite ao mesmo endereço). */
+  acessoEmail?: string | null;
+  /** Login ligado a este cadastro (null = só cadastro, sem login). */
+  userId?: number | null;
 }
+
+/** sem_acesso: sem login; convite_enviado: login criado, ainda não entrou; ativo: já entrou no sistema. */
+export type EstadoAcessoMotorista = "sem_acesso" | "convite_enviado" | "ativo";
+
+export const ESTADOS_ACESSO_MOTORISTA: readonly EstadoAcessoMotorista[] = ["sem_acesso", "convite_enviado", "ativo"];
 
 export interface MotoristaPayload {
   nome: string;

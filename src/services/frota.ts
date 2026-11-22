@@ -1,6 +1,7 @@
 import { isAxiosError } from "axios";
 import api from "./api";
 import { urlDaFoto } from "../utils/imagem";
+import { ESTADOS_ACESSO_MOTORISTA } from "../types/frota";
 import type {
   CentroCusto,
   CentroCustoPayload,
@@ -17,6 +18,7 @@ import type {
   GrupoUsuario,
   GrupoUsuarioPayload,
   GruposDaFrota,
+  EstadoAcessoMotorista,
   Motorista,
   MotoristaPayload,
   ResumoImportacao,
@@ -37,6 +39,15 @@ interface MotoristaApi {
   cnh_validade?: string | null;
   ativo: boolean;
   centro_custo_id?: number | null;
+  user_id?: number | null;
+  /** Só vem do servidor depois do deploy do estado de acesso; antes, fica ausente. */
+  acesso?: string | null;
+  acesso_email?: string | null;
+}
+
+/** Valor desconhecido (ou campo ausente) vira null: a tela trata como "não sei" e não oferece o botão. */
+function estadoDeAcesso(valor: string | null | undefined): EstadoAcessoMotorista | null {
+  return ESTADOS_ACESSO_MOTORISTA.find((estado) => estado === valor) ?? null;
 }
 
 export function mapearMotorista(item: MotoristaApi): Motorista {
@@ -48,6 +59,9 @@ export function mapearMotorista(item: MotoristaApi): Motorista {
     cnhValidade: item.cnh_validade ? item.cnh_validade.slice(0, 10) : null,
     ativo: Boolean(item.ativo),
     centroCustoId: item.centro_custo_id ?? null,
+    acesso: estadoDeAcesso(item.acesso),
+    acessoEmail: item.acesso_email ?? null,
+    userId: item.user_id ?? null,
   };
 }
 
@@ -74,6 +88,13 @@ export const motoristasService = {
 
   async remover(id: number): Promise<void> {
     await api.delete(`/conta/motoristas/${id}`);
+  },
+
+  /** Cria o login do motorista (ou reenvia o convite) e manda o link para ele criar a senha. */
+  async enviarAcesso(id: number, email: string): Promise<{ mensagem: string }> {
+    const { data } = await api.post<{ message?: string }>(`/conta/motoristas/${id}/acesso`, { email });
+
+    return { mensagem: data?.message ?? `Convite enviado para ${email}.` };
   },
 };
 
