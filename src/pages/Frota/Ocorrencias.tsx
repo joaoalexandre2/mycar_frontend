@@ -202,6 +202,8 @@ export function Ocorrencias() {
             setEditando(null);
             setVersao((v) => v + 1);
           }}
+          // Ao criar, o modal segue aberto para as fotos; a lista por trás já mostra o registro novo.
+          onCriada={() => setVersao((v) => v + 1)}
           onClose={() => {
             setNova(false);
             setEditando(null);
