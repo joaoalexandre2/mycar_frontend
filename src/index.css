@@ -131,6 +131,25 @@ th {
   }
 }
 
+/* No cabeçalho os botões de ícone seguem com 36px visíveis, mas a área de
+   toque cresce 4px para cada lado (44px) com um pseudo-elemento, sem tomar
+   espaço do título. Vale também para o botão do avatar, que envolve um
+   círculo de 36px. Fica em @layer base para que um "absolute" do Tailwind
+   continue valendo sobre o "relative" daqui. */
+@layer base {
+  @media (pointer: coarse) {
+    header button:where(.h-9.w-9, :has(> .h-9.w-9)) {
+      position: relative;
+    }
+
+    header button:where(.h-9.w-9, :has(> .h-9.w-9))::after {
+      content: "";
+      position: absolute;
+      inset: -4px;
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
