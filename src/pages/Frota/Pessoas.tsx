@@ -1,8 +1,9 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { UserPlus } from "lucide-react";
-import { pessoasFrotaService } from "../../services/frota";
+import { motoristasService, pessoasFrotaService } from "../../services/frota";
 import { mensagemErro } from "../../services/api";
 import { useUsuarioDaFrota } from "../../hooks/usePodeNaFrota";
+import { useConfirmar } from "../../hooks/useNotificacoes";
 import type { PapelDaFrota, PessoaDaFrota } from "../../types/frota";
 
 const classeCampo =
@@ -18,10 +19,15 @@ const nomesDosPapeis: Record<PapelDaFrota, string> = {
 /** Pessoas da frota e seus papéis. Só o administrador chega aqui. */
 export function Pessoas() {
   const usuario = useUsuarioDaFrota();
+  const pedirConfirmacao = useConfirmar();
   const [pessoas, setPessoas] = useState<PessoaDaFrota[] | null>(null);
+  // Logins ligados a um cadastro de motorista. null = não deu para saber (a tela não afirma nada).
+  const [comCadastroDeMotorista, setComCadastroDeMotorista] = useState<Set<number> | null>(null);
   const [versao, setVersao] = useState(0);
   const [erro, setErro] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
+  // Mudança feita, mas que ainda não deixa a pessoa trabalhar (ex.: motorista sem cadastro ligado).
+  const [pendencia, setPendencia] = useState<string | null>(null);
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [papelNovo, setPapelNovo] = useState<"administrador" | "gestor">("gestor");
@@ -44,18 +50,64 @@ export function Pessoas() {
         if (ativo) setErro(mensagemErro(error));
       });
 
+    // Quem tem papel motorista só reserva se o login estiver ligado a um cadastro de motorista.
+    motoristasService
+      .listar(true)
+      .then((motoristas) => {
+        if (!ativo) return;
+        setComCadastroDeMotorista(
+          new Set(motoristas.map((m) => m.userId).filter((id): id is number => typeof id === "number")),
+        );
+      })
+      .catch(() => {
+        if (ativo) setComCadastroDeMotorista(null);
+      });
+
     return () => {
       ativo = false;
     };
   }, [versao]);
 
+  const semCadastroDeMotorista = (pessoa: PessoaDaFrota) =>
+    comCadastroDeMotorista !== null && !comCadastroDeMotorista.has(pessoa.id);
+
   async function mudarPapel(pessoa: PessoaDaFrota, papel: PapelDaFrota) {
     setErro(null);
     setAviso(null);
+    setPendencia(null);
+
+    const faltaCadastro = papel === "motorista" && semCadastroDeMotorista(pessoa);
+
+    if (papel === "administrador") {
+      const confirmado = await pedirConfirmacao({
+        titulo: `Tornar ${pessoa.name} administrador?`,
+        mensagem:
+          "Administradores veem e alteram tudo na frota: veículos, motoristas, custos, pessoas e papéis, inclusive o de outros administradores.",
+        confirmarTexto: "Tornar administrador",
+      });
+      if (!confirmado) return;
+    }
+
+    if (faltaCadastro) {
+      const confirmado = await pedirConfirmacao({
+        titulo: "Falta o cadastro de motorista",
+        mensagem:
+          `${pessoa.name} não está ligado a nenhum cadastro de motorista. Só com o papel, não consegue reservar veículos.\n\n` +
+          'Para dar acesso a um motorista, cadastre-o em Cadastros > Motoristas e use "Enviar acesso".',
+        confirmarTexto: "Mudar o papel mesmo assim",
+      });
+      if (!confirmado) return;
+    }
 
     try {
       await pessoasFrotaService.mudarPapel(pessoa.id, papel);
-      setAviso(`${pessoa.name} agora é ${nomesDosPapeis[papel].toLowerCase()}.`);
+      if (faltaCadastro) {
+        setPendencia(
+          `${pessoa.name} agora tem o papel de motorista, mas ainda não consegue reservar: falta um cadastro de motorista ligado a este login.`,
+        );
+      } else {
+        setAviso(`${pessoa.name} agora é ${nomesDosPapeis[papel].toLowerCase()}.`);
+      }
       setVersao((v) => v + 1);
     } catch (error) {
       setErro(mensagemErro(error));
@@ -66,6 +118,7 @@ export function Pessoas() {
     evento.preventDefault();
     setErro(null);
     setAviso(null);
+    setPendencia(null);
 
     if (!nome.trim() || !email.trim()) {
       setErro("Informe o nome e o e-mail da pessoa.");
@@ -117,6 +170,9 @@ export function Pessoas() {
 
       {erro && <p role="alert" className="text-xs text-red-600">{erro}</p>}
       {aviso && <p role="status" className="text-xs text-green-700">{aviso}</p>}
+      {pendencia && (
+        <p role="status" className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800">{pendencia}</p>
+      )}
 
       {pessoas === null && !erro && <p className="text-xs text-gray-500">Carregando...</p>}
 
@@ -140,6 +196,11 @@ export function Pessoas() {
                           ...(p.menus ?? []).map((chave) => `vê o menu ${rotulos.menus[chave] ?? chave}`),
                         ].join(" · ") || "Sem permissões extras."}
                   </p>
+                  {p.papel === "motorista" && semCadastroDeMotorista(p) && (
+                    <p className="mt-1 text-xs font-semibold text-amber-700">
+                      Ainda não consegue reservar: falta um cadastro de motorista ligado a este login.
+                    </p>
+                  )}
                 </div>
                 <label className="text-xs text-gray-700">
                   <span className="sr-only">Papel de {p.name}</span>

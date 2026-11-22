@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Building2, History, Pencil, Plus, Trash2, UserRound } from "lucide-react";
+import { Building2, History, Pencil, Plus, Send, Trash2, UserRound } from "lucide-react";
 import { Modal } from "../../components/ui/Modal";
 import { useCarregarLista } from "../../hooks/useCarregarLista";
 import { HistoricoCentros } from "./HistoricoCentros";
@@ -9,7 +9,7 @@ import { mensagemErro } from "../../services/api";
 import { useConfirmar } from "../../hooks/useNotificacoes";
 import { formatarData } from "../../utils/formatters";
 import { situacaoDaCnh } from "../../utils/motorista";
-import type { CentroCusto, Motorista } from "../../types/frota";
+import type { CentroCusto, EstadoAcessoMotorista, Motorista } from "../../types/frota";
 
 const classeCampo =
   "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
@@ -85,6 +85,8 @@ function Motoristas() {
   const [editando, setEditando] = useState<Motorista | "novo" | null>(null);
   // Erro de uma ação (desativar, remover) fica separado do erro da carga da lista.
   const [erroDeAcao, setErroDeAcao] = useState<string | null>(null);
+  const [convidando, setConvidando] = useState<Motorista | null>(null);
+  const [confirmacao, setConfirmacao] = useState<string | null>(null);
   const { carregando, erro: erroDeCarga, recarregar: carregar } = useCarregarLista(
     "motoristas",
     async (ativo) => {
@@ -133,6 +135,12 @@ function Motoristas() {
         </p>
       )}
 
+      {confirmacao && (
+        <p role="status" className="rounded-lg bg-green-50 px-4 py-3 text-xs text-green-700">
+          {confirmacao}
+        </p>
+      )}
+
       {erroDeCarga && (
         <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">
           <span>{erroDeCarga}</span>
@@ -165,9 +173,29 @@ function Motoristas() {
                   </p>
                   {cnh === "vencida" && <p className="text-xs font-semibold text-red-600">CNH vencida</p>}
                   {cnh === "vence_em_breve" && <p className="text-xs font-semibold text-amber-600">CNH vence em breve</p>}
+                  {m.acesso && (
+                    <p className={`mt-1 text-xs font-medium ${ESTILO_ACESSO[m.acesso]}`}>
+                      {ROTULO_ACESSO[m.acesso]}
+                      {m.acesso !== "sem_acesso" && m.acessoEmail ? ` · ${m.acessoEmail}` : ""}
+                    </p>
+                  )}
                 </div>
 
-                <div className="flex items-center gap-1">
+                <div className="flex flex-wrap items-center gap-1">
+                  {/* Sem o estado de acesso (servidor antigo), não oferece o botão: não há como saber se já tem login. */}
+                  {m.ativo && (m.acesso === "sem_acesso" || m.acesso === "convite_enviado") && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setConfirmacao(null);
+                        setConvidando(m);
+                      }}
+                      aria-label={`${m.acesso === "convite_enviado" ? "Reenviar convite" : "Enviar acesso"} para ${m.nome}`}
+                      className="flex h-11 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold text-blue-700 hover:bg-blue-50 sm:h-8"
+                    >
+                      <Send size={14} /> {m.acesso === "convite_enviado" ? "Reenviar convite" : "Enviar acesso"}
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => void alternarAtivo(m)}
@@ -208,7 +236,112 @@ function Motoristas() {
           onClose={() => setEditando(null)}
         />
       )}
+
+      {convidando && (
+        <AcessoMotoristaModal
+          motorista={convidando}
+          onEnviado={(mensagem) => {
+            setConvidando(null);
+            setConfirmacao(mensagem);
+            carregar();
+          }}
+          onClose={() => setConvidando(null)}
+        />
+      )}
     </section>
+  );
+}
+
+const ROTULO_ACESSO: Record<EstadoAcessoMotorista, string> = {
+  sem_acesso: "Sem acesso ao sistema",
+  convite_enviado: "Convite enviado, ainda não entrou",
+  ativo: "Acesso ativo",
+};
+
+const ESTILO_ACESSO: Record<EstadoAcessoMotorista, string> = {
+  sem_acesso: "text-gray-500",
+  convite_enviado: "text-amber-700",
+  ativo: "text-green-700",
+};
+
+const FORMATO_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Pede (ou confirma) o e-mail e manda o convite para o motorista criar a senha. */
+function AcessoMotoristaModal({
+  motorista,
+  onEnviado,
+  onClose,
+}: {
+  motorista: Motorista;
+  onEnviado: (mensagem: string) => void;
+  onClose: () => void;
+}) {
+  // Já tem login: o convite só pode ir para o mesmo e-mail (o servidor recusa outro).
+  const emailFixo = motorista.acesso === "convite_enviado" && motorista.acessoEmail ? motorista.acessoEmail : null;
+  const [email, setEmail] = useState(emailFixo ?? "");
+  const [erro, setErro] = useState<string | null>(null);
+  const [enviando, setEnviando] = useState(false);
+  const reenvio = motorista.acesso === "convite_enviado";
+
+  async function enviar(evento: FormEvent) {
+    evento.preventDefault();
+    setErro(null);
+
+    const endereco = email.trim();
+
+    if (!FORMATO_EMAIL.test(endereco)) {
+      setErro("Informe um e-mail válido, como nome@empresa.com.br.");
+      return;
+    }
+
+    try {
+      setEnviando(true);
+      await motoristasService.enviarAcesso(motorista.id, endereco);
+      onEnviado(`Convite enviado para ${endereco}. ${motorista.nome} cria a senha pelo link recebido.`);
+    } catch (error) {
+      setErro(mensagemErro(error));
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  return (
+    <Modal titulo={reenvio ? "Reenviar convite" : "Enviar acesso"} icone={<Send size={16} />} onClose={onClose}>
+      <form onSubmit={(e) => void enviar(e)} noValidate className="space-y-4 px-6 py-5">
+        <p className="text-xs text-gray-600">
+          {motorista.nome} recebe por e-mail um link para criar a senha. Com ela, reserva os veículos e registra saída e chegada.
+        </p>
+        <div>
+          <label htmlFor="mot-acesso-email" className={rotulo}>E-mail do motorista</label>
+          <input
+            id="mot-acesso-email"
+            type="email"
+            inputMode="email"
+            autoComplete="off"
+            value={email}
+            maxLength={255}
+            readOnly={emailFixo !== null}
+            onChange={(e) => setEmail(e.target.value)}
+            className={`${classeCampo} read-only:bg-gray-50`}
+            autoFocus={emailFixo === null}
+          />
+          {emailFixo && <p className="mt-1 text-xs text-gray-500">O convite vai para o e-mail do login já criado.</p>}
+        </div>
+
+        {erro && (
+          <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{erro}</p>
+        )}
+
+        <div className="flex justify-end gap-2">
+          <button type="button" onClick={onClose} className="h-11 rounded-lg border border-gray-200 px-4 text-xs font-semibold text-gray-600 hover:bg-gray-50 sm:h-10">
+            Cancelar
+          </button>
+          <button type="submit" disabled={enviando} className="h-11 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60 sm:h-10">
+            {enviando ? "Enviando..." : reenvio ? "Reenviar convite" : "Enviar convite"}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }
 
