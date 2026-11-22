@@ -4,6 +4,7 @@ import { dataISO } from "../../utils/formatters";
 import { urlDaFoto } from "../../utils/imagem";
 import { tipoDe } from "../../utils/tipoVeiculo";
 import type {
+  OrigemKmConhecida,
   PreferenciasConta,
   ResumoConta,
   TipoVencimento,
@@ -47,7 +48,25 @@ interface VeiculoContaApi {
   fipe_consultado_em?: string | null;
   km_atual?: number | null;
   km_atualizado_em?: string | null;
+  /** Aditivo no backend: ausente num backend antigo, null sem km nenhuma. */
+  km_conhecida?: { km: number; origem: string; em: string | null } | null;
   centro_custo_id?: number | null;
+}
+
+const ORIGENS_KM: readonly OrigemKmConhecida[] = ["hodometro", "abastecimento", "servico"];
+
+function kmConhecidaDe(item: VeiculoContaApi) {
+  const km = item.km_conhecida;
+
+  if (!km || typeof km.km !== "number" || !Number.isFinite(km.km)) {
+    return { kmConhecida: null, kmConhecidaEm: null, kmConhecidaOrigem: null };
+  }
+
+  return {
+    kmConhecida: km.km,
+    kmConhecidaEm: km.em ? dataISO(km.em) : null,
+    kmConhecidaOrigem: ORIGENS_KM.find((origem) => origem === km.origem) ?? null,
+  };
 }
 
 interface ResumoContaApi {
@@ -149,6 +168,7 @@ export function mapearVeiculoConta(item: VeiculoContaApi): VeiculoConta {
     fipeConsultadoEm: item.fipe_consultado_em ?? null,
     kmAtual: item.km_atual ?? null,
     kmAtualizadoEm: item.km_atualizado_em ? dataISO(item.km_atualizado_em) : null,
+    ...kmConhecidaDe(item),
     centroCustoId: item.centro_custo_id ?? null,
   };
 }

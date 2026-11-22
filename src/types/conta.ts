@@ -51,9 +51,20 @@ export interface VeiculoConta {
   /** Quilometragem atual: sobe a cada saída ou chegada de uso (frota). */
   kmAtual: number | null;
   kmAtualizadoEm: string | null;
+  /**
+   * Km conhecida do veículo, a mesma que os avisos por km usam: a maior entre
+   * o hodômetro (kmAtual), os abastecimentos e os serviços. Vem do backend
+   * (km_conhecida); opcional porque um backend antigo não manda o campo.
+   */
+  kmConhecida?: number | null;
+  kmConhecidaEm?: string | null;
+  kmConhecidaOrigem?: OrigemKmConhecida | null;
   /** Centro de custo padrão do veículo (frota). */
   centroCustoId: number | null;
 }
+
+/** De onde veio a km conhecida: hodômetro do veículo, abastecimento ou serviço. */
+export type OrigemKmConhecida = "hodometro" | "abastecimento" | "servico";
 
 export interface VeiculoContaPayload {
   tipo_veiculo?: TipoVeiculo;

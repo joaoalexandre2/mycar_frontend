@@ -7,6 +7,7 @@ import { mensagemErro } from "../../services/api";
 import { useAuth } from "../../hooks/useAuth";
 import { ehConta, perfilDe } from "../../utils/perfil";
 import { formatarData, formatarKm } from "../../utils/formatters";
+import { mensagemKmDesconhecida, podeInformarKm, situacaoPorKm } from "../../utils/avisoPorKm";
 
 type Tom = "atrasado" | "breve";
 
@@ -16,6 +17,8 @@ interface Aviso {
   detalhe: string;
   prazo: string;
   tom: Tom;
+  /** Aviso por km sem a km do veículo: o que pedir no lugar de "já passou". */
+  pedido?: string;
 }
 
 const ROTULO_TIPO: Record<string, string> = {
@@ -41,19 +44,32 @@ async function avisosDaConta(): Promise<Aviso[]> {
   const resumo = await contaService.resumo();
 
   return resumo.vencimentos.slice(0, LIMITE).map((item) => {
-    const porKm = Boolean(item.porKm);
-    const faltam = item.kmRestante ?? 0;
-
-    return {
+    const base = {
       chave: `${item.tipo}-${item.rotulo ?? ""}-${item.veiculoId}-${item.data}`,
       titulo: item.rotulo ?? ROTULO_TIPO[item.tipo] ?? item.tipo,
       detalhe: `${item.veiculo} · ${item.placa}`,
-      prazo: porKm
-        ? faltam <= 0
-          ? "já passou"
-          : `faltam ${formatarKm(faltam)}`
-        : prazoEmDias(item.dias),
-      tom: porKm ? (faltam <= 0 ? "atrasado" : "breve") : item.dias < 0 ? "atrasado" : "breve",
+    };
+
+    if (!item.porKm) {
+      return { ...base, prazo: prazoEmDias(item.dias), tom: item.dias < 0 ? "atrasado" : "breve" } satisfies Aviso;
+    }
+
+    const situacao = situacaoPorKm(item.kmRestante);
+
+    // Sem a km do veículo não há como dizer que passou: pede a km.
+    if (situacao.tipo === "desconhecida") {
+      return {
+        ...base,
+        prazo: "sem km",
+        tom: "breve",
+        pedido: mensagemKmDesconhecida(item.veiculo, item.rotulo),
+      } satisfies Aviso;
+    }
+
+    return {
+      ...base,
+      prazo: situacao.tipo === "passou" ? "já passou" : `faltam ${formatarKm(situacao.faltam)}`,
+      tom: situacao.tipo === "passou" ? "atrasado" : "breve",
     } satisfies Aviso;
   });
 }
@@ -254,6 +270,23 @@ export function Atualizacoes() {
                     <p className="mt-0.5 truncate text-xs text-gray-500">
                       {aviso.detalhe}
                     </p>
+                    {aviso.pedido && (
+                      <p className="mt-1 text-xs text-gray-600">
+                        {aviso.pedido}.
+                        {podeInformarKm(usuario) && (
+                          <>
+                            {" "}
+                            <Link
+                              to="/veiculos"
+                              onClick={() => setAberto(false)}
+                              className="font-semibold text-blue-600 hover:text-blue-700"
+                            >
+                              Informar km
+                            </Link>
+                          </>
+                        )}
+                      </p>
+                    )}
                   </div>
 
                   <span
