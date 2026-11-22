@@ -200,7 +200,17 @@ export interface PessoaDaFrota {
   permissoes: string[];
   /** Menus que ela vê hoje, como chaves. */
   menus: string[];
+  /**
+   * Cadastro de motorista ligado a este login. null = nenhum ligado; ausente
+   * (undefined) = servidor antigo, que ainda não informa: a tela não oferece a ligação.
+   */
+  motorista?: { id: number; nome: string } | null;
 }
+
+/** Ligar uma pessoa a um cadastro de motorista: a um existente sem login, ou criando o cadastro com o nome dela. */
+export type LigacaoDeMotorista =
+  | { motorista_id: number }
+  | { centro_custo_id: number; cnh_numero?: string | null; cnh_validade?: string | null; telefone?: string | null };
 
 /** Modelo de grupo que a própria frota salvou para reusar. */
 export interface ModeloSalvo {
@@ -227,7 +237,7 @@ export interface EventoDeAcesso {
   ator: string | null;
   alvo_tipo: "grupo" | "pessoa" | "modelo";
   alvo_id: number | null;
-  acao: "criou" | "editou" | "removeu" | "convidou" | "mudou_papel" | "salvou";
+  acao: "criou" | "editou" | "removeu" | "convidou" | "mudou_papel" | "salvou" | "ligou_motorista";
   detalhes: Record<string, unknown> | null;
 }
 

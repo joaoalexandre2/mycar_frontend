@@ -3,7 +3,7 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NotificacoesProvider } from "../../contexts/NotificacoesProvider";
 import { AuthContext, type AuthContextValor } from "../../contexts/authContextDefinition";
-import { motivosTrocaCentroService, motoristasService, pessoasFrotaService } from "../../services/frota";
+import { centrosCustoService, motivosTrocaCentroService, motoristasService, pessoasFrotaService } from "../../services/frota";
 import { ConfiguracoesFrota } from "./ConfiguracoesFrota";
 import { Pessoas } from "./Pessoas";
 import type { PessoaDaFrota } from "../../types/frota";
@@ -195,5 +195,170 @@ describe("Pessoas: confirmações ao trocar o papel", () => {
 
     expect(await screen.findByText("Rui Rua")).toBeInTheDocument();
     expect(screen.queryByText(/falta um cadastro de motorista/)).not.toBeInTheDocument();
+  });
+});
+
+describe("Pessoas: ligar o login a um cadastro de motorista", () => {
+  const rui: PessoaDaFrota = {
+    id: 3, name: "Rui Rua", email: "rui@x.com", papel: "motorista", permissoes: [], menus: [], motorista: null,
+  };
+  const comRui = (pessoa: PessoaDaFrota = rui) => ({ pessoas: [...pessoas, pessoa], catalogo: {}, menus: {} });
+
+  function motoristasCadastrados() {
+    return vi.spyOn(motoristasService, "listar").mockResolvedValue([
+      { id: 100, nome: "Rui da Silva", telefone: null, cnhNumero: null, cnhValidade: "2035-01-01", ativo: true, centroCustoId: 7, userId: null },
+      { id: 101, nome: "Já Tem Login", telefone: null, cnhNumero: null, cnhValidade: null, ativo: true, centroCustoId: null, userId: 50 },
+      { id: 102, nome: "Desativado", telefone: null, cnhNumero: null, cnhValidade: null, ativo: false, centroCustoId: null, userId: null },
+    ]);
+  }
+
+  beforeEach(() => {
+    vi.spyOn(centrosCustoService, "listar").mockResolvedValue([
+      { id: 7, nome: "Entregas", codigo: null, ativo: true },
+      { id: 8, nome: "Antigo", codigo: null, ativo: false },
+    ]);
+  });
+
+  it("mostra a pendência e a ação para o motorista sem cadastro ligado, com alvo de 44px no celular", async () => {
+    vi.spyOn(pessoasFrotaService, "listar").mockResolvedValue(comRui());
+    motoristasCadastrados();
+
+    comUsuario("administrador")(<Pessoas />);
+
+    expect(await screen.findByText(/Ainda não consegue reservar: falta um cadastro de motorista/)).toBeInTheDocument();
+    const botao = screen.getByRole("button", { name: /Ligar a um motorista: Rui Rua/ });
+    expect(botao).toHaveClass("h-11");
+  });
+
+  it("com o servidor antigo (sem o campo motorista), não oferece a ação", async () => {
+    const semCampo: PessoaDaFrota = { ...rui };
+    delete semCampo.motorista;
+    vi.spyOn(pessoasFrotaService, "listar").mockResolvedValue(comRui(semCampo));
+    motoristasCadastrados();
+
+    comUsuario("administrador")(<Pessoas />);
+
+    expect(await screen.findByText(/Ainda não consegue reservar/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Ligar a um motorista/ })).not.toBeInTheDocument();
+  });
+
+  it("quem já tem cadastro ligado mostra o cadastro e não oferece a ação", async () => {
+    vi.spyOn(pessoasFrotaService, "listar").mockResolvedValue(comRui({ ...rui, motorista: { id: 100, nome: "Rui da Silva" } }));
+    motoristasCadastrados();
+
+    comUsuario("administrador")(<Pessoas />);
+
+    expect(await screen.findByText("Cadastro de motorista: Rui da Silva")).toBeInTheDocument();
+    expect(screen.queryByText(/Ainda não consegue reservar/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Ligar a um motorista/ })).not.toBeInTheDocument();
+  });
+
+  it("liga a um motorista cadastrado sem acesso (só os ativos e sem login aparecem)", async () => {
+    vi.spyOn(pessoasFrotaService, "listar")
+      .mockResolvedValueOnce(comRui())
+      .mockResolvedValue(comRui({ ...rui, motorista: { id: 100, nome: "Rui da Silva" } }));
+    motoristasCadastrados();
+    const ligar = vi.spyOn(pessoasFrotaService, "ligarMotorista").mockResolvedValue({ ...rui, motorista: { id: 100, nome: "Rui da Silva" } });
+    const usuario = userEvent.setup();
+
+    comUsuario("administrador")(<Pessoas />);
+
+    await usuario.click(await screen.findByRole("button", { name: /Ligar a um motorista: Rui Rua/ }));
+    const dialogo = await screen.findByRole("dialog", { name: /Ligar a um motorista/ });
+
+    const select = within(dialogo).getByLabelText("Motorista sem acesso");
+    const opcoes = within(select).getAllByRole("option").map((o) => o.textContent);
+    expect(opcoes).toEqual(["Escolha o motorista", "Rui da Silva"]);
+
+    await usuario.selectOptions(select, "100");
+    await usuario.click(within(dialogo).getByRole("button", { name: "Ligar" }));
+
+    await waitFor(() => expect(ligar).toHaveBeenCalledWith(3, { motorista_id: 100 }));
+    expect(await screen.findByText(/Rui Rua agora está ligado ao cadastro de motorista Rui da Silva/)).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(await screen.findByText("Cadastro de motorista: Rui da Silva")).toBeInTheDocument();
+  });
+
+  it("cria o cadastro a partir da pessoa e exige o centro de custo", async () => {
+    vi.spyOn(pessoasFrotaService, "listar").mockResolvedValue(comRui());
+    motoristasCadastrados();
+    const ligar = vi.spyOn(pessoasFrotaService, "ligarMotorista").mockResolvedValue({ ...rui, motorista: { id: 200, nome: "Rui Rua" } });
+    const usuario = userEvent.setup();
+
+    comUsuario("administrador")(<Pessoas />);
+
+    await usuario.click(await screen.findByRole("button", { name: /Ligar a um motorista: Rui Rua/ }));
+    const dialogo = await screen.findByRole("dialog");
+    await usuario.click(within(dialogo).getByRole("radio", { name: /Criar o cadastro com o nome Rui Rua/ }));
+
+    const centro = within(dialogo).getByLabelText(/Centro de custo/);
+    // Só os centros ativos (mais a opção vazia).
+    await waitFor(() => expect(within(centro).getAllByRole("option")).toHaveLength(2));
+
+    await usuario.click(within(dialogo).getByRole("button", { name: "Ligar" }));
+
+    expect(ligar).not.toHaveBeenCalled();
+    expect(centro).toHaveAttribute("aria-invalid", "true");
+    expect(centro).toHaveAccessibleDescription(/Escolha o centro de custo/);
+    expect(centro).toHaveFocus();
+
+    await usuario.selectOptions(centro, "7");
+    await usuario.type(within(dialogo).getByLabelText("Número da CNH"), "12345");
+    await usuario.click(within(dialogo).getByRole("button", { name: "Ligar" }));
+
+    await waitFor(() =>
+      expect(ligar).toHaveBeenCalledWith(3, { centro_custo_id: 7, cnh_numero: "12345", cnh_validade: null }),
+    );
+  });
+
+  it("sem motorista disponível, já abre em criar o cadastro", async () => {
+    vi.spyOn(pessoasFrotaService, "listar").mockResolvedValue(comRui());
+    vi.spyOn(motoristasService, "listar").mockResolvedValue([]);
+    const usuario = userEvent.setup();
+
+    comUsuario("administrador")(<Pessoas />);
+
+    await usuario.click(await screen.findByRole("button", { name: /Ligar a um motorista: Rui Rua/ }));
+    const dialogo = await screen.findByRole("dialog");
+
+    expect(within(dialogo).getByRole("radio", { name: /já cadastrado/ })).toBeDisabled();
+    expect(within(dialogo).getByRole("radio", { name: /Criar o cadastro/ })).toBeChecked();
+    expect(dialogo).toHaveTextContent("Nenhum motorista ativo sem acesso cadastrado");
+  });
+
+  it("erro do servidor aparece no diálogo, anunciado, e o diálogo continua aberto", async () => {
+    vi.spyOn(pessoasFrotaService, "listar").mockResolvedValue(comRui());
+    motoristasCadastrados();
+    vi.spyOn(pessoasFrotaService, "ligarMotorista").mockRejectedValue(new Error("falhou"));
+    const usuario = userEvent.setup();
+
+    comUsuario("administrador")(<Pessoas />);
+
+    await usuario.click(await screen.findByRole("button", { name: /Ligar a um motorista: Rui Rua/ }));
+    const dialogo = await screen.findByRole("dialog");
+    await usuario.selectOptions(within(dialogo).getByLabelText("Motorista sem acesso"), "100");
+    await usuario.click(within(dialogo).getByRole("button", { name: "Ligar" }));
+
+    expect(await within(dialogo).findByRole("alert")).toBeInTheDocument();
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+  });
+
+  it("trocar o papel para motorista aponta para a nova ação, não para Cadastros", async () => {
+    const gestorSemCadastro: PessoaDaFrota = { ...rui, papel: "gestor" };
+    vi.spyOn(pessoasFrotaService, "listar").mockResolvedValueOnce(comRui(gestorSemCadastro)).mockResolvedValue(comRui());
+    motoristasCadastrados();
+    vi.spyOn(pessoasFrotaService, "mudarPapel").mockResolvedValue(rui);
+    const usuario = userEvent.setup();
+
+    comUsuario("administrador")(<Pessoas />);
+
+    await usuario.selectOptions(await screen.findByLabelText("Papel de Rui Rua"), "motorista");
+    const dialogo = await screen.findByRole("alertdialog");
+    expect(dialogo).toHaveTextContent('use "Ligar a um motorista" nesta tela');
+    expect(dialogo).not.toHaveTextContent("Cadastros > Motoristas");
+
+    await usuario.click(within(dialogo).getByRole("button", { name: "Mudar o papel mesmo assim" }));
+
+    expect(await screen.findByRole("button", { name: /Ligar a um motorista: Rui Rua/ })).toBeInTheDocument();
   });
 });
