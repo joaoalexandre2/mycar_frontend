@@ -167,6 +167,7 @@ export function UsoDetalheModal({
 
   const registrandoSaida = uso.status === "agendado";
   const registrandoChegada = uso.status === "em_uso";
+  const registrando = registrandoSaida || registrandoChegada;
 
   async function registrar() {
     setErro(null);
@@ -240,6 +241,28 @@ export function UsoDetalheModal({
       onClose={onClose}
       larguraMax="max-w-xl"
       fecharAoClicarFora
+      rodape={
+        registrando ? (
+          <div className="space-y-2">
+            {erro && (
+              <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
+                {erro}
+              </p>
+            )}
+
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => void registrar()}
+                disabled={enviando}
+                className="h-11 flex-1 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60 sm:flex-none md:h-10"
+              >
+                {enviando ? "Registrando..." : registrandoSaida ? "Registrar saída" : "Registrar chegada"}
+              </button>
+            </div>
+          </div>
+        ) : undefined
+      }
     >
       <div className="space-y-5 px-6 py-5">
         <div className="flex flex-wrap items-center gap-2">
@@ -323,7 +346,7 @@ export function UsoDetalheModal({
           </div>
         )}
 
-        {(registrandoSaida || registrandoChegada) && (
+        {registrando && (
           <div className="space-y-3 rounded-lg border border-blue-100 bg-blue-50/40 p-4">
             <p className="text-xs font-semibold text-gray-800">
               {registrandoSaida ? "Registrar a saída" : "Registrar a chegada"}
@@ -366,19 +389,11 @@ export function UsoDetalheModal({
                     : undefined
               }
             />
-
-            <button
-              type="button"
-              onClick={() => void registrar()}
-              disabled={enviando}
-              className="h-10 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
-            >
-              {enviando ? "Registrando..." : registrandoSaida ? "Registrar saída" : "Registrar chegada"}
-            </button>
           </div>
         )}
 
-        {erro && (
+        {/* Registrando, o erro vai para o rodapé, junto do botão. */}
+        {erro && !registrando && (
           <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
             {erro}
           </p>

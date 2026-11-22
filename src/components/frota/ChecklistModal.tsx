@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useId, useState, type FormEvent } from "react";
 import { ClipboardCheck } from "lucide-react";
 import { Modal } from "../ui/Modal";
 import { checklistService } from "../../services/frotaDiferenciais";
@@ -45,6 +45,7 @@ export function ChecklistModal({
   const [observacoes, setObservacoes] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
+  const idFormulario = useId();
 
   useEffect(() => {
     let ativo = true;
@@ -72,6 +73,7 @@ export function ChecklistModal({
       ? (Object.entries(dados.itens) as [string, string][]).map(([chave, texto]) => ({ chave, rotulo: texto, obrigatorio: true }))
       : [];
   const comModelo = modelo !== null;
+  const mostrandoFormulario = dados !== null && !jaFeito;
 
   function responder(chave: string, parcial: Partial<Resposta>) {
     setRespostas((atuais) => {
@@ -141,6 +143,33 @@ export function ChecklistModal({
       icone={<ClipboardCheck size={16} />}
       onClose={onClose}
       larguraMax="max-w-lg"
+      rodape={
+        // Só com o formulário na tela: carregando, já feito ou com erro de carga não há o que salvar.
+        mostrandoFormulario ? (
+          <div className="space-y-2">
+            {erro && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{erro}</p>}
+
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="h-11 flex-1 rounded-lg border border-gray-200 px-4 text-xs font-semibold text-gray-600 hover:bg-gray-50 sm:flex-none md:h-10"
+              >
+                Cancelar
+              </button>
+              {/* Fora do <form>, mas ligado a ele: o Enter num campo continua enviando. */}
+              <button
+                type="submit"
+                form={idFormulario}
+                disabled={salvando}
+                className="h-11 flex-1 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60 sm:flex-none md:h-10"
+              >
+                {salvando ? "Salvando..." : "Salvar checklist"}
+              </button>
+            </div>
+          </div>
+        ) : undefined
+      }
     >
       {!dados && !erro && <p className="px-6 py-5 text-xs text-gray-500">Carregando...</p>}
 
@@ -148,8 +177,8 @@ export function ChecklistModal({
         <p className="px-6 py-5 text-xs text-gray-700">Este checklist de {TEXTO_DO_MOMENTO[momento]} já foi feito.</p>
       )}
 
-      {dados && !jaFeito && (
-        <form onSubmit={(e) => void enviar(e)} className="space-y-4 px-6 py-5">
+      {mostrandoFormulario && (
+        <form id={idFormulario} onSubmit={(e) => void enviar(e)} className="space-y-4 px-6 py-5">
           {itens.map((item) => {
             const resposta = respostas[item.chave];
 
@@ -200,17 +229,6 @@ export function ChecklistModal({
               className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-700 outline-none focus:border-blue-500"
               rows={3}
             />
-          </div>
-
-          {erro && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{erro}</p>}
-
-          <div className="flex justify-end gap-2">
-            <button type="button" onClick={onClose} className="h-10 rounded-lg border border-gray-200 px-4 text-xs font-semibold text-gray-600 hover:bg-gray-50">
-              Cancelar
-            </button>
-            <button type="submit" disabled={salvando} className="h-10 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
-              {salvando ? "Salvando..." : "Salvar checklist"}
-            </button>
           </div>
         </form>
       )}

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 import { CalendarPlus } from "lucide-react";
 import { Modal } from "../ui/Modal";
 import { usosService } from "../../services/frota";
@@ -51,6 +51,7 @@ export function UsoFormModal({
   const [observacoes, setObservacoes] = useState(uso?.observacoes ?? "");
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
+  const idFormulario = useId();
 
   /** Escolhido o veículo, sugere o centro de custo padrão dele (se ainda não escolheu outro). */
   function escolherVeiculo(id: string) {
@@ -109,8 +110,36 @@ export function UsoFormModal({
       icone={<CalendarPlus size={16} />}
       onClose={onClose}
       larguraMax="max-w-xl"
+      rodape={
+        <div className="space-y-2">
+          {erro && (
+            <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
+              {erro}
+            </p>
+          )}
+
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="h-11 flex-1 rounded-lg border border-gray-200 px-4 text-xs font-semibold text-gray-600 hover:bg-gray-50 sm:flex-none md:h-10"
+            >
+              Cancelar
+            </button>
+            {/* Fora do <form>, mas ligado a ele: o Enter num campo continua enviando. */}
+            <button
+              type="submit"
+              form={idFormulario}
+              disabled={salvando}
+              className="h-11 flex-1 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60 sm:flex-none md:h-10"
+            >
+              {salvando ? "Salvando..." : uso ? "Salvar alterações" : "Reservar"}
+            </button>
+          </div>
+        </div>
+      }
     >
-      <form onSubmit={(e) => void salvar(e)} noValidate className="space-y-4 px-6 py-5">
+      <form id={idFormulario} onSubmit={(e) => void salvar(e)} noValidate className="space-y-4 px-6 py-5">
         <div>
           <label htmlFor="uso-veiculo" className={rotulo}>
             Veículo
@@ -254,28 +283,6 @@ export function UsoFormModal({
           />
         </div>
 
-        {erro && (
-          <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
-            {erro}
-          </p>
-        )}
-
-        <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="h-10 rounded-lg border border-gray-200 px-4 text-xs font-semibold text-gray-600 hover:bg-gray-50"
-          >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            disabled={salvando}
-            className="h-10 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
-          >
-            {salvando ? "Salvando..." : uso ? "Salvar alterações" : "Reservar"}
-          </button>
-        </div>
       </form>
     </Modal>
   );

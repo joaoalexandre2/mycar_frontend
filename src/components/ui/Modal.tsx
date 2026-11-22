@@ -16,6 +16,12 @@ interface ModalProps {
    * sem querer apagaria o que foi digitado.
    */
   fecharAoClicarFora?: boolean;
+  /**
+   * Faixa presa na base do diálogo, para a ação principal (e o erro dela). Com
+   * conteúdo longo ou o teclado do celular aberto, o botão continua à vista sem
+   * precisar rolar. Sem a prop, o diálogo fica como sempre foi.
+   */
+  rodape?: ReactNode;
   children: ReactNode;
 }
 
@@ -31,6 +37,7 @@ export function Modal({
   onClose,
   larguraMax = "max-w-lg",
   fecharAoClicarFora = false,
+  rodape,
   children,
 }: ModalProps) {
   const idTitulo = useId();
@@ -51,7 +58,9 @@ export function Modal({
         aria-modal="true"
         aria-labelledby={idTitulo}
         tabIndex={-1}
-        className={`max-h-[92dvh] w-full ${larguraMax} overflow-y-auto rounded-xl bg-white shadow-xl outline-none`}
+        // Com rodapé, o scroll-padding faz o campo que recebe o foco parar acima
+        // da faixa fixa, em vez de ficar escondido atrás dela.
+        className={`max-h-[92dvh] w-full ${larguraMax} overflow-y-auto rounded-xl bg-white shadow-xl outline-none${rodape ? " scroll-pb-28" : ""}`}
       >
         <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
           <div>
@@ -82,6 +91,16 @@ export function Modal({
         </div>
 
         {children}
+
+        {/* Dentro do contêiner que rola: é o que faz o sticky prender na base. */}
+        {rodape && (
+          <div
+            data-rodape-do-modal=""
+            className="sticky bottom-0 border-t border-gray-200 bg-white px-6 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+          >
+            {rodape}
+          </div>
+        )}
       </div>
     </div>,
     document.body,

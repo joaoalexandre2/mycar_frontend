@@ -154,6 +154,107 @@ describe("Modal", () => {
   });
 });
 
+describe("Modal com rodapé", () => {
+  function ComRodape({ aoEnviar = () => {}, aoFechar = () => {} }: { aoEnviar?: () => void; aoFechar?: () => void }) {
+    const [aberto, setAberto] = useState(false);
+
+    return (
+      <div>
+        <button onClick={() => setAberto(true)}>Abrir</button>
+
+        {aberto && (
+          <Modal
+            titulo="Registrar saída"
+            onClose={() => {
+              aoFechar();
+              setAberto(false);
+            }}
+            rodape={
+              <button type="submit" form="form-teste">
+                Salvar
+              </button>
+            }
+          >
+            <form
+              id="form-teste"
+              onSubmit={(evento) => {
+                evento.preventDefault();
+                aoEnviar();
+              }}
+            >
+              <input aria-label="Km" />
+            </form>
+          </Modal>
+        )}
+      </div>
+    );
+  }
+
+  it("mostra o rodapé preso na base, dentro do contêiner que rola", async () => {
+    render(<ComRodape />);
+    await userEvent.click(screen.getByRole("button", { name: "Abrir" }));
+
+    const dialogo = screen.getByRole("dialog");
+    const rodape = screen.getByRole("button", { name: "Salvar" }).closest("[data-rodape-do-modal]") as HTMLElement;
+
+    expect(rodape).not.toBeNull();
+    expect(rodape).toHaveClass("sticky", "bottom-0", "border-t", "bg-white");
+    expect(rodape.className).toContain("env(safe-area-inset-bottom)");
+    // Filho direto do diálogo (o que tem overflow-y-auto): é o que faz o sticky funcionar.
+    expect(rodape.parentElement).toBe(dialogo);
+    expect(dialogo).toHaveClass("overflow-y-auto");
+    expect(dialogo.lastElementChild).toBe(rodape);
+  });
+
+  it("sem a prop, não há rodapé nem mudança no contêiner", async () => {
+    render(<Tela />);
+    await userEvent.click(screen.getByRole("button", { name: "Abrir" }));
+
+    const dialogo = screen.getByRole("dialog");
+
+    expect(dialogo.querySelector("[data-rodape-do-modal]")).toBeNull();
+    expect(dialogo.className).not.toContain("scroll-pb");
+  });
+
+  it("o botão do rodapé envia o formulário do corpo", async () => {
+    const aoEnviar = vi.fn();
+    render(<ComRodape aoEnviar={aoEnviar} />);
+    await userEvent.click(screen.getByRole("button", { name: "Abrir" }));
+
+    const salvar = screen.getByRole("button", { name: "Salvar" });
+
+    // É o botão de envio do formulário: o Enter num campo usa ele no navegador.
+    expect((salvar as HTMLButtonElement).form).toBe(screen.getByLabelText("Km").closest("form"));
+
+    await userEvent.click(salvar);
+    expect(aoEnviar).toHaveBeenCalledTimes(1);
+  });
+
+  it("o foco preso inclui o rodapé, e Esc e a devolução do foco continuam", async () => {
+    const aoFechar = vi.fn();
+    render(<ComRodape aoFechar={aoFechar} />);
+    const abrir = screen.getByRole("button", { name: "Abrir" });
+    await userEvent.click(abrir);
+
+    const fechar = screen.getByRole("button", { name: "Fechar" });
+    const salvar = screen.getByRole("button", { name: "Salvar" });
+
+    screen.getByLabelText("Km").focus();
+    await userEvent.tab();
+    expect(salvar).toHaveFocus();
+
+    await userEvent.tab();
+    expect(fechar).toHaveFocus();
+
+    await userEvent.tab({ shift: true });
+    expect(salvar).toHaveFocus();
+
+    await userEvent.keyboard("{Escape}");
+    expect(aoFechar).toHaveBeenCalledTimes(1);
+    expect(abrir).toHaveFocus();
+  });
+});
+
 describe("diálogos empilhados", () => {
   function Empilhado({
     aoFecharModal,
