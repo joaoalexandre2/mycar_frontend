@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { lerInteiroBR, lerNumeroBR } from "./numero";
+import { lerInteiroBR, lerNumeroBR, lerValorEmReais, valorEmReaisParaCampo } from "./numero";
 
 function valorDe(texto: string, opcoes?: { pontoComoMilhar?: boolean }) {
   const lido = lerNumeroBR(texto, opcoes);
@@ -81,4 +81,70 @@ describe("lerInteiroBR", () => {
   it("vazio continua vazio", () => {
     expect(lerInteiroBR("")).toEqual({ estado: "vazio" });
   });
+});
+
+describe("lerValorEmReais", () => {
+  it.each([
+    ["1500,50", 1500.5],
+    ["1.500,50", 1500.5],
+    ["1500.50", 1500.5],
+    ["R$ 1.500,50", 1500.5],
+    // ponto separando grupo de três é milhar, como se escreve no Brasil
+    ["2.500", 2500],
+    ["2.500,00", 2500],
+    ["130.16", 130.16],
+    ["0", 0],
+    ["0,01", 0.01],
+    ["99.999.999,00", 99_999_999],
+  ])("lê %s como %s", (texto, esperado) => {
+    expect(lerValorEmReais(texto)).toEqual({ estado: "ok", valor: esperado });
+  });
+
+  it("vazio é vazio, não zero nem erro", () => {
+    expect(lerValorEmReais("")).toEqual({ estado: "vazio" });
+    expect(lerValorEmReais("   ")).toEqual({ estado: "vazio" });
+  });
+
+  it.each(["abc", "12a", "1,2,3", "1.50.0"])("%s é inválido com mensagem", (texto) => {
+    expect(lerValorEmReais(texto)).toEqual({ estado: "invalido", mensagem: "Use só números, como 1.500,50." });
+  });
+
+  it("recusa negativo, que o backend não aceita", () => {
+    expect(lerValorEmReais("-10")).toEqual({ estado: "invalido", mensagem: "O valor não pode ser negativo." });
+  });
+
+  it.each(["2,500", "0.500", "1500,505", "1.500,505"])(
+    "%s tem mais de dois decimais e é ambíguo: recusa em vez de adivinhar",
+    (texto) => {
+      const lido = lerValorEmReais(texto);
+
+      expect(lido.estado).toBe("invalido");
+      expect(lido.estado === "invalido" && lido.mensagem).toMatch(/duas casas decimais/);
+    },
+  );
+
+  it("recusa acima do máximo do backend", () => {
+    expect(lerValorEmReais("100.000.000")).toEqual({ estado: "invalido", mensagem: "O valor máximo é R$ 99.999.999,00." });
+  });
+});
+
+describe("valorEmReaisParaCampo", () => {
+  it.each([
+    [1500.5, "1500,50"],
+    ["130.16", "130,16"],
+    [2500, "2500,00"],
+    [0, "0,00"],
+    [null, ""],
+    [undefined, ""],
+    ["", ""],
+  ])("%s vira %j no campo", (valor, esperado) => {
+    expect(valorEmReaisParaCampo(valor)).toBe(esperado);
+  });
+
+  it.each([1500.5, 2500, 0.01, 0.29, 1.15, 130.16, 99_999_999, 12345.67])(
+    "ida e volta de %s não muda o número",
+    (valor) => {
+      expect(lerValorEmReais(valorEmReaisParaCampo(valor))).toEqual({ estado: "ok", valor });
+    },
+  );
 });

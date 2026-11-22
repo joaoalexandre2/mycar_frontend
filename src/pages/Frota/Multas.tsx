@@ -8,6 +8,8 @@ import { multasService, type PaginaDeMultas } from "../../services/frotaDiferenc
 import { mensagemErro } from "../../services/api";
 import { useConfirmar } from "../../hooks/useNotificacoes";
 import { formatarDataHora } from "../../utils/formatters";
+import { lerValorEmReais } from "../../utils/numero";
+import { CampoEmReais } from "../../components/frota/CampoEmReais";
 import type { Motorista } from "../../types/frota";
 import type { Multa, SugestaoDeResponsavel } from "../../types/frota";
 import type { VeiculoConta } from "../../types/conta";
@@ -200,6 +202,7 @@ function NovaMulta({ onSalva, onClose }: { onSalva: () => void; onClose: () => v
   const [dataHora, setDataHora] = useState("");
   const [descricao, setDescricao] = useState("");
   const [valor, setValor] = useState("");
+  const [erroValor, setErroValor] = useState<string | null>(null);
   const [pontos, setPontos] = useState("");
   const [motoristaId, setMotoristaId] = useState("");
   const [sugestao, setSugestao] = useState<SugestaoDeResponsavel | null>(null);
@@ -242,13 +245,22 @@ function NovaMulta({ onSalva, onClose }: { onSalva: () => void; onClose: () => v
       return;
     }
 
+    // Antes, "1.500,50" virava NaN e o JSON mandava null: a multa ficava sem valor, sem aviso.
+    const valorLido = lerValorEmReais(valor);
+
+    if (valorLido.estado === "invalido") {
+      setErroValor(valorLido.mensagem);
+      setErro("Corrija o valor da multa.");
+      return;
+    }
+
     try {
       setSalvando(true);
       await multasService.criar({
         veiculo_conta_id: Number(veiculoId),
         data_hora: dataHora,
         descricao: descricao.trim(),
-        valor: valor ? Number(valor.replace(",", ".")) : null,
+        valor: valorLido.estado === "ok" ? valorLido.valor : null,
         pontos: pontos ? Number(pontos) : null,
         motorista_id: motoristaId ? Number(motoristaId) : null,
       });
@@ -302,10 +314,18 @@ function NovaMulta({ onSalva, onClose }: { onSalva: () => void; onClose: () => v
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="multa-valor" className={rotulo}>Valor (R$)</label>
-            <input id="multa-valor" type="text" inputMode="decimal" value={valor} onChange={(e) => setValor(e.target.value)} className={classeCampo} />
-          </div>
+          <CampoEmReais
+            id="multa-valor"
+            rotulo="Valor (R$)"
+            valor={valor}
+            onChange={(texto) => {
+              setValor(texto);
+              setErroValor(null);
+            }}
+            erro={erroValor}
+            classeCampo={classeCampo}
+            classeRotulo={rotulo}
+          />
           <div>
             <label htmlFor="multa-pontos" className={rotulo}>Pontos</label>
             <input id="multa-pontos" type="number" min={0} max={40} value={pontos} onChange={(e) => setPontos(e.target.value)} className={classeCampo} />
