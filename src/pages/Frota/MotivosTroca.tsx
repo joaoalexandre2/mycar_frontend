@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { motivosTrocaCentroService } from "../../services/frota";
+import { Alert } from "../../components/ui/Alert";
 import { mensagemErro } from "../../services/api";
 import type { MotivoTrocaCentro } from "../../types/frota";
 
@@ -90,7 +91,7 @@ export function MotivosTroca() {
         </button>
       </form>
 
-      {erro && <p role="alert" className="text-xs text-red-600">{erro}</p>}
+      {erro && <Alert tone="danger">{erro}</Alert>}
 
       {motivos === null && !erro && <p className="text-xs text-gray-500">Carregando...</p>}
 

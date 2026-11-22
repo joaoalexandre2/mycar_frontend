@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { ChevronLeft, ChevronRight, FileWarning, Plus, Trash2 } from "lucide-react";
+import { Alert } from "../../components/ui/Alert";
 import { Modal } from "../../components/ui/Modal";
 import { useCarregarLista } from "../../hooks/useCarregarLista";
 import { contaService } from "../../services/conta/veiculos";
@@ -97,15 +98,12 @@ export function Multas() {
         </div>
       </div>
 
-      {erroDeAcao && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">{erroDeAcao}</p>}
+      {erroDeAcao && <Alert tone="danger">{erroDeAcao}</Alert>}
 
       {erroDeCarga && (
-        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">
-          <span>{erroDeCarga}</span>
-          <button type="button" onClick={recarregar} className="font-semibold underline">
-            Tentar de novo
-          </button>
-        </div>
+        <Alert tone="danger" action={{ label: "Tentar de novo", onClick: recarregar }}>
+          {erroDeCarga}
+        </Alert>
       )}
 
       {carregando && !erroDeCarga && <p className="text-xs text-gray-500">Carregando...</p>}
@@ -332,7 +330,7 @@ function NovaMulta({ onSalva, onClose }: { onSalva: () => void; onClose: () => v
           </div>
         </div>
 
-        {erro && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{erro}</p>}
+        {erro && <Alert tone="danger">{erro}</Alert>}
 
         <div className="flex justify-end gap-2">
           <button type="button" onClick={onClose} className="h-10 rounded-lg border border-gray-200 px-4 text-xs font-semibold text-gray-600 hover:bg-gray-50">Cancelar</button>

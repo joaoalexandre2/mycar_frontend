@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { pessoasFrotaService } from "../../services/frota";
+import { Alert } from "../../components/ui/Alert";
 import { mensagemErro } from "../../services/api";
 import { formatarDataHora } from "../../utils/formatters";
 import type { EventoDeAcesso } from "../../types/frota";
@@ -39,9 +40,9 @@ export function AcessosHistorico() {
 
   if (erro) {
     return (
-      <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">
+      <Alert tone="danger">
         {erro}
-      </p>
+      </Alert>
     );
   }
 

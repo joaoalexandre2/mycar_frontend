@@ -9,8 +9,10 @@ import { UsoFormModal } from "../../components/frota/UsoFormModal";
 import { UsoDetalheModal } from "../../components/frota/UsoDetalheModal";
 import { ImportarPlanilhaModal } from "../../components/frota/ImportarPlanilhaModal";
 import { Modal } from "../../components/ui/Modal";
+import { Alert } from "../../components/ui/Alert";
+import { CLASSES_DO_TOM } from "../../components/ui/tons";
+import { TOM_DO_STATUS_USO } from "../../components/frota/tomDoStatusUso";
 import {
-  COR_DO_STATUS,
   descreverJanela,
   diasDoCalendario,
   horaDe,
@@ -52,13 +54,18 @@ const descricaoDoUso = (uso: UsoVeiculo) =>
 /** "10/11/2026" */
 const dataCompleta = (dia: string) => `${dia.slice(8, 10)}/${dia.slice(5, 7)}/${dia.slice(0, 4)}`;
 
+/** Cores do status do uso (o cancelado vai riscado). */
+const corDoUso = (uso: UsoVeiculo) =>
+  `${CLASSES_DO_TOM[TOM_DO_STATUS_USO[uso.status]]}${uso.status === "cancelado" ? " line-through" : ""}`;
+
 /** Um uso na lista por dia (celular e "+N mais"): placa, motorista, janela e status por escrito. */
 function BotaoDoUso({ uso, onAbrir }: { uso: UsoVeiculo; onAbrir: (uso: UsoVeiculo) => void }) {
   return (
     <button
       type="button"
       onClick={() => onAbrir(uso)}
-      className={`block min-h-11 w-full rounded-lg border px-3 py-2 text-left text-sm ${COR_DO_STATUS[uso.status]}`}
+      data-tom={TOM_DO_STATUS_USO[uso.status]}
+      className={`block min-h-11 w-full rounded-lg border px-3 py-2 text-left text-sm ${corDoUso(uso)}`}
     >
       <span className="font-semibold">
         {uso.veiculo?.placa} · {uso.motorista ?? "sem motorista"}
@@ -218,13 +225,13 @@ export function Agenda() {
       </div>
 
       {semVeiculos && (
-        <p className="rounded-lg bg-amber-50 px-4 py-3 text-xs text-amber-800">
+        <Alert tone="warning">
           Cadastre os veículos da frota em{" "}
           <Link to="/veiculos" className="font-semibold underline">
             Veículos da frota
           </Link>{" "}
           para poder reservá-los.
-        </p>
+        </Alert>
       )}
 
       <div className="flex flex-wrap items-center gap-3">
@@ -293,12 +300,9 @@ export function Agenda() {
       </div>
 
       {erro && (
-        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">
-          <span>{erro}</span>
-          <button type="button" onClick={tentarDeNovo} className="h-11 font-semibold underline md:h-auto">
-            Tentar de novo
-          </button>
-        </div>
+        <Alert tone="danger" action={{ label: "Tentar de novo", onClick: tentarDeNovo }}>
+          {erro}
+        </Alert>
       )}
 
       {/* Calendário (a partir de lg: no tablet as 7 colunas ficavam estreitas
@@ -347,7 +351,8 @@ export function Agenda() {
                       onClick={() => setAberto(uso)}
                       aria-label={descricaoDoUso(uso)}
                       title={descricaoDoUso(uso)}
-                      className={`block w-full rounded border px-1.5 py-0.5 text-left text-xs font-medium ${COR_DO_STATUS[uso.status]}`}
+                      data-tom={TOM_DO_STATUS_USO[uso.status]}
+                      className={`block w-full rounded-md border px-1.5 py-0.5 text-left text-xs font-medium ${corDoUso(uso)}`}
                     >
                       {/* O status vai por escrito, não só na cor. */}
                       <span className="block truncate">{resumoDoUso(uso)}</span>

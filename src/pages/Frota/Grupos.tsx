@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Pencil, Plus, Trash2, Users } from "lucide-react";
+import { Alert } from "../../components/ui/Alert";
 import { Modal } from "../../components/ui/Modal";
 import { useCarregarLista } from "../../hooks/useCarregarLista";
 import { gruposUsuariosService, modelosGrupoService } from "../../services/frota";
@@ -85,18 +86,15 @@ export function Grupos() {
       </div>
 
       {erroDeAcao && (
-        <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">
+        <Alert tone="danger">
           {erroDeAcao}
-        </p>
+        </Alert>
       )}
 
       {erroDeCarga && (
-        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">
-          <span>{erroDeCarga}</span>
-          <button type="button" onClick={carregar} className="font-semibold underline">
-            Tentar de novo
-          </button>
-        </div>
+        <Alert tone="danger" action={{ label: "Tentar de novo", onClick: carregar }}>
+          {erroDeCarga}
+        </Alert>
       )}
 
       {dados && dados.grupos.length === 0 && (
@@ -391,7 +389,7 @@ function GrupoModal({
         </div>
 
         {erro && (
-          <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{erro}</p>
+          <Alert tone="danger">{erro}</Alert>
         )}
 
         {!grupo && (

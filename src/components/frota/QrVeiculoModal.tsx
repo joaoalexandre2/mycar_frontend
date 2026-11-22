@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
+import { Alert } from "../ui/Alert";
 import { QrCode } from "lucide-react";
 import { Modal } from "../ui/Modal";
 import { qrService } from "../../services/frotaDiferenciais";
@@ -54,7 +55,7 @@ export function QrVeiculoModal({ veiculo, onClose }: { veiculo: VeiculoConta; on
     <Modal titulo={`QR Code · ${veiculo.placa}`} icone={<QrCode size={16} />} onClose={onClose} larguraMax="max-w-md">
       <div className="space-y-4 px-6 py-5 text-center">
         {!imagem && !erro && <p className="text-xs text-gray-500">Gerando o QR Code...</p>}
-        {erro && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{erro}</p>}
+        {erro && <Alert tone="danger">{erro}</Alert>}
 
         {imagem && (
           <>

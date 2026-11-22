@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { Alert } from "../../components/ui/Alert";
+import { StatusChip } from "../../components/ui/StatusChip";
 import { Car } from "lucide-react";
 import { ChecklistModal } from "../../components/frota/ChecklistModal";
 import { qrService } from "../../services/frotaDiferenciais";
@@ -37,7 +39,7 @@ export function QrVeiculoPagina() {
   if (erro) {
     return (
       <div className="mx-auto max-w-md space-y-4 p-6">
-        <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">{erro}</p>
+        <Alert tone="danger">{erro}</Alert>
         <Link to="/" className="text-xs font-semibold text-blue-600">Voltar ao início</Link>
       </div>
     );
@@ -77,8 +79,10 @@ export function QrVeiculoPagina() {
               {r.finalidade ? ` · ${r.finalidade}` : ""}
             </p>
             {r.checklist_feito ? (
-              <p className="text-xs font-semibold text-green-700">
-                Checklist de {r.momento === "saida" ? "saída" : "devolução"} já feito
+              <p>
+                <StatusChip tone="success">
+                  Checklist de {r.momento === "saida" ? "saída" : "devolução"} já feito
+                </StatusChip>
               </p>
             ) : (
               <button

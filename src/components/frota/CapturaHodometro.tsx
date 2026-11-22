@@ -5,6 +5,7 @@ import { type Retangulo } from "../../utils/ocrHodometro";
 import { lerKmDoHodometro } from "../../utils/leituraHodometro";
 import { mensagemErro } from "../../services/api";
 import { RecorteDoVisor } from "./RecorteDoVisor";
+import { Alert } from "../ui/Alert";
 
 /** Maior lado da foto do painel, em pixels: dá para ler o número e sobe rápido no celular. */
 const LADO_MAXIMO = 1280;
@@ -178,9 +179,9 @@ export function CapturaHodometro({
       {lendo && <p className="text-xs text-gray-500">Lendo o km da foto...</p>}
 
       {erro && (
-        <p role="alert" className="text-xs text-red-600">
+        <Alert tone="danger">
           {erro}
-        </p>
+        </Alert>
       )}
     </div>
   );

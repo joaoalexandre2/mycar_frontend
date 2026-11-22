@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { ClipboardCheck, Pencil, Plus, Trash2 } from "lucide-react";
+import { Alert } from "../../components/ui/Alert";
 import { Modal } from "../../components/ui/Modal";
 import { useConfirmar } from "../../hooks/useNotificacoes";
 import { checklistModelosService, type ItemDeModelo, type PayloadDeModelo } from "../../services/frotaDiferenciais";
@@ -127,7 +128,7 @@ function EditorDeModelo({
           </button>
         </div>
 
-        {erro && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{erro}</p>}
+        {erro && <Alert tone="danger">{erro}</Alert>}
 
         <div className="flex justify-end gap-2">
           <button type="button" onClick={onClose} className="h-10 rounded-lg border border-gray-200 px-4 text-xs font-semibold text-gray-600 hover:bg-gray-50">
@@ -190,7 +191,7 @@ export function ModelosDeChecklist() {
         </button>
       </div>
 
-      {erro && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">{erro}</p>}
+      {erro && <Alert tone="danger">{erro}</Alert>}
 
       <ul className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white">
         {modelos.map((modelo) => (

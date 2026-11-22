@@ -74,10 +74,12 @@ describe("Agenda: status por escrito", () => {
     expect(chip).toHaveTextContent("Agendado");
     expect(chip).toHaveAccessibleName(`09:00 · AAA1B25 · Maria Silva · Agendado · ${hoje.slice(8, 10)}/${hoje.slice(5, 7)} 09:00 – 11:00`);
     // "Agendado" sai da escala da marca (blue), que é a mesma cor dos botões e do erro.
-    expect(chip.className).toContain("bg-sky-50");
+    expect(chip).toHaveAttribute("data-tom", "neutral");
     expect(chip.className).not.toMatch(/\bbg-blue-/);
 
-    expect(screen.getByRole("button", { name: /^13:00 · AAA1B25 · Maria Silva · Em uso/ })).toHaveTextContent("Em uso");
+    const emUso = screen.getByRole("button", { name: /^13:00 · AAA1B25 · Maria Silva · Em uso/ });
+    expect(emUso).toHaveTextContent("Em uso");
+    expect(emUso).toHaveAttribute("data-tom", "info");
   });
 });
 
