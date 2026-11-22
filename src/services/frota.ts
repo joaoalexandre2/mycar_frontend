@@ -9,6 +9,7 @@ import type {
   MotivoTrocaCentro,
   PapelDaFrota,
   EventoDeAcesso,
+  LigacaoDeMotorista,
   ListaDePessoasDaFrota,
   ModeloSalvo,
   PessoaDaFrota,
@@ -530,6 +531,13 @@ export const pessoasFrotaService = {
 
   async mudarPapel(id: number, papel: PapelDaFrota): Promise<PessoaDaFrota> {
     const { data } = await api.put<PessoaDaFrota>(`/conta/pessoas/${id}/papel`, { papel });
+
+    return data;
+  },
+
+  /** Liga o login da pessoa (papel motorista) a um cadastro de motorista, existente ou criado agora. */
+  async ligarMotorista(id: number, ligacao: LigacaoDeMotorista): Promise<PessoaDaFrota> {
+    const { data } = await api.post<PessoaDaFrota>(`/conta/pessoas/${id}/motorista`, ligacao);
 
     return data;
   },

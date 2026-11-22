@@ -28,6 +28,25 @@ describe("Histórico de acessos", () => {
     expect(screen.getByText("Gil Gestor: gestor → administrador")).toBeInTheDocument();
   });
 
+  it("mostra quem ligou uma pessoa a um cadastro de motorista", async () => {
+    vi.spyOn(pessoasFrotaService, "acessos").mockResolvedValue([
+      {
+        id: 2,
+        quando: "2026-11-02T10:00:00Z",
+        ator: "Ana Admin",
+        alvo_tipo: "pessoa",
+        alvo_id: 3,
+        acao: "ligou_motorista",
+        detalhes: { nome: "Rui Rua", motorista_id: 9, motorista: "Rui Rua", criou_cadastro: true },
+      },
+    ]);
+
+    render(<AcessosHistorico />);
+
+    expect(await screen.findByText(/ligou a um cadastro de motorista/)).toBeInTheDocument();
+    expect(screen.getByText("Rui Rua → Rui Rua (cadastro criado)")).toBeInTheDocument();
+  });
+
   it("avisa quando ainda não há mudanças", async () => {
     vi.spyOn(pessoasFrotaService, "acessos").mockResolvedValue([]);
 

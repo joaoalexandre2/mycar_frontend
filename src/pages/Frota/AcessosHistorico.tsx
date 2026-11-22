@@ -11,6 +11,7 @@ const ROTULO_DA_ACAO: Record<EventoDeAcesso["acao"], string> = {
   convidou: "convidou",
   mudou_papel: "mudou o papel de",
   salvou: "salvou o modelo",
+  ligou_motorista: "ligou a um cadastro de motorista",
 };
 
 /** Quem mudou acesso na frota e quando. Só o administrador vê. */
@@ -73,6 +74,10 @@ function descreverAlvo(e: EventoDeAcesso): string {
 
   if (e.acao === "mudou_papel") {
     return `${String(d.nome ?? "")}: ${String(d.de ?? "")} → ${String(d.para ?? "")}`;
+  }
+
+  if (e.acao === "ligou_motorista") {
+    return `${String(d.nome ?? "")} → ${String(d.motorista ?? "")}${d.criou_cadastro ? " (cadastro criado)" : ""}`;
   }
 
   if (e.acao === "convidou") {
