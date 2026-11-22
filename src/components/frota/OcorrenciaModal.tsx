@@ -1,4 +1,4 @@
-import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { Camera, Trash2, TriangleAlert } from "lucide-react";
 import { Modal } from "../ui/Modal";
 import { ocorrenciasService } from "../../services/ocorrencias";
@@ -20,11 +20,18 @@ interface Props {
   /** Administrador e gestor informam valores e status; o motorista só descreve. */
   gerencia: boolean;
   onSalva: () => void;
+  /**
+   * Chamado ao criar: o modal continua aberto, já no registro novo, para anexar
+   * as fotos. A página atualiza a lista por trás sem fechar o modal.
+   */
+  onCriada?: (criada: Ocorrencia) => void;
   onClose: () => void;
 }
 
+type CampoObrigatorio = "veiculo" | "dataHora" | "descricao";
+
 /** Registro e acompanhamento de uma ocorrência, com as fotos antes e depois do reparo. */
-export function OcorrenciaModal({ ocorrencia, veiculos, gerencia, onSalva, onClose }: Props) {
+export function OcorrenciaModal({ ocorrencia, veiculos, gerencia, onSalva, onCriada, onClose }: Props) {
   const pedirConfirmacao = useConfirmar();
   const [veiculoId, setVeiculoId] = useState(String(ocorrencia?.veiculo?.id ?? ""));
   const [tipo, setTipo] = useState<TipoDeOcorrencia>(ocorrencia?.tipo ?? "avaria");
@@ -39,17 +46,47 @@ export function OcorrenciaModal({ ocorrencia, veiculos, gerencia, onSalva, onClo
   const [erroGasto, setErroGasto] = useState<string | null>(null);
   const [fotos, setFotos] = useState<FotoDeOcorrencia[]>(ocorrencia?.fotos ?? []);
   const [erro, setErro] = useState<string | null>(null);
+  const [errosDosCampos, setErrosDosCampos] = useState<Partial<Record<CampoObrigatorio, string>>>({});
+  // O registro em edição: o que veio da lista ou o que acabou de ser criado aqui.
+  const [registro, setRegistro] = useState<Ocorrencia | null>(ocorrencia);
+  const [recemCriada, setRecemCriada] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [enviandoFoto, setEnviandoFoto] = useState<"antes" | "depois" | null>(null);
   const entradaAntes = useRef<HTMLInputElement>(null);
   const entradaDepois = useRef<HTMLInputElement>(null);
+  const campoVeiculo = useRef<HTMLSelectElement>(null);
+  const campoData = useRef<HTMLInputElement>(null);
+  const campoDescricao = useRef<HTMLTextAreaElement>(null);
+  const avisoDeSucesso = useRef<HTMLParagraphElement>(null);
+
+  // Depois de criar, o botão Salvar pode sumir (o motorista não edita): o foco vai
+  // para o aviso, que o leitor de tela lê, em vez de se perder no corpo da página.
+  useEffect(() => {
+    if (recemCriada) avisoDeSucesso.current?.focus();
+  }, [recemCriada]);
+
+  function limparErroDoCampo(campo: CampoObrigatorio) {
+    setErrosDosCampos((atuais) => (atuais[campo] ? { ...atuais, [campo]: undefined } : atuais));
+  }
+
+  /** Liga o campo à mensagem de erro dele, logo abaixo. */
+  function atributosDeErro(campo: CampoObrigatorio, id: string) {
+    return errosDosCampos[campo] ? { "aria-invalid": true as const, "aria-describedby": `${id}-erro` } : {};
+  }
 
   async function salvar(evento: FormEvent) {
     evento.preventDefault();
     setErro(null);
 
-    if (!veiculoId || !dataHora || descricao.trim().length < 3) {
-      setErro("Informe o veículo, a data e hora e descreva o que aconteceu.");
+    const faltando: Partial<Record<CampoObrigatorio, string>> = {};
+    if (!veiculoId) faltando.veiculo = "Escolha o veículo.";
+    if (!dataHora) faltando.dataHora = "Informe a data e a hora.";
+    if (descricao.trim().length < 3) faltando.descricao = "Descreva o que aconteceu (pelo menos 3 caracteres).";
+    setErrosDosCampos(faltando);
+
+    if (faltando.veiculo || faltando.dataHora || faltando.descricao) {
+      // Foco no primeiro que falta, na ordem em que aparecem na tela.
+      (faltando.veiculo ? campoVeiculo : faltando.dataHora ? campoData : campoDescricao).current?.focus();
       return;
     }
 
@@ -79,13 +116,18 @@ export function OcorrenciaModal({ ocorrencia, veiculos, gerencia, onSalva, onClo
     try {
       setSalvando(true);
 
-      if (ocorrencia) {
-        await ocorrenciasService.atualizar(ocorrencia.id, payload);
-      } else {
-        await ocorrenciasService.criar(payload);
+      if (registro) {
+        await ocorrenciasService.atualizar(registro.id, payload);
+        onSalva();
+        return;
       }
 
-      onSalva();
+      // Ao criar, o modal não fecha: logo depois do dano é a hora de fotografar.
+      const criada = await ocorrenciasService.criar(payload);
+      setRegistro(criada);
+      setFotos(criada.fotos ?? []);
+      setRecemCriada(true);
+      onCriada?.(criada);
     } catch (error) {
       setErro(mensagemErro(error));
     } finally {
@@ -97,12 +139,12 @@ export function OcorrenciaModal({ ocorrencia, veiculos, gerencia, onSalva, onClo
     const arquivo = evento.target.files?.[0];
     evento.target.value = "";
 
-    if (!arquivo || !ocorrencia) return;
+    if (!arquivo || !registro) return;
 
     try {
       setEnviandoFoto(momento);
       const reduzida = await redimensionar(arquivo, 1280, 0.8);
-      const enviada = await ocorrenciasService.enviarFoto(ocorrencia.id, momento, reduzida);
+      const enviada = await ocorrenciasService.enviarFoto(registro.id, momento, reduzida);
       setFotos((atuais) => [...atuais, enviada]);
     } catch (error) {
       setErro(mensagemErro(error));
@@ -123,17 +165,36 @@ export function OcorrenciaModal({ ocorrencia, veiculos, gerencia, onSalva, onClo
   }
 
   return (
-    <Modal titulo={ocorrencia ? "Ocorrência" : "Registrar ocorrência"} icone={<TriangleAlert size={16} />} onClose={onClose} larguraMax="max-w-lg">
-      <form onSubmit={(e) => void salvar(e)} className="space-y-4 px-6 py-5">
+    <Modal titulo={registro ? "Ocorrência" : "Registrar ocorrência"} icone={<TriangleAlert size={16} />} onClose={onClose} larguraMax="max-w-lg">
+      <form onSubmit={(e) => void salvar(e)} noValidate className="space-y-4 px-6 py-5">
+        {recemCriada && (
+          <p ref={avisoDeSucesso} role="status" tabIndex={-1} className="rounded-lg bg-green-50 px-3 py-2 text-xs text-green-700 outline-none">
+            Ocorrência registrada. Agora você pode anexar as fotos de antes e depois.
+          </p>
+        )}
+
+        {/* O motorista não edita ocorrência já registrada (a rota de edição é só da gestão): depois de criar, os dados ficam só para leitura. */}
+        <fieldset disabled={recemCriada && !gerencia} className="min-w-0 space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label htmlFor="ocorrencia-veiculo" className={rotulo}>Veículo</label>
-            <select id="ocorrencia-veiculo" value={veiculoId} onChange={(e) => setVeiculoId(e.target.value)} className={classeCampo}>
+            <select
+              ref={campoVeiculo}
+              id="ocorrencia-veiculo"
+              value={veiculoId}
+              onChange={(e) => {
+                setVeiculoId(e.target.value);
+                limparErroDoCampo("veiculo");
+              }}
+              {...atributosDeErro("veiculo", "ocorrencia-veiculo")}
+              className={`${classeCampo} aria-invalid:border-red-400`}
+            >
               <option value="">Escolha...</option>
               {veiculos.map((v) => (
                 <option key={v.id} value={v.id}>{v.placa} · {v.marca} {v.modelo}</option>
               ))}
             </select>
+            {errosDosCampos.veiculo && <p id="ocorrencia-veiculo-erro" className="mt-1 text-xs text-red-600">{errosDosCampos.veiculo}</p>}
           </div>
           <div>
             <label htmlFor="ocorrencia-tipo" className={rotulo}>Tipo</label>
@@ -148,7 +209,19 @@ export function OcorrenciaModal({ ocorrencia, veiculos, gerencia, onSalva, onClo
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label htmlFor="ocorrencia-data" className={rotulo}>Data e hora</label>
-            <input id="ocorrencia-data" type="datetime-local" value={dataHora} onChange={(e) => setDataHora(e.target.value)} className={classeCampo} />
+            <input
+              ref={campoData}
+              id="ocorrencia-data"
+              type="datetime-local"
+              value={dataHora}
+              onChange={(e) => {
+                setDataHora(e.target.value);
+                limparErroDoCampo("dataHora");
+              }}
+              {...atributosDeErro("dataHora", "ocorrencia-data")}
+              className={`${classeCampo} aria-invalid:border-red-400`}
+            />
+            {errosDosCampos.dataHora && <p id="ocorrencia-data-erro" className="mt-1 text-xs text-red-600">{errosDosCampos.dataHora}</p>}
           </div>
           <div>
             <label htmlFor="ocorrencia-local" className={rotulo}>Local (opcional)</label>
@@ -158,7 +231,20 @@ export function OcorrenciaModal({ ocorrencia, veiculos, gerencia, onSalva, onClo
 
         <div>
           <label htmlFor="ocorrencia-descricao" className={rotulo}>O que aconteceu</label>
-          <textarea id="ocorrencia-descricao" rows={3} maxLength={2000} value={descricao} onChange={(e) => setDescricao(e.target.value)} className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-700 outline-none focus:border-blue-500" />
+          <textarea
+            ref={campoDescricao}
+            id="ocorrencia-descricao"
+            rows={3}
+            maxLength={2000}
+            value={descricao}
+            onChange={(e) => {
+              setDescricao(e.target.value);
+              limparErroDoCampo("descricao");
+            }}
+            {...atributosDeErro("descricao", "ocorrencia-descricao")}
+            className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-700 outline-none focus:border-blue-500 aria-invalid:border-red-400"
+          />
+          {errosDosCampos.descricao && <p id="ocorrencia-descricao-erro" className="mt-1 text-xs text-red-600">{errosDosCampos.descricao}</p>}
         </div>
 
         {gerencia && (
@@ -198,8 +284,9 @@ export function OcorrenciaModal({ ocorrencia, veiculos, gerencia, onSalva, onClo
             <p className="col-span-3 text-xs text-gray-500">Um valor gasto vira uma despesa de "Reparo e peças" no financeiro.</p>
           </div>
         )}
+        </fieldset>
 
-        {ocorrencia && (
+        {registro && (
           <section aria-label="Fotos" className="space-y-2">
             <p className={rotulo}>Fotos</p>
             <ul className="space-y-1">
@@ -207,10 +294,10 @@ export function OcorrenciaModal({ ocorrencia, veiculos, gerencia, onSalva, onClo
                 <li key={f.id} className="flex items-center justify-between text-xs">
                   <span>
                     <span className="text-gray-500">{f.momento === "antes" ? "Antes do reparo" : "Depois do reparo"}:</span>{" "}
-                    <a href={f.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-600 hover:text-blue-700">Ver foto</a>
+                    <a href={f.url} target="_blank" rel="noopener noreferrer" aria-label={`Ver foto de ${f.momento}`} className="inline-flex h-11 items-center font-semibold text-blue-600 hover:text-blue-700 md:h-9">Ver foto</a>
                   </span>
                   {gerencia && (
-                    <button type="button" onClick={() => void removerFoto(f)} aria-label="Remover foto" className="text-red-500 hover:text-red-600">
+                    <button type="button" onClick={() => void removerFoto(f)} aria-label={`Remover foto de ${f.momento}`} className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-red-500 hover:bg-red-50 hover:text-red-600 md:h-9 md:w-9">
                       <Trash2 size={13} />
                     </button>
                   )}
@@ -218,13 +305,13 @@ export function OcorrenciaModal({ ocorrencia, veiculos, gerencia, onSalva, onClo
               ))}
               {fotos.length === 0 && <li className="text-xs text-gray-500">Nenhuma foto ainda.</li>}
             </ul>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <input ref={entradaAntes} type="file" accept="image/*" capture="environment" className="hidden" aria-label="Anexar foto antes do reparo" onChange={(e) => void anexar("antes", e)} />
               <input ref={entradaDepois} type="file" accept="image/*" capture="environment" className="hidden" aria-label="Anexar foto depois do reparo" onChange={(e) => void anexar("depois", e)} />
-              <button type="button" onClick={() => entradaAntes.current?.click()} disabled={enviandoFoto !== null} className="flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-60">
+              <button type="button" onClick={() => entradaAntes.current?.click()} disabled={enviandoFoto !== null} className="flex h-11 items-center gap-1 rounded-lg border border-gray-200 px-3 text-xs font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-60 md:h-9">
                 <Camera size={13} /> {enviandoFoto === "antes" ? "Enviando..." : "Foto antes"}
               </button>
-              <button type="button" onClick={() => entradaDepois.current?.click()} disabled={enviandoFoto !== null} className="flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-60">
+              <button type="button" onClick={() => entradaDepois.current?.click()} disabled={enviandoFoto !== null} className="flex h-11 items-center gap-1 rounded-lg border border-gray-200 px-3 text-xs font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-60 md:h-9">
                 <Camera size={13} /> {enviandoFoto === "depois" ? "Enviando..." : "Foto depois"}
               </button>
             </div>
@@ -234,12 +321,28 @@ export function OcorrenciaModal({ ocorrencia, veiculos, gerencia, onSalva, onClo
         {erro && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{erro}</p>}
 
         <div className="flex justify-end gap-2">
-          <button type="button" onClick={onClose} className="h-10 rounded-lg border border-gray-200 px-4 text-xs font-semibold text-gray-600 hover:bg-gray-50">
-            Fechar
-          </button>
-          <button type="submit" disabled={salvando} className="h-10 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
-            {salvando ? "Salvando..." : "Salvar"}
-          </button>
+          {recemCriada ? (
+            <>
+              {/* Quem gerencia ainda pode ajustar status e valores do registro novo. */}
+              {gerencia && (
+                <button type="submit" disabled={salvando} className="h-10 rounded-lg border border-gray-200 px-4 text-xs font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-60">
+                  {salvando ? "Salvando..." : "Salvar alterações"}
+                </button>
+              )}
+              <button type="button" onClick={onClose} className="h-10 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700">
+                Concluir
+              </button>
+            </>
+          ) : (
+            <>
+              <button type="button" onClick={onClose} className="h-10 rounded-lg border border-gray-200 px-4 text-xs font-semibold text-gray-600 hover:bg-gray-50">
+                Fechar
+              </button>
+              <button type="submit" disabled={salvando} className="h-10 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
+                {salvando ? "Salvando..." : "Salvar"}
+              </button>
+            </>
+          )}
         </div>
       </form>
     </Modal>
