@@ -7,6 +7,7 @@ import { TrocarCentroModal } from "./TrocarCentroModal";
 import { usePodeNaFrota, useUsuarioDaFrota } from "../../hooks/usePodeNaFrota";
 import { ehAdministradorOuGestor } from "../../utils/permissoes";
 import { usosService, type EventoDoUso } from "../../services/frota";
+import { isAxiosError } from "axios";
 import { mensagemErro } from "../../services/api";
 import { useConfirmar, useToast } from "../../hooks/useNotificacoes";
 import { COR_DO_STATUS, descreverJanela } from "../../utils/agenda";
@@ -133,6 +134,10 @@ export function UsoDetalheModal({
   const [foto, setFoto] = useState<Blob | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  // Último envio que falhou por falta de conexão: "Tentar de novo" reenvia
+  // exatamente estes valores. Mexer em km, foto ou motivo tira a oferta (aí vale
+  // o botão principal, com os valores novos).
+  const [tentativaSemConexao, setTentativaSemConexao] = useState<{ km: number; foto: Blob | null; motivo: string } | null>(null);
 
   // Só quem corrige usos vê a trilha do motivo (o backend barra os demais).
   const podeVerHistoricoDoMotivo = pode("usos_corrigir");
@@ -169,8 +174,48 @@ export function UsoDetalheModal({
   const registrandoChegada = uso.status === "em_uso";
   const registrando = registrandoSaida || registrandoChegada;
 
+  // "Sujo": a pessoa digitou km, anexou foto ou mudou o motivo e ainda não registrou.
+  const sujo =
+    registrando &&
+    (km.trim() !== "" || foto !== null || (registrandoSaida && motivo.trim() !== (uso.finalidade ?? "").trim()));
+
+  // Clique fora, Esc e o X passam por aqui: com algo digitado, pergunta antes de
+  // descartar (um toque na margem de 16px do celular apagava tudo).
+  async function fechar() {
+    if (!sujo) {
+      onClose();
+      return;
+    }
+
+    const descartar = await pedirConfirmacao({
+      titulo: "Descartar o que você digitou?",
+      mensagem: "O km, a foto e o motivo ainda não foram registrados.",
+      confirmarTexto: "Descartar",
+      cancelarTexto: "Continuar editando",
+      perigo: true,
+    });
+
+    if (descartar) onClose();
+  }
+
+  function aoMudarKm(valor: string) {
+    setKm(valor);
+    setTentativaSemConexao(null);
+  }
+
+  function aoMudarFoto(valor: Blob | null) {
+    setFoto(valor);
+    setTentativaSemConexao(null);
+  }
+
+  function aoMudarMotivo(valor: string) {
+    setMotivo(valor);
+    setTentativaSemConexao(null);
+  }
+
   async function registrar() {
     setErro(null);
+    setTentativaSemConexao(null);
 
     const lido = lerInteiroBR(km);
 
@@ -179,11 +224,24 @@ export function UsoDetalheModal({
       return;
     }
 
+    await enviar({ km: lido.valor, foto, motivo: motivo.trim() });
+  }
+
+  /**
+   * Reenviar depois de uma falha de rede é seguro: o servidor trava o uso na
+   * transação, só registra saída de uso "agendado" (chegada de uso "em_uso") e,
+   * se o primeiro envio tiver chegado, devolve o que já foi gravado para o mesmo
+   * usuário e o mesmo km, sem criar um segundo registro.
+   */
+  async function enviar(valores: { km: number; foto: Blob | null; motivo: string }) {
+    setErro(null);
+    setTentativaSemConexao(null);
+
     try {
       setEnviando(true);
       const atualizado = registrandoSaida
-        ? await usosService.registrarSaida(uso.id, lido.valor, foto, motivo.trim())
-        : await usosService.registrarChegada(uso.id, lido.valor, foto);
+        ? await usosService.registrarSaida(uso.id, valores.km, valores.foto, valores.motivo)
+        : await usosService.registrarChegada(uso.id, valores.km, valores.foto);
 
       setKm("");
       setFoto(null);
@@ -191,6 +249,10 @@ export function UsoDetalheModal({
       avisarConflitos(atualizado);
     } catch (error) {
       setErro(mensagemErro(error));
+
+      if (isAxiosError(error) && error.code === "ERR_NETWORK") {
+        setTentativaSemConexao(valores);
+      }
     } finally {
       setEnviando(false);
     }
@@ -238,16 +300,26 @@ export function UsoDetalheModal({
       titulo={uso.veiculo ? `${uso.veiculo.placa} · ${uso.veiculo.nome}` : "Uso do veículo"}
       subtitulo={descreverJanela(uso.inicioPrevisto, uso.fimPrevisto)}
       icone={<Gauge size={16} />}
-      onClose={onClose}
+      onClose={() => void fechar()}
       larguraMax="max-w-xl"
       fecharAoClicarFora
       rodape={
         registrando ? (
           <div className="space-y-2">
             {erro && (
-              <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
-                {erro}
-              </p>
+              <div role="alert" className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
+                <p>{erro}</p>
+                {tentativaSemConexao && (
+                  <button
+                    type="button"
+                    onClick={() => void enviar(tentativaSemConexao)}
+                    disabled={enviando}
+                    className="h-9 shrink-0 rounded-lg border border-red-200 bg-white px-3 font-semibold text-red-700 hover:bg-red-50 disabled:opacity-60"
+                  >
+                    Tentar de novo
+                  </button>
+                )}
+              </div>
             )}
 
             <div className="flex justify-end">
@@ -361,7 +433,7 @@ export function UsoDetalheModal({
                   id="uso-motivo-saida"
                   type="text"
                   value={motivo}
-                  onChange={(e) => setMotivo(e.target.value)}
+                  onChange={(e) => aoMudarMotivo(e.target.value)}
                   maxLength={160}
                   placeholder="Ex.: entrega em Campinas"
                   className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
@@ -378,9 +450,9 @@ export function UsoDetalheModal({
             <CapturaHodometro
               rotulo={registrandoSaida ? "Km de saída" : "Km de chegada"}
               km={km}
-              onKm={setKm}
+              onKm={aoMudarKm}
               foto={foto}
-              onFoto={setFoto}
+              onFoto={aoMudarFoto}
               dica={
                 registrandoChegada && uso.kmSaida !== null
                   ? `Saiu com ${formatarKm(uso.kmSaida)}.`

@@ -1,9 +1,13 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Car, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { authService, type ProvedorSocial } from "../../services/auth";
 import { mensagemErro } from "../../services/api";
+import {
+  apagarAvisoDeSessaoExpirada,
+  haAvisoDeSessaoExpirada,
+} from "../../utils/avisoDeSessao";
 
 export function Login() {
   const { entrar } = useAuth();
@@ -19,6 +23,13 @@ export function Login() {
   const [reenviando, setReenviando] = useState(false);
   const [reenviado, setReenviado] = useState(false);
   const [socialEnviando, setSocialEnviando] = useState<ProvedorSocial | null>(null);
+  // Lido uma vez ao abrir; o efeito abaixo apaga a marca, então recarregar o
+  // login (ou voltar a ele depois) não repete o aviso.
+  const [sessaoExpirou, setSessaoExpirou] = useState(haAvisoDeSessaoExpirada);
+
+  useEffect(() => {
+    apagarAvisoDeSessaoExpirada();
+  }, []);
 
   const estadoRota = location.state as { from?: string } | null;
   const destino = estadoRota?.from ?? "/";
@@ -26,6 +37,7 @@ export function Login() {
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setErro(null);
+    setSessaoExpirou(false);
     setPrecisaConfirmarEmail(false);
     setReenviado(false);
     setEnviando(true);
@@ -165,6 +177,15 @@ export function Login() {
               </button>
             </div>
           </div>
+
+          {sessaoExpirou && (
+            <p
+              role="status"
+              className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800"
+            >
+              Sua sessão expirou. Entre de novo para continuar.
+            </p>
+          )}
 
           {erro && (
             <div

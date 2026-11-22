@@ -1,5 +1,6 @@
 import axios, { isAxiosError } from "axios";
-import { limparSessao } from "../utils/authStorage";
+import { estaLogado, limparSessao } from "../utils/authStorage";
+import { gravarAvisoDeSessaoExpirada } from "../utils/avisoDeSessao";
 import { ErroDeUsuario } from "../utils/erros";
 
 export const api = axios.create({
@@ -27,6 +28,16 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (isAxiosError(error) && error.response?.status === 401) {
+      // Só é "sessão expirou" quando havia alguém logado e o 401 não veio do
+      // próprio login (senha errada) nem do sair. Sem o aviso, quem estava no
+      // meio de um registro caía no login sem entender o porquê.
+      const rota = error.config?.url ?? "";
+      const ehLoginOuSair = /^\/?(login|logout)(\/|$|\?)/.test(rota);
+
+      if (estaLogado() && !ehLoginOuSair) {
+        gravarAvisoDeSessaoExpirada();
+      }
+
       limparSessao();
 
       if (window.location.pathname !== "/login") {
