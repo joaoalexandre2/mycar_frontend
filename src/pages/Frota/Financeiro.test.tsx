@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NotificacoesProvider } from "../../contexts/NotificacoesProvider";
+import { conferirTabelaCartoes } from "../../test/tabelaCartoes";
 import { contaService } from "../../services/conta/veiculos";
 import { motoristasService, centrosCustoService } from "../../services/frota";
 import { categoriasDeDespesaService, despesasAvulsasService, financeiroService } from "../../services/financeiro";
@@ -31,6 +32,18 @@ const resumo: ResumoFinanceiro = {
     veiculoMaiorCusto: { veiculoId: 1, placa: "AAA1A11", valor: 480 },
     veiculoMaiorManutencao: { veiculoId: 1, placa: "AAA1A11", valor: 150 },
   },
+};
+
+const despesa: DespesaAvulsa = {
+  id: 9,
+  data: "2026-03-10",
+  valor: 30,
+  descricao: "Retrovisor novo",
+  comprovante: null,
+  categoria: { id: 1, nome: "Pedágio" },
+  veiculo: { id: 1, placa: "AAA1A11", nome: "Fiat Strada" },
+  motorista: null,
+  centroCusto: null,
 };
 
 function renderizar() {
@@ -63,6 +76,39 @@ describe("Financeiro da frota", () => {
     expect(screen.getAllByText("R$ 480,00").length).toBeGreaterThan(0);
     expect(screen.getAllByText("AAA1A11").length).toBeGreaterThan(0);
     expect(screen.getByText(/Seguro: R\$ 3\.000,00 por ano/)).toBeInTheDocument();
+  });
+
+  it("as quatro tabelas viram cartões no celular, com o rótulo de cada coluna em cada célula", async () => {
+    prepararServicos();
+    vi.spyOn(despesasAvulsasService, "listar").mockResolvedValue({ dados: [despesa], paginaAtual: 1, totalPaginas: 1, totalRegistros: 1 });
+
+    const { container } = renderizar();
+
+    expect(await screen.findByText("Retrovisor novo")).toBeInTheDocument();
+    const tabelas = Array.from(container.querySelectorAll("table"));
+    expect(tabelas).toHaveLength(4);
+    tabelas.forEach(conferirTabelaCartoes);
+
+    // Por veículo tem oito colunas: no cartão o Total sobe para logo abaixo do veículo.
+    const linhaVeiculo = tabelas[0].querySelector("tbody tr") as HTMLElement;
+    expect(linhaVeiculo).toHaveClass("max-md:flex!", "max-md:flex-col");
+    expect(within(linhaVeiculo).getByText("R$ 480,00").closest("td")).toHaveClass("max-md:-order-1");
+
+    // As ações continuam alcançáveis pelo nome e ganham alvo de toque maior no celular.
+    for (const nome of ["Editar despesa de 10/03/2026", "Remover despesa de 10/03/2026"]) {
+      expect(screen.getByRole("button", { name: nome })).toHaveClass("max-md:h-11", "max-md:w-11");
+    }
+  });
+
+  it("as linhas de tabela vazia ocupam todas as colunas, sem quebrar o modo cartão", async () => {
+    prepararServicos();
+    vi.spyOn(financeiroService, "resumo").mockResolvedValue({ ...resumo, porVeiculo: [] });
+
+    const { container } = renderizar();
+
+    expect(await screen.findByText("Nenhum veículo com gasto no período.")).toBeInTheDocument();
+    expect(await screen.findByText("Nenhuma despesa avulsa no período.")).toBeInTheDocument();
+    container.querySelectorAll("table").forEach(conferirTabelaCartoes);
   });
 
   it("registra uma despesa avulsa com a categoria e o valor escolhidos", async () => {

@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NotificacoesProvider } from "../../contexts/NotificacoesProvider";
+import { conferirTabelaCartoes } from "../../test/tabelaCartoes";
 import { contaService } from "../../services/conta/veiculos";
 import { motoristasService, centrosCustoService } from "../../services/frota";
 import { categoriasDeDespesaService } from "../../services/financeiro";
@@ -49,6 +50,28 @@ describe("Relatórios da frota", () => {
     expect(await screen.findByText("AAA1A11")).toBeInTheDocument();
     expect(screen.getByText("R$ 200,00")).toBeInTheDocument();
     expect(screen.getByText("1 registro(s)")).toBeInTheDocument();
+  });
+
+  it("a tabela vira cartões no celular com o rótulo que o servidor manda para cada coluna", async () => {
+    prepararServicos();
+
+    renderizar();
+
+    await screen.findByText("AAA1A11");
+    const tabela = screen.getByRole("table") as HTMLTableElement;
+    conferirTabelaCartoes(tabela);
+    expect(screen.getByText("R$ 200,00").closest("td")).toHaveAttribute("data-label", "Valor total");
+  });
+
+  it("a linha de relatório vazio ocupa todas as colunas", async () => {
+    prepararServicos();
+    vi.spyOn(relatoriosService, "mostrar").mockResolvedValue({ ...relatorio, linhas: [], totalLinhas: 0 });
+
+    renderizar();
+
+    const vazio = await screen.findByText("Nenhum registro com esse filtro.");
+    expect(vazio.closest("td")?.colSpan).toBe(2);
+    conferirTabelaCartoes(screen.getByRole("table") as HTMLTableElement);
   });
 
   it("baixa o CSV com o mesmo filtro da tela", async () => {

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { conferirTabelaCartoes } from "../../test/tabelaCartoes";
 import userEvent from "@testing-library/user-event";
 import { AuthContext, type AuthContextValor } from "../../contexts/authContextDefinition";
 import { NotificacoesProvider } from "../../contexts/NotificacoesProvider";
@@ -74,6 +75,36 @@ describe("Ocorrências da frota", () => {
     expect(await screen.findByText("Retrovisor quebrado")).toBeInTheDocument();
     expect(screen.queryByText("Prejuízo estimado")).not.toBeInTheDocument();
     expect(screen.queryByRole("columnheader", { name: "Gasto" })).not.toBeInTheDocument();
+  });
+
+  it.each(["gestor", "motorista"])("a tabela vira cartões no celular com o rótulo de cada coluna (%s)", async (papel) => {
+    prepararServicos();
+
+    renderizar(papel);
+
+    await screen.findByText("Retrovisor quebrado");
+    const tabela = screen.getByRole("table");
+    conferirTabelaCartoes(tabela as HTMLTableElement);
+    expect(within(tabela).getByText("Retrovisor quebrado").closest("td")).toHaveAttribute("data-label", "O que aconteceu");
+
+    // As ações continuam alcançáveis pelo nome e ganham alvo de toque maior no celular.
+    const acoes = within(tabela).getAllByRole("button");
+    expect(acoes).toHaveLength(papel === "gestor" ? 2 : 1);
+    acoes.forEach((botao) => expect(botao).toHaveClass("max-md:h-11", "max-md:w-11"));
+  });
+
+  it.each([
+    ["gestor", 8],
+    ["motorista", 7],
+  ])("a linha de lista vazia ocupa todas as colunas (%s)", async (papel, colunas) => {
+    vi.spyOn(ocorrenciasService, "listar").mockResolvedValue({ dados: [], paginaAtual: 1, totalPaginas: 1, totalRegistros: 0, resumo });
+    vi.spyOn(contaService, "listarVeiculos").mockResolvedValue({ dados: [], paginaAtual: 1, totalPaginas: 1, totalRegistros: 0 } as never);
+
+    renderizar(papel);
+
+    const vazio = await screen.findByText("Nenhuma ocorrência com esse filtro.");
+    expect(vazio.closest("td")?.colSpan).toBe(colunas);
+    conferirTabelaCartoes(screen.getByRole("table") as HTMLTableElement);
   });
 
   it("registra uma ocorrência com o horário digitado", async () => {
