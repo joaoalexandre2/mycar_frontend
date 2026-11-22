@@ -7,6 +7,7 @@ import { contaService } from "../../services/conta";
 import { mensagemErro } from "../../services/api";
 import { useAuth } from "../../hooks/useAuth";
 import { formatarData, formatarKm, formatarMoeda } from "../../utils/formatters";
+import { mensagemKmDesconhecida, podeInformarKm, situacaoPorKm } from "../../utils/avisoPorKm";
 import type { ResumoConta, TipoVencimento, Vencimento } from "../../types/conta";
 
 const ROTULO_TIPO = {
@@ -32,12 +33,21 @@ function IconeDoTipo({ tipo }: { tipo: TipoVencimento }) {
 /** O número grande de um vencimento (dias ou km) e o quanto ele pede atenção. */
 function prazoDoVencimento(item: Vencimento) {
   if (item.porKm) {
-    const faltam = item.kmRestante ?? 0;
+    const situacao = situacaoPorKm(item.kmRestante);
+    const detalhe = item.proximaKm !== null && item.proximaKm !== undefined ? `aos ${formatarKm(item.proximaKm)}` : "";
+
+    // Sem a km do veículo não há como dizer que passou: pede a km.
+    if (situacao.tipo === "desconhecida") {
+      return { numero: "sem km", detalhe, tom: "normal", kmDesconhecida: true } as const;
+    }
+
+    const faltam = situacao.faltam;
 
     return {
-      numero: faltam <= 0 ? "já passou" : formatarKm(faltam),
-      detalhe: item.proximaKm !== null && item.proximaKm !== undefined ? `aos ${formatarKm(item.proximaKm)}` : "",
-      tom: faltam <= 0 ? "atrasado" : faltam <= KM_EM_BREVE ? "breve" : "normal",
+      numero: situacao.tipo === "passou" ? "já passou" : formatarKm(faltam),
+      detalhe,
+      tom: situacao.tipo === "passou" ? "atrasado" : faltam <= KM_EM_BREVE ? "breve" : "normal",
+      kmDesconhecida: false,
     } as const;
   }
 
@@ -45,6 +55,7 @@ function prazoDoVencimento(item: Vencimento) {
     numero: item.dias < 0 ? `${Math.abs(item.dias)} d atraso` : item.dias === 0 ? "hoje" : `${item.dias} d`,
     detalhe: formatarData(item.data),
     tom: item.dias < 0 ? "atrasado" : item.dias <= DIAS_EM_BREVE ? "breve" : "normal",
+    kmDesconhecida: false,
   } as const;
 }
 
@@ -231,6 +242,22 @@ export function ContaInicio() {
                       {item.valorEstimado !== null &&
                         ` · estimado ${formatarMoeda(item.valorEstimado)}`}
                     </p>
+                    {prazo.kmDesconhecida && (
+                      <p className="mt-1 text-xs text-gray-600">
+                        {mensagemKmDesconhecida(item.veiculo, item.rotulo)}.
+                        {podeInformarKm(usuario) && (
+                          <>
+                            {" "}
+                            <Link
+                              to="/veiculos"
+                              className="font-semibold text-blue-600 hover:text-blue-700"
+                            >
+                              Informar km
+                            </Link>
+                          </>
+                        )}
+                      </p>
+                    )}
                   </div>
 
                   <div className="shrink-0 text-right">

@@ -15,7 +15,7 @@ import { Placa } from "../../components/veiculos/Placa";
 import { placaValida } from "../../utils/placa";
 import { formatarData, formatarKm, formatarMoeda } from "../../utils/formatters";
 import { diasAteData } from "../../utils/prazos";
-import type { VeiculoConta } from "../../types/conta";
+import type { OrigemKmConhecida, VeiculoConta } from "../../types/conta";
 import { ROTULO_TIPO, temEstimativas, tipoDe } from "../../utils/tipoVeiculo";
 
 export interface AcoesDoVeiculo {
@@ -124,6 +124,28 @@ function Imposto({
  * desenho padrão), placa e nome por cima, valor FIPE em destaque, impostos estimados
  * e a fileira de ações.
  */
+const ROTULO_ORIGEM_KM: Record<OrigemKmConhecida, string | null> = {
+  hodometro: null,
+  abastecimento: "abastecimento",
+  servico: "serviço",
+};
+
+/**
+ * A km que o cartão mostra é a km conhecida do backend (a mesma dos avisos por
+ * km), com a data e a origem dela. Backend antigo, sem o campo: cai no km_atual.
+ */
+function kmDoCartao(veiculo: VeiculoConta): { valor: number | null; em: string | null; origem: string | null } {
+  if (veiculo.kmConhecida !== null && veiculo.kmConhecida !== undefined) {
+    return {
+      valor: veiculo.kmConhecida,
+      em: veiculo.kmConhecidaEm ?? null,
+      origem: veiculo.kmConhecidaOrigem ? ROTULO_ORIGEM_KM[veiculo.kmConhecidaOrigem] : null,
+    };
+  }
+
+  return { valor: veiculo.kmAtual, em: veiculo.kmAtual !== null ? veiculo.kmAtualizadoEm : null, origem: null };
+}
+
 export function CartaoVeiculo({
   veiculo,
   nome,
@@ -138,6 +160,7 @@ export function CartaoVeiculo({
   /** Quem só consulta a frota (motorista) não vê os botões de gestão: o backend barra mesmo assim. */
   podeGerir?: boolean;
 }) {
+  const km = kmDoCartao(veiculo);
   const temCodigoFipe = Boolean(
     veiculo.fipeMarcaId && veiculo.fipeModeloId && veiculo.fipeAno,
   );
@@ -276,18 +299,19 @@ export function CartaoVeiculo({
           </p>
         )}
 
-        {(veiculo.kmAtual !== null || acoes.corrigirKm) && (
+        {(km.valor !== null || acoes.corrigirKm) && (
           <p className="text-xs text-gray-600">
             Km atual{" "}
-            <span className="font-semibold text-gray-900">{formatarKm(veiculo.kmAtual)}</span>
-            {veiculo.kmAtualizadoEm && ` · em ${formatarData(veiculo.kmAtualizadoEm)}`}
+            <span className="font-semibold text-gray-900">{formatarKm(km.valor)}</span>
+            {km.em && ` · em ${formatarData(km.em)}`}
+            {km.origem && ` (${km.origem})`}
             {acoes.corrigirKm && (
               <button
                 type="button"
                 onClick={acoes.corrigirKm}
                 className="-my-3.5 ml-1 inline-flex min-h-11 items-center px-1 font-semibold text-blue-600 hover:text-blue-700"
               >
-                {veiculo.kmAtual === null ? "informar" : "corrigir"}
+                {km.valor === null ? "informar" : "corrigir"}
               </button>
             )}
           </p>
