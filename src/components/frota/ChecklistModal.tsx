@@ -1,4 +1,4 @@
-import { useEffect, useId, useState, type FormEvent } from "react";
+import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { ClipboardCheck } from "lucide-react";
 import { Modal } from "../ui/Modal";
 import { checklistService } from "../../services/frotaDiferenciais";
@@ -45,7 +45,14 @@ export function ChecklistModal({
   const [observacoes, setObservacoes] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
+  /** Depois de uma tentativa de salvar, os itens que faltam ficam marcados como inválidos. */
+  const [tentouSalvar, setTentouSalvar] = useState(false);
+  const [tentativaDeCarga, setTentativaDeCarga] = useState(0);
   const idFormulario = useId();
+  const idErro = useId();
+  // Onde levar o foco quando falta algo: o grupo de opções ou o campo de descrição de cada item.
+  const grupos = useRef<Record<string, HTMLDivElement | null>>({});
+  const descricoes = useRef<Record<string, HTMLInputElement | null>>({});
 
   useEffect(() => {
     let ativo = true;
@@ -62,7 +69,12 @@ export function ChecklistModal({
     return () => {
       ativo = false;
     };
-  }, [usoId]);
+  }, [usoId, tentativaDeCarga]);
+
+  function tentarCarregarDeNovo() {
+    setErro(null);
+    setTentativaDeCarga((n) => n + 1);
+  }
 
   const jaFeito = dados?.checklists.some((c) => c.momento === momento) ?? false;
   // Com modelos, a tela segue o modelo e envia a situação. Sem eles (resposta antiga), segue os itens fixos.
@@ -74,6 +86,20 @@ export function ChecklistModal({
       : [];
   const comModelo = modelo !== null;
   const mostrandoFormulario = dados !== null && !jaFeito;
+  const respondidos = itens.filter((i) => respostas[i.chave] !== undefined).length;
+
+  const faltaResponder = (item: ItemDaTela) => item.obrigatorio && respostas[item.chave] === undefined;
+  // Só o checklist do modelo pede a descrição do problema; o formato antigo não pedia.
+  const faltaDescrever = (item: ItemDaTela) =>
+    comModelo && respostas[item.chave]?.situacao === "problema" && respostas[item.chave].observacao.trim() === "";
+
+  /** Rola até o que falta e põe o foco nele: o aviso no rodapé sozinho não diz onde está. */
+  function levarAte(elemento: HTMLElement | null | undefined) {
+    if (!elemento) return;
+
+    elemento.scrollIntoView?.({ block: "center" });
+    elemento.focus({ preventScroll: true });
+  }
 
   function responder(chave: string, parcial: Partial<Resposta>) {
     setRespostas((atuais) => {
@@ -86,21 +112,26 @@ export function ChecklistModal({
   async function enviar(evento: FormEvent) {
     evento.preventDefault();
     setErro(null);
+    setTentouSalvar(true);
 
-    const faltando = itens.filter((i) => i.obrigatorio && respostas[i.chave] === undefined);
+    const faltando = itens.filter(faltaResponder);
 
     if (faltando.length > 0) {
-      setErro("Marque cada item como OK ou com problema.");
+      const [primeiro] = faltando;
+      const outros = faltando.length - 1;
+      setErro(
+        `Marque cada item como OK ou com problema. Falta "${primeiro.rotulo}"` +
+          (outros > 0 ? ` e mais ${outros} ${outros === 1 ? "item" : "itens"}.` : "."),
+      );
+      levarAte(grupos.current[primeiro.chave]);
       return;
     }
 
-    // Só o checklist do modelo pede a descrição do problema; o formato antigo não pedia.
-    const semDescricao = comModelo
-      ? itens.find((i) => respostas[i.chave]?.situacao === "problema" && respostas[i.chave].observacao.trim() === "")
-      : undefined;
+    const semDescricao = itens.find(faltaDescrever);
 
     if (semDescricao) {
       setErro(`Descreva o problema em "${semDescricao.rotulo}".`);
+      levarAte(descricoes.current[semDescricao.chave]);
       return;
     }
 
@@ -147,7 +178,7 @@ export function ChecklistModal({
         // Só com o formulário na tela: carregando, já feito ou com erro de carga não há o que salvar.
         mostrandoFormulario ? (
           <div className="space-y-2">
-            {erro && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{erro}</p>}
+            {erro && <p id={idErro} role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{erro}</p>}
 
             <div className="flex justify-end gap-2">
               <button
@@ -179,16 +210,35 @@ export function ChecklistModal({
 
       {mostrandoFormulario && (
         <form id={idFormulario} onSubmit={(e) => void enviar(e)} className="space-y-4 px-6 py-5">
-          {itens.map((item) => {
+          {/* Polite: o leitor de tela fala o progresso quando der, sem interromper. */}
+          <p role="status" className="text-xs text-gray-500">
+            {respondidos} de {itens.length} {itens.length === 1 ? "item respondido" : "itens respondidos"}
+          </p>
+
+          {itens.map((item, posicao) => {
             const resposta = respostas[item.chave];
+            const idLegenda = `${idFormulario}-item-${posicao}`;
+            const grupoInvalido = tentouSalvar && faltaResponder(item);
+            const descricaoInvalida = tentouSalvar && faltaDescrever(item);
 
             return (
               <fieldset key={item.chave} className="space-y-2 border-b border-gray-100 pb-3">
-                <legend className="w-full text-xs font-medium text-gray-900">
+                <legend id={idLegenda} className="w-full text-xs font-medium text-gray-900">
                   {item.rotulo}
                   {item.obrigatorio && <span className="text-red-600"> *</span>}
                 </legend>
-                <div className="flex flex-wrap items-center gap-4">
+                {/* O grupo recebe o foco (tabIndex -1) quando é o item que falta. */}
+                <div
+                  ref={(el) => {
+                    grupos.current[item.chave] = el;
+                  }}
+                  role="radiogroup"
+                  aria-labelledby={idLegenda}
+                  aria-invalid={grupoInvalido || undefined}
+                  aria-describedby={grupoInvalido && erro ? idErro : undefined}
+                  tabIndex={-1}
+                  className={`flex flex-wrap items-center gap-4 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${grupoInvalido ? "ring-1 ring-red-300" : ""}`}
+                >
                   <label className="flex items-center gap-1.5 text-xs text-gray-700">
                     <input type="radio" name={item.chave} checked={resposta?.situacao === "ok"} onChange={() => responder(item.chave, { situacao: "ok" })} />
                     OK
@@ -206,8 +256,13 @@ export function ChecklistModal({
                 </div>
                 {comModelo && resposta?.situacao === "problema" && (
                   <input
+                    ref={(el) => {
+                      descricoes.current[item.chave] = el;
+                    }}
                     type="text"
                     aria-label={`Descreva o problema em ${item.rotulo}`}
+                    aria-invalid={descricaoInvalida || undefined}
+                    aria-describedby={descricaoInvalida && erro ? idErro : undefined}
                     placeholder="Descreva o problema"
                     maxLength={255}
                     value={resposta.observacao}
@@ -233,7 +288,14 @@ export function ChecklistModal({
         </form>
       )}
 
-      {erro && !dados && <p role="alert" className="px-6 py-5 text-xs text-red-600">{erro}</p>}
+      {erro && !dados && (
+        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 px-6 py-5 text-xs text-red-600">
+          <span>{erro}</span>
+          <button type="button" onClick={tentarCarregarDeNovo} className="h-11 font-semibold underline md:h-auto">
+            Tentar de novo
+          </button>
+        </div>
+      )}
     </Modal>
   );
 }

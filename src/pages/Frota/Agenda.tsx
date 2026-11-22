@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { CalendarDays, ChevronLeft, ChevronRight, FileUp, Plus } from "lucide-react";
 import { contaService } from "../../services/conta";
@@ -8,6 +8,7 @@ import { usePodeNaFrota, useUsuarioDaFrota } from "../../hooks/usePodeNaFrota";
 import { UsoFormModal } from "../../components/frota/UsoFormModal";
 import { UsoDetalheModal } from "../../components/frota/UsoDetalheModal";
 import { ImportarPlanilhaModal } from "../../components/frota/ImportarPlanilhaModal";
+import { Modal } from "../../components/ui/Modal";
 import {
   COR_DO_STATUS,
   descreverJanela,
@@ -32,6 +33,42 @@ const classeFiltro =
 /** Texto curto de um uso dentro do calendário: hora, placa e quem vai usar. */
 const resumoDoUso = (uso: UsoVeiculo) =>
   [horaDe(uso.inicioPrevisto), uso.veiculo?.placa, uso.motorista].filter(Boolean).join(" · ");
+
+/**
+ * Tudo o que o chip do calendário diz, para o leitor de tela e para quem passa o
+ * mouse (o texto visível corta). Começa pelo mesmo resumo que se vê no chip.
+ */
+const descricaoDoUso = (uso: UsoVeiculo) =>
+  [
+    horaDe(uso.inicioPrevisto),
+    uso.veiculo?.placa,
+    uso.motorista ?? "sem motorista",
+    ROTULO_STATUS_USO[uso.status],
+    descreverJanela(uso.inicioPrevisto, uso.fimPrevisto),
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+/** "10/11/2026" */
+const dataCompleta = (dia: string) => `${dia.slice(8, 10)}/${dia.slice(5, 7)}/${dia.slice(0, 4)}`;
+
+/** Um uso na lista por dia (celular e "+N mais"): placa, motorista, janela e status por escrito. */
+function BotaoDoUso({ uso, onAbrir }: { uso: UsoVeiculo; onAbrir: (uso: UsoVeiculo) => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onAbrir(uso)}
+      className={`block min-h-11 w-full rounded-lg border px-3 py-2 text-left text-sm ${COR_DO_STATUS[uso.status]}`}
+    >
+      <span className="font-semibold">
+        {uso.veiculo?.placa} · {uso.motorista ?? "sem motorista"}
+      </span>
+      <span className="block">
+        {descreverJanela(uso.inicioPrevisto, uso.fimPrevisto)} · {ROTULO_STATUS_USO[uso.status]}
+      </span>
+    </button>
+  );
+}
 
 /** Agenda da frota: quem vai usar qual veículo e quando. */
 export function Agenda() {
@@ -63,6 +100,11 @@ export function Agenda() {
   const [formulario, setFormulario] = useState<{ uso: UsoVeiculo | null; dia?: string } | null>(null);
   const [aberto, setAberto] = useState<UsoVeiculo | null>(null);
   const [importando, setImportando] = useState(false);
+  /** Dia aberto pelo "+N mais": a lista completa dele. */
+  const [diaAberto, setDiaAberto] = useState<string | null>(null);
+  /** Dia do seletor da lista do celular (onde os dias livres não aparecem). */
+  const [diaEscolhido, setDiaEscolhido] = useState(hoje);
+  const idBase = useId();
 
   useEffect(() => {
     let ativo = true;
@@ -134,6 +176,14 @@ export function Agenda() {
     setUsos((lista) => lista.map((u) => (u.id === uso.id ? uso : u)));
     setAberto(uso);
   }, []);
+
+  function tentarDeNovo() {
+    setErro(null);
+    setCarregando(true);
+    setRecarregar((n) => n + 1);
+  }
+
+  const reservarNoDia = (dia: string) => setFormulario({ uso: null, dia });
 
   const totalNoMes = usos.filter(ocupaAAgenda).length;
   const semVeiculos = cadastrosCarregados && veiculos.length === 0;
@@ -243,9 +293,12 @@ export function Agenda() {
       </div>
 
       {erro && (
-        <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">
-          {erro}
-        </p>
+        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">
+          <span>{erro}</span>
+          <button type="button" onClick={tentarDeNovo} className="h-11 font-semibold underline md:h-auto">
+            Tentar de novo
+          </button>
+        </div>
       )}
 
       {/* Calendário (a partir de lg: no tablet as 7 colunas ficavam estreitas
@@ -271,7 +324,7 @@ export function Agenda() {
               >
                 <button
                   type="button"
-                  onClick={() => setFormulario({ uso: null, dia: dia.data })}
+                  onClick={() => reservarNoDia(dia.data)}
                   disabled={semVeiculos}
                   title="Reservar neste dia"
                   aria-label={`Reservar em ${dia.data.slice(8, 10)}/${dia.data.slice(5, 7)}/${dia.data.slice(0, 4)}`}
@@ -292,16 +345,20 @@ export function Agenda() {
                       key={uso.id}
                       type="button"
                       onClick={() => setAberto(uso)}
-                      title={`${uso.veiculo?.placa ?? ""} · ${ROTULO_STATUS_USO[uso.status]}`}
-                      className={`block w-full truncate rounded border px-1.5 py-0.5 text-left text-xs font-medium ${COR_DO_STATUS[uso.status]}`}
+                      aria-label={descricaoDoUso(uso)}
+                      title={descricaoDoUso(uso)}
+                      className={`block w-full rounded border px-1.5 py-0.5 text-left text-xs font-medium ${COR_DO_STATUS[uso.status]}`}
                     >
-                      {resumoDoUso(uso)}
+                      {/* O status vai por escrito, não só na cor. */}
+                      <span className="block truncate">{resumoDoUso(uso)}</span>
+                      <span className="block truncate font-bold">{ROTULO_STATUS_USO[uso.status]}</span>
                     </button>
                   ))}
                   {doDia.length > POR_DIA_NO_CALENDARIO && (
                     <button
                       type="button"
-                      onClick={() => setAberto(doDia[POR_DIA_NO_CALENDARIO])}
+                      onClick={() => setDiaAberto(dia.data)}
+                      aria-label={`+${doDia.length - POR_DIA_NO_CALENDARIO} mais: ver os ${doDia.length} usos de ${dataCompleta(dia.data)}`}
                       className="px-1 text-xs font-semibold text-gray-500 hover:text-gray-700"
                     >
                       +{doDia.length - POR_DIA_NO_CALENDARIO} mais
@@ -316,32 +373,64 @@ export function Agenda() {
 
       {/* Lista por dia (celular e tablet) */}
       <div className="space-y-3 lg:hidden">
+        {/* Aqui só aparecem os dias com uso: o seletor deixa reservar num dia livre
+            sem ir ao botão do topo e trocar a data no formulário. */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (diaEscolhido) reservarNoDia(diaEscolhido);
+          }}
+          className="flex flex-wrap items-end gap-2 rounded-xl border border-gray-200 bg-white p-3"
+        >
+          <div className="min-w-40 flex-1">
+            <label htmlFor={`${idBase}-dia`} className="mb-1 block text-xs font-medium text-gray-700">
+              Reservar em outro dia
+            </label>
+            <input
+              id={`${idBase}-dia`}
+              type="date"
+              value={diaEscolhido}
+              onChange={(e) => setDiaEscolhido(e.target.value)}
+              className="h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-base text-gray-700 outline-none focus:border-blue-500"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={semVeiculos || !diaEscolhido}
+            className="flex h-11 items-center gap-2 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+          >
+            <Plus size={15} aria-hidden="true" /> Reservar no dia escolhido
+          </button>
+        </form>
+
         {diasDoMes.map((dia) => {
           const doDia = usosDoDia(usos, dia.data);
 
           if (doDia.length === 0) return null;
 
+          const idTitulo = `${idBase}-${dia.data}`;
+
           return (
-            <section key={dia.data} className="rounded-xl border border-gray-200 bg-white p-3">
-              <h3 className="mb-2 text-xs font-bold text-gray-700">
-                {dia.data.slice(8, 10)}/{dia.data.slice(5, 7)}
-                {dia.data === hoje && <span className="ml-2 text-blue-600">hoje</span>}
-              </h3>
+            <section key={dia.data} aria-labelledby={idTitulo} className="rounded-xl border border-gray-200 bg-white p-3">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <h3 id={idTitulo} className="text-xs font-bold text-gray-700">
+                  {dia.data.slice(8, 10)}/{dia.data.slice(5, 7)}
+                  {dia.data === hoje && <span className="ml-2 text-blue-600">hoje</span>}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => reservarNoDia(dia.data)}
+                  disabled={semVeiculos}
+                  aria-describedby={idTitulo}
+                  className="flex h-11 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+                >
+                  <Plus size={14} aria-hidden="true" /> Reservar neste dia
+                </button>
+              </div>
               <ul className="space-y-1.5">
                 {doDia.map((uso) => (
                   <li key={uso.id}>
-                    <button
-                      type="button"
-                      onClick={() => setAberto(uso)}
-                      className={`block w-full rounded-lg border px-3 py-2 text-left text-sm ${COR_DO_STATUS[uso.status]}`}
-                    >
-                      <span className="font-semibold">
-                        {uso.veiculo?.placa} · {uso.motorista ?? "sem motorista"}
-                      </span>
-                      <span className="block">
-                        {descreverJanela(uso.inicioPrevisto, uso.fimPrevisto)} · {ROTULO_STATUS_USO[uso.status]}
-                      </span>
-                    </button>
+                    <BotaoDoUso uso={uso} onAbrir={setAberto} />
                   </li>
                 ))}
               </ul>
@@ -351,9 +440,22 @@ export function Agenda() {
       </div>
 
       {!carregando && totalNoMes === 0 && !erro && (
-        <p className="rounded-lg bg-gray-50 px-4 py-6 text-center text-xs text-gray-500">
-          Nenhum uso agendado neste período. Use <strong>Reservar veículo</strong> ou clique em um dia do calendário.
-        </p>
+        <div className="space-y-3 rounded-lg bg-gray-50 px-4 py-6 text-center text-xs text-gray-500">
+          <p>
+            Nenhum uso agendado neste período.
+            {/* O motorista só recebe as reservas dele: a agenda vazia não quer dizer frota livre. */}
+            {souMotorista && " Você vê só as suas reservas."}
+          </p>
+          {!semVeiculos && (
+            <button
+              type="button"
+              onClick={() => setFormulario({ uso: null })}
+              className="inline-flex h-11 items-center gap-2 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700 md:h-10"
+            >
+              <Plus size={15} aria-hidden="true" /> Reservar veículo
+            </button>
+          )}
+        </div>
       )}
 
       {formulario && (
@@ -371,6 +473,37 @@ export function Agenda() {
           }}
           onClose={() => setFormulario(null)}
         />
+      )}
+
+      {diaAberto && (
+        <Modal titulo={`Usos de ${dataCompleta(diaAberto)}`} onClose={() => setDiaAberto(null)} larguraMax="max-w-md">
+          <div className="space-y-3 px-6 py-5">
+            <ul className="space-y-1.5">
+              {usosDoDia(usos, diaAberto).map((uso) => (
+                <li key={uso.id}>
+                  <BotaoDoUso
+                    uso={uso}
+                    onAbrir={(u) => {
+                      setDiaAberto(null);
+                      setAberto(u);
+                    }}
+                  />
+                </li>
+              ))}
+            </ul>
+            <button
+              type="button"
+              onClick={() => {
+                setDiaAberto(null);
+                reservarNoDia(diaAberto);
+              }}
+              disabled={semVeiculos}
+              className="flex h-11 items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-60 md:h-10"
+            >
+              <Plus size={15} aria-hidden="true" /> Reservar neste dia
+            </button>
+          </div>
+        </Modal>
       )}
 
       {aberto && !formulario && (

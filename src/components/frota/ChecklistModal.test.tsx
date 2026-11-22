@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { checklistService } from "../../services/frotaDiferenciais";
 import { ChecklistModal } from "./ChecklistModal";
@@ -83,5 +83,86 @@ describe("ChecklistModal", () => {
     expect(await screen.findByText("Este checklist de saída já foi feito.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Salvar checklist" })).not.toBeInTheDocument();
     expect(screen.getByRole("dialog").querySelector("[data-rodape-do-modal]")).toBeNull();
+  });
+
+  it("diz qual item falta, rola até ele e põe o foco no grupo de opções", async () => {
+    vi.spyOn(checklistService, "listar").mockResolvedValue(resposta);
+    const rolar = vi.fn();
+    Element.prototype.scrollIntoView = rolar;
+    const usuario = userEvent.setup();
+
+    try {
+      render(<ChecklistModal usoId={7} momento="saida" onSalvo={() => {}} onClose={() => {}} />);
+
+      await screen.findByText("Nível de combustível");
+      await usuario.click(screen.getAllByRole("radio", { name: "OK" })[0]);
+      await usuario.click(screen.getByRole("button", { name: "Salvar checklist" }));
+
+      expect(screen.getByRole("alert")).toHaveTextContent('Falta "Pneus e estepe".');
+
+      const grupo = screen.getByRole("radiogroup", { name: /Pneus e estepe/ });
+      expect(grupo).toHaveFocus();
+      expect(grupo).toHaveAttribute("aria-invalid", "true");
+      expect(grupo).toHaveAccessibleDescription(/Falta "Pneus e estepe"/);
+      expect(rolar).toHaveBeenCalledTimes(1);
+      expect(rolar.mock.contexts[0]).toBe(grupo);
+      // O item já respondido não fica marcado.
+      expect(screen.getByRole("radiogroup", { name: /Nível de combustível/ })).not.toHaveAttribute("aria-invalid");
+
+      // Respondido, deixa de ser inválido.
+      await usuario.click(screen.getAllByRole("radio", { name: "OK" })[1]);
+      expect(grupo).not.toHaveAttribute("aria-invalid");
+    } finally {
+      delete (Element.prototype as { scrollIntoView?: unknown }).scrollIntoView;
+    }
+  });
+
+  it("com vários faltando, aponta o primeiro e conta os outros", async () => {
+    vi.spyOn(checklistService, "listar").mockResolvedValue(resposta);
+    const usuario = userEvent.setup();
+
+    render(<ChecklistModal usoId={7} momento="saida" onSalvo={() => {}} onClose={() => {}} />);
+
+    await usuario.click(await screen.findByRole("button", { name: "Salvar checklist" }));
+
+    expect(screen.getByRole("alert")).toHaveTextContent('Falta "Nível de combustível" e mais 1 item.');
+    expect(screen.getByRole("radiogroup", { name: /Nível de combustível/ })).toHaveFocus();
+  });
+
+  it("mostra quantos itens já foram respondidos, num status discreto", async () => {
+    vi.spyOn(checklistService, "listar").mockResolvedValue(resposta);
+    const usuario = userEvent.setup();
+
+    render(<ChecklistModal usoId={7} momento="saida" onSalvo={() => {}} onClose={() => {}} />);
+
+    const progresso = await screen.findByRole("status");
+    expect(progresso).toHaveTextContent("0 de 2 itens respondidos");
+
+    await usuario.click(screen.getAllByRole("radio", { name: "Problema" })[1]);
+    expect(progresso).toHaveTextContent("1 de 2 itens respondidos");
+
+    await usuario.click(screen.getAllByRole("radio", { name: "OK" })[0]);
+    expect(progresso).toHaveTextContent("2 de 2 itens respondidos");
+  });
+
+  it("falha ao carregar: 'Tentar de novo' pede o checklist outra vez", async () => {
+    const listar = vi
+      .spyOn(checklistService, "listar")
+      .mockRejectedValueOnce(
+        Object.assign(new Error("500"), { isAxiosError: true, response: { status: 500, data: { message: "Servidor fora do ar" } } }),
+      )
+      .mockResolvedValueOnce(resposta);
+    const usuario = userEvent.setup();
+
+    render(<ChecklistModal usoId={7} momento="saida" onSalvo={() => {}} onClose={() => {}} />);
+
+    const alerta = await screen.findByRole("alert");
+    expect(alerta).toHaveTextContent("Servidor fora do ar");
+
+    await usuario.click(within(alerta).getByRole("button", { name: "Tentar de novo" }));
+
+    expect(await screen.findByText("Nível de combustível")).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(listar).toHaveBeenCalledTimes(2);
   });
 });
