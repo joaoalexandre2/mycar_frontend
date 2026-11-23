@@ -9,10 +9,7 @@ import { useConfirmar } from "../../hooks/useNotificacoes";
 import { usePodeNaFrota, usePodeVerMenu } from "../../hooks/usePodeNaFrota";
 import { MODELOS_DE_GRUPO, menusParaPermissoes } from "../../utils/modelosDeGrupo";
 import type { GrupoUsuario, GruposDaFrota, ModeloSalvo } from "../../types/frota";
-
-const classeCampo =
-  "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
-const rotulo = "mb-1.5 block text-xs font-medium text-gray-700";
+import { classeDoCampo, classeDoRotulo } from "../../components/ui/Campo";
 
 /** Grupos de usuários da frota: quem faz parte e o que cada grupo pode fazer além do papel. */
 export function Grupos() {
@@ -292,18 +289,18 @@ function GrupoModal({
     <Modal titulo={grupo ? "Editar grupo" : "Novo grupo"} icone={<Users size={16} />} onClose={onClose} larguraMax="max-w-xl">
       <form onSubmit={(e) => void salvar(e)} className="space-y-4 px-6 py-5">
         <div>
-          <label htmlFor="grp-nome" className={rotulo}>Nome</label>
-          <input id="grp-nome" type="text" value={nome} maxLength={80} onChange={(e) => setNome(e.target.value)} className={classeCampo} autoFocus />
+          <label htmlFor="grp-nome" className={classeDoRotulo}>Nome</label>
+          <input id="grp-nome" type="text" value={nome} maxLength={80} onChange={(e) => setNome(e.target.value)} className={classeDoCampo} autoFocus />
         </div>
         <div>
-          <label htmlFor="grp-desc" className={rotulo}>Descrição (opcional)</label>
-          <input id="grp-desc" type="text" value={descricao} maxLength={255} onChange={(e) => setDescricao(e.target.value)} className={classeCampo} />
+          <label htmlFor="grp-desc" className={classeDoRotulo}>Descrição (opcional)</label>
+          <input id="grp-desc" type="text" value={descricao} maxLength={255} onChange={(e) => setDescricao(e.target.value)} className={classeDoCampo} />
         </div>
 
         {!grupo && (
           <div>
-            <label htmlFor="grp-modelo" className={rotulo}>Começar de um modelo (opcional)</label>
-            <select id="grp-modelo" defaultValue="" onChange={(e) => aplicarModelo(e.target.value)} className={classeCampo}>
+            <label htmlFor="grp-modelo" className={classeDoRotulo}>Começar de um modelo (opcional)</label>
+            <select id="grp-modelo" defaultValue="" onChange={(e) => aplicarModelo(e.target.value)} className={classeDoCampo}>
               <option value="">Escolha...</option>
               <optgroup label="Prontos">
                 {MODELOS_DE_GRUPO.map((m) => (
@@ -323,7 +320,7 @@ function GrupoModal({
         )}
 
         <fieldset className="space-y-2">
-          <legend className={rotulo}>O que o grupo pode fazer</legend>
+          <legend className={classeDoRotulo}>O que o grupo pode fazer</legend>
           {Object.entries(dados.catalogo).map(([chave, texto]) => (
             <label key={chave} className="flex items-start gap-2 text-xs text-gray-700" title={pode(chave) ? undefined : "Você não tem essa permissão, então não pode concedê-la."}>
               <input
@@ -339,7 +336,7 @@ function GrupoModal({
         </fieldset>
 
         <fieldset className="space-y-2">
-          <legend className={rotulo}>Liberar estes menus para quem está no grupo</legend>
+          <legend className={classeDoRotulo}>Liberar estes menus para quem está no grupo</legend>
           <p className="text-xs text-gray-500">Administrador e gestor veem todos. Os demais veem só o que o grupo libera. Marcar uma permissão de cadastro libera Motoristas e centros junto.</p>
           {Object.entries(dados.menus).map(([chave, texto]) => (
             <label key={chave} className="flex items-start gap-2 text-xs text-gray-700">
@@ -356,7 +353,7 @@ function GrupoModal({
         </fieldset>
 
         <fieldset className="space-y-2">
-          <legend className={rotulo}>Membros</legend>
+          <legend className={classeDoRotulo}>Membros</legend>
           {dados.usuarios.length === 0 && <p className="text-xs text-gray-500">Nenhum usuário na frota.</p>}
           <div className="max-h-48 space-y-2 overflow-y-auto">
             {dados.usuarios.map((u) => (
@@ -404,7 +401,7 @@ function GrupoModal({
                 maxLength={80}
                 placeholder="Ex.: Recepção"
                 onChange={(e) => setNomeDoModelo(e.target.value)}
-                className={classeCampo}
+                className={classeDoCampo}
               />
               <button
                 type="button"

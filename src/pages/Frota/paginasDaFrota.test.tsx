@@ -224,8 +224,8 @@ describe("Agenda", () => {
     for (const botao of screen.getAllByRole("button", { name: /Reservar veículo/ })) {
       expect(botao).toHaveClass("h-11", "md:h-10");
     }
-    expect(screen.getByRole("combobox", { name: "Filtrar por veículo" })).toHaveClass("h-11", "md:h-9");
-    expect(screen.getByRole("combobox", { name: "Filtrar por motorista" })).toHaveClass("h-11", "md:h-9");
+    expect(screen.getByRole("combobox", { name: "Filtrar por veículo" })).toHaveClass("h-11", "md:h-10");
+    expect(screen.getByRole("combobox", { name: "Filtrar por motorista" })).toHaveClass("h-11", "md:h-10");
 
     const calendario = screen.getByRole("grid").parentElement!;
     expect(calendario).toHaveClass("hidden", "lg:block");

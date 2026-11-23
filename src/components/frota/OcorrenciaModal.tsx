@@ -10,10 +10,7 @@ import { lerValorEmReais, valorEmReaisParaCampo } from "../../utils/numero";
 import { CampoEmReais } from "./CampoEmReais";
 import { STATUS_DE_OCORRENCIA, TIPOS_DE_OCORRENCIA, type FotoDeOcorrencia, type Ocorrencia, type OcorrenciaPayload, type StatusDeOcorrencia, type TipoDeOcorrencia } from "../../types/ocorrencias";
 import type { VeiculoConta } from "../../types/conta";
-
-const classeCampo =
-  "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
-const rotulo = "mb-1.5 block text-xs font-medium text-gray-700";
+import { classeDaAreaDeTexto, classeDoCampo, classeDoRotulo } from "../ui/Campo";
 
 interface Props {
   ocorrencia: Ocorrencia | null;
@@ -178,7 +175,7 @@ export function OcorrenciaModal({ ocorrencia, veiculos, gerencia, onSalva, onCri
         <fieldset disabled={recemCriada && !gerencia} className="min-w-0 space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="ocorrencia-veiculo" className={rotulo}>Veículo</label>
+            <label htmlFor="ocorrencia-veiculo" className={classeDoRotulo}>Veículo</label>
             <select
               ref={campoVeiculo}
               id="ocorrencia-veiculo"
@@ -188,18 +185,18 @@ export function OcorrenciaModal({ ocorrencia, veiculos, gerencia, onSalva, onCri
                 limparErroDoCampo("veiculo");
               }}
               {...atributosDeErro("veiculo", "ocorrencia-veiculo")}
-              className={`${classeCampo} aria-invalid:border-red-400`}
+              className={classeDoCampo}
             >
               <option value="">Escolha...</option>
               {veiculos.map((v) => (
                 <option key={v.id} value={v.id}>{v.placa} · {v.marca} {v.modelo}</option>
               ))}
             </select>
-            {errosDosCampos.veiculo && <p id="ocorrencia-veiculo-erro" className="mt-1 text-xs text-red-600">{errosDosCampos.veiculo}</p>}
+            {errosDosCampos.veiculo && <p id="ocorrencia-veiculo-erro" className="mt-1 text-xs font-medium text-(--tom-danger-texto)">{errosDosCampos.veiculo}</p>}
           </div>
           <div>
-            <label htmlFor="ocorrencia-tipo" className={rotulo}>Tipo</label>
-            <select id="ocorrencia-tipo" value={tipo} onChange={(e) => setTipo(e.target.value as TipoDeOcorrencia)} className={classeCampo}>
+            <label htmlFor="ocorrencia-tipo" className={classeDoRotulo}>Tipo</label>
+            <select id="ocorrencia-tipo" value={tipo} onChange={(e) => setTipo(e.target.value as TipoDeOcorrencia)} className={classeDoCampo}>
               {Object.entries(TIPOS_DE_OCORRENCIA).map(([valor, texto]) => (
                 <option key={valor} value={valor}>{texto}</option>
               ))}
@@ -209,7 +206,7 @@ export function OcorrenciaModal({ ocorrencia, veiculos, gerencia, onSalva, onCri
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="ocorrencia-data" className={rotulo}>Data e hora</label>
+            <label htmlFor="ocorrencia-data" className={classeDoRotulo}>Data e hora</label>
             <input
               ref={campoData}
               id="ocorrencia-data"
@@ -220,18 +217,18 @@ export function OcorrenciaModal({ ocorrencia, veiculos, gerencia, onSalva, onCri
                 limparErroDoCampo("dataHora");
               }}
               {...atributosDeErro("dataHora", "ocorrencia-data")}
-              className={`${classeCampo} aria-invalid:border-red-400`}
+              className={classeDoCampo}
             />
-            {errosDosCampos.dataHora && <p id="ocorrencia-data-erro" className="mt-1 text-xs text-red-600">{errosDosCampos.dataHora}</p>}
+            {errosDosCampos.dataHora && <p id="ocorrencia-data-erro" className="mt-1 text-xs font-medium text-(--tom-danger-texto)">{errosDosCampos.dataHora}</p>}
           </div>
           <div>
-            <label htmlFor="ocorrencia-local" className={rotulo}>Local (opcional)</label>
-            <input id="ocorrencia-local" type="text" maxLength={160} value={local} onChange={(e) => setLocal(e.target.value)} className={classeCampo} />
+            <label htmlFor="ocorrencia-local" className={classeDoRotulo}>Local (opcional)</label>
+            <input id="ocorrencia-local" type="text" maxLength={160} value={local} onChange={(e) => setLocal(e.target.value)} className={classeDoCampo} />
           </div>
         </div>
 
         <div>
-          <label htmlFor="ocorrencia-descricao" className={rotulo}>O que aconteceu</label>
+          <label htmlFor="ocorrencia-descricao" className={classeDoRotulo}>O que aconteceu</label>
           <textarea
             ref={campoDescricao}
             id="ocorrencia-descricao"
@@ -243,16 +240,16 @@ export function OcorrenciaModal({ ocorrencia, veiculos, gerencia, onSalva, onCri
               limparErroDoCampo("descricao");
             }}
             {...atributosDeErro("descricao", "ocorrencia-descricao")}
-            className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-700 outline-none focus:border-blue-500 aria-invalid:border-red-400"
+            className={classeDaAreaDeTexto}
           />
-          {errosDosCampos.descricao && <p id="ocorrencia-descricao-erro" className="mt-1 text-xs text-red-600">{errosDosCampos.descricao}</p>}
+          {errosDosCampos.descricao && <p id="ocorrencia-descricao-erro" className="mt-1 text-xs font-medium text-(--tom-danger-texto)">{errosDosCampos.descricao}</p>}
         </div>
 
         {gerencia && (
           <div className="grid grid-cols-3 gap-4 rounded-lg bg-gray-50 p-3">
             <div>
-              <label htmlFor="ocorrencia-status" className={rotulo}>Status</label>
-              <select id="ocorrencia-status" value={status} onChange={(e) => setStatus(e.target.value as StatusDeOcorrencia)} className={classeCampo}>
+              <label htmlFor="ocorrencia-status" className={classeDoRotulo}>Status</label>
+              <select id="ocorrencia-status" value={status} onChange={(e) => setStatus(e.target.value as StatusDeOcorrencia)} className={classeDoCampo}>
                 {Object.entries(STATUS_DE_OCORRENCIA).map(([valor, texto]) => (
                   <option key={valor} value={valor}>{texto}</option>
                 ))}
@@ -267,8 +264,6 @@ export function OcorrenciaModal({ ocorrencia, veiculos, gerencia, onSalva, onCri
                 setErroPrejuizo(null);
               }}
               erro={erroPrejuizo}
-              classeCampo={classeCampo}
-              classeRotulo={rotulo}
             />
             <CampoEmReais
               id="ocorrencia-gasto"
@@ -279,8 +274,6 @@ export function OcorrenciaModal({ ocorrencia, veiculos, gerencia, onSalva, onCri
                 setErroGasto(null);
               }}
               erro={erroGasto}
-              classeCampo={classeCampo}
-              classeRotulo={rotulo}
             />
             <p className="col-span-3 text-xs text-gray-500">Um valor gasto vira uma despesa de "Reparo e peças" no financeiro.</p>
           </div>
@@ -289,7 +282,7 @@ export function OcorrenciaModal({ ocorrencia, veiculos, gerencia, onSalva, onCri
 
         {registro && (
           <section aria-label="Fotos" className="space-y-2">
-            <p className={rotulo}>Fotos</p>
+            <p className={classeDoRotulo}>Fotos</p>
             <ul className="space-y-1">
               {fotos.map((f) => (
                 <li key={f.id} className="flex items-center justify-between text-xs">

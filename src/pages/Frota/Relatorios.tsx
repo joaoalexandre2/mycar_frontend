@@ -11,9 +11,7 @@ import { dataISOLocal, formatarData, formatarMoeda } from "../../utils/formatter
 import type { CategoriaDeDespesa } from "../../types/financeiro";
 import type { Motorista } from "../../types/frota";
 import type { VeiculoConta } from "../../types/conta";
-
-const classeCampo =
-  "h-10 rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
+import { classeDoCampoEmLinha } from "../../components/ui/Campo";
 
 function celula(coluna: ColunaDeRelatorio, valor: CelulaDeRelatorio): string {
   if (valor === null || valor === "") return "—";
@@ -98,43 +96,43 @@ export function Relatorios() {
   return (
     <div className="space-y-6 p-4 sm:p-8">
       <div className="flex flex-wrap items-end gap-3">
-        <label className="text-xs text-gray-600">
+        <label className="text-xs text-gray-700">
           Relatório
-          <select aria-label="Escolher relatório" value={tipo} onChange={(e) => setTipo(e.target.value)} className={`${classeCampo} mt-1 block w-72`}>
+          <select aria-label="Escolher relatório" value={tipo} onChange={(e) => setTipo(e.target.value)} className={`${classeDoCampoEmLinha} mt-1 block w-72`}>
             {catalogo.map((r) => (
               <option key={r.tipo} value={r.tipo}>{r.nome}</option>
             ))}
           </select>
         </label>
-        <label className="text-xs text-gray-600">
+        <label className="text-xs text-gray-700">
           De
-          <input type="date" aria-label="Data inicial" value={filtro.de ?? ""} onChange={(e) => setFiltro((f) => ({ ...f, de: e.target.value || undefined }))} className={`${classeCampo} mt-1 block`} />
+          <input type="date" aria-label="Data inicial" value={filtro.de ?? ""} onChange={(e) => setFiltro((f) => ({ ...f, de: e.target.value || undefined }))} className={`${classeDoCampoEmLinha} mt-1 block`} />
         </label>
-        <label className="text-xs text-gray-600">
+        <label className="text-xs text-gray-700">
           Até
-          <input type="date" aria-label="Data final" value={filtro.ate ?? ""} onChange={(e) => setFiltro((f) => ({ ...f, ate: e.target.value || undefined }))} className={`${classeCampo} mt-1 block`} />
+          <input type="date" aria-label="Data final" value={filtro.ate ?? ""} onChange={(e) => setFiltro((f) => ({ ...f, ate: e.target.value || undefined }))} className={`${classeDoCampoEmLinha} mt-1 block`} />
         </label>
-        <label className="text-xs text-gray-600">
+        <label className="text-xs text-gray-700">
           Veículo
-          <select aria-label="Filtrar por veículo" value={filtro.veiculoId ?? ""} onChange={(e) => setFiltro((f) => ({ ...f, veiculoId: e.target.value ? Number(e.target.value) : undefined }))} className={`${classeCampo} mt-1 block w-48`}>
+          <select aria-label="Filtrar por veículo" value={filtro.veiculoId ?? ""} onChange={(e) => setFiltro((f) => ({ ...f, veiculoId: e.target.value ? Number(e.target.value) : undefined }))} className={`${classeDoCampoEmLinha} mt-1 block w-48`}>
             <option value="">Todos</option>
             {veiculos.map((v) => (
               <option key={v.id} value={v.id}>{v.placa}</option>
             ))}
           </select>
         </label>
-        <label className="text-xs text-gray-600">
+        <label className="text-xs text-gray-700">
           Motorista
-          <select aria-label="Filtrar por motorista" value={filtro.motoristaId ?? ""} onChange={(e) => setFiltro((f) => ({ ...f, motoristaId: e.target.value ? Number(e.target.value) : undefined }))} className={`${classeCampo} mt-1 block w-44`}>
+          <select aria-label="Filtrar por motorista" value={filtro.motoristaId ?? ""} onChange={(e) => setFiltro((f) => ({ ...f, motoristaId: e.target.value ? Number(e.target.value) : undefined }))} className={`${classeDoCampoEmLinha} mt-1 block w-44`}>
             <option value="">Todos</option>
             {motoristas.map((m) => (
               <option key={m.id} value={m.id}>{m.nome}</option>
             ))}
           </select>
         </label>
-        <label className="text-xs text-gray-600">
+        <label className="text-xs text-gray-700">
           Centro de custo
-          <select aria-label="Filtrar por centro de custo" value={filtro.centroCustoId ?? ""} onChange={(e) => setFiltro((f) => ({ ...f, centroCustoId: e.target.value ? Number(e.target.value) : undefined }))} className={`${classeCampo} mt-1 block w-44`}>
+          <select aria-label="Filtrar por centro de custo" value={filtro.centroCustoId ?? ""} onChange={(e) => setFiltro((f) => ({ ...f, centroCustoId: e.target.value ? Number(e.target.value) : undefined }))} className={`${classeDoCampoEmLinha} mt-1 block w-44`}>
             <option value="">Todos</option>
             {centros.map((c) => (
               <option key={c.id} value={c.id}>{c.nome}</option>
@@ -142,9 +140,9 @@ export function Relatorios() {
           </select>
         </label>
         {tipo === "despesas" && (
-          <label className="text-xs text-gray-600">
+          <label className="text-xs text-gray-700">
             Categoria (só avulsas)
-            <select aria-label="Filtrar por categoria" value={filtro.categoriaId ?? ""} onChange={(e) => setFiltro((f) => ({ ...f, categoriaId: e.target.value ? Number(e.target.value) : undefined }))} className={`${classeCampo} mt-1 block w-44`}>
+            <select aria-label="Filtrar por categoria" value={filtro.categoriaId ?? ""} onChange={(e) => setFiltro((f) => ({ ...f, categoriaId: e.target.value ? Number(e.target.value) : undefined }))} className={`${classeDoCampoEmLinha} mt-1 block w-44`}>
               <option value="">Todas</option>
               {categorias.map((c) => (
                 <option key={c.id} value={c.id}>{c.nome}</option>
@@ -172,8 +170,8 @@ export function Relatorios() {
           </div>
           {/* No celular cada linha vira um cartão: a primeira coluna do relatório é o
               título e as demais aparecem rotuladas, na ordem que o servidor manda. */}
-          <table className="tabela-cartoes mt-3 w-full text-left text-xs">
-            <thead className="bg-gray-50 text-gray-500">
+          <table className="tabela-cartoes mt-3 w-full text-left text-sm">
+            <thead className="bg-gray-50 text-xs text-gray-500">
               <tr>
                 {relatorio.colunas.map((c) => (
                   <th key={c.chave} className="px-4 py-2 font-medium">{c.rotulo}</th>

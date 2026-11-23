@@ -6,10 +6,7 @@ import { useConfirmar } from "../../hooks/useNotificacoes";
 import { checklistModelosService, type ItemDeModelo, type PayloadDeModelo } from "../../services/frotaDiferenciais";
 import { mensagemErro } from "../../services/api";
 import type { ModeloDeChecklist } from "../../types/frota";
-
-const classeCampo =
-  "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
-const rotulo = "mb-1.5 block text-xs font-medium text-gray-700";
+import { classeDoCampo, classeDoRotulo } from "../../components/ui/Campo";
 
 const MOMENTOS: { valor: PayloadDeModelo["momento"]; texto: string }[] = [
   { valor: "saida", texto: "Saída" },
@@ -78,12 +75,12 @@ function EditorDeModelo({
       <form onSubmit={(e) => void salvar(e)} className="space-y-4 px-6 py-5">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="modelo-nome" className={rotulo}>Nome</label>
-            <input id="modelo-nome" type="text" maxLength={80} value={nome} onChange={(e) => setNome(e.target.value)} className={classeCampo} />
+            <label htmlFor="modelo-nome" className={classeDoRotulo}>Nome</label>
+            <input id="modelo-nome" type="text" maxLength={80} value={nome} onChange={(e) => setNome(e.target.value)} className={classeDoCampo} />
           </div>
           <div>
-            <label htmlFor="modelo-momento" className={rotulo}>Usado na</label>
-            <select id="modelo-momento" value={momento} onChange={(e) => setMomento(e.target.value as PayloadDeModelo["momento"])} className={classeCampo}>
+            <label htmlFor="modelo-momento" className={classeDoRotulo}>Usado na</label>
+            <select id="modelo-momento" value={momento} onChange={(e) => setMomento(e.target.value as PayloadDeModelo["momento"])} className={classeDoCampo}>
               {MOMENTOS.map((m) => (
                 <option key={m.valor} value={m.valor}>{m.texto}</option>
               ))}
@@ -92,7 +89,7 @@ function EditorDeModelo({
         </div>
 
         <div className="space-y-2">
-          <p className={rotulo}>Itens que o motorista confere</p>
+          <p className={classeDoRotulo}>Itens que o motorista confere</p>
           {itens.map((item, indice) => (
             <div key={indice} className="flex items-center gap-2">
               <input
@@ -102,9 +99,9 @@ function EditorDeModelo({
                 value={item.rotulo}
                 onChange={(e) => alterarItem(indice, { rotulo: e.target.value })}
                 placeholder="Ex.: Nível de óleo"
-                className={classeCampo}
+                className={classeDoCampo}
               />
-              <label className="flex shrink-0 items-center gap-1 text-xs text-gray-600">
+              <label className="flex shrink-0 items-center gap-1 text-xs text-gray-700">
                 <input type="checkbox" checked={item.obrigatorio} onChange={(e) => alterarItem(indice, { obrigatorio: e.target.checked })} />
                 Obrigatório
               </label>

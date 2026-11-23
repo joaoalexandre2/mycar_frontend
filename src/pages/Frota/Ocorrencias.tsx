@@ -12,9 +12,7 @@ import { formatarDataHora, formatarMoeda } from "../../utils/formatters";
 import { ehAdministradorOuGestor } from "../../utils/permissoes";
 import { STATUS_DE_OCORRENCIA, TIPOS_DE_OCORRENCIA, type FiltroDeOcorrencias, type Ocorrencia, type ResumoDeOcorrencias, type StatusDeOcorrencia, type TipoDeOcorrencia } from "../../types/ocorrencias";
 import type { VeiculoConta } from "../../types/conta";
-
-const classeCampo =
-  "h-10 rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
+import { classeDoCampoEmLinha } from "../../components/ui/Campo";
 
 function Indicador({ titulo, valor }: { titulo: string; valor: string }) {
   return (
@@ -94,27 +92,27 @@ export function Ocorrencias() {
   return (
     <div className="space-y-6 p-4 sm:p-8">
       <div className="flex flex-wrap items-end gap-3">
-        <label className="text-xs text-gray-600">
+        <label className="text-xs text-gray-700">
           Status
-          <select aria-label="Filtrar por status" value={filtro.status ?? ""} onChange={(e) => alterarFiltro({ status: (e.target.value || undefined) as StatusDeOcorrencia | undefined })} className={`${classeCampo} mt-1 block w-48`}>
+          <select aria-label="Filtrar por status" value={filtro.status ?? ""} onChange={(e) => alterarFiltro({ status: (e.target.value || undefined) as StatusDeOcorrencia | undefined })} className={`${classeDoCampoEmLinha} mt-1 block w-48`}>
             <option value="">Todos</option>
             {Object.entries(STATUS_DE_OCORRENCIA).map(([valor, texto]) => (
               <option key={valor} value={valor}>{texto}</option>
             ))}
           </select>
         </label>
-        <label className="text-xs text-gray-600">
+        <label className="text-xs text-gray-700">
           Tipo
-          <select aria-label="Filtrar por tipo" value={filtro.tipo ?? ""} onChange={(e) => alterarFiltro({ tipo: (e.target.value || undefined) as TipoDeOcorrencia | undefined })} className={`${classeCampo} mt-1 block w-48`}>
+          <select aria-label="Filtrar por tipo" value={filtro.tipo ?? ""} onChange={(e) => alterarFiltro({ tipo: (e.target.value || undefined) as TipoDeOcorrencia | undefined })} className={`${classeDoCampoEmLinha} mt-1 block w-48`}>
             <option value="">Todos</option>
             {Object.entries(TIPOS_DE_OCORRENCIA).map(([valor, texto]) => (
               <option key={valor} value={valor}>{texto}</option>
             ))}
           </select>
         </label>
-        <label className="text-xs text-gray-600">
+        <label className="text-xs text-gray-700">
           Veículo
-          <select aria-label="Filtrar por veículo" value={filtro.veiculoId ?? ""} onChange={(e) => alterarFiltro({ veiculoId: e.target.value ? Number(e.target.value) : undefined })} className={`${classeCampo} mt-1 block w-56`}>
+          <select aria-label="Filtrar por veículo" value={filtro.veiculoId ?? ""} onChange={(e) => alterarFiltro({ veiculoId: e.target.value ? Number(e.target.value) : undefined })} className={`${classeDoCampoEmLinha} mt-1 block w-56`}>
             <option value="">Todos</option>
             {veiculos.map((v) => (
               <option key={v.id} value={v.id}>{v.placa} · {v.marca} {v.modelo}</option>
@@ -139,8 +137,8 @@ export function Ocorrencias() {
 
       <section aria-labelledby="ocorrencias-lista" className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
         <h2 id="ocorrencias-lista" className={`px-5 pt-4 ${TITULO_DE_SECAO}`}>Ocorrências registradas</h2>
-        <table className="tabela-cartoes mt-3 w-full text-left text-xs">
-          <thead className="bg-gray-50 text-gray-500">
+        <table className="tabela-cartoes mt-3 w-full text-left text-sm">
+          <thead className="bg-gray-50 text-xs text-gray-500">
             <tr>
               <th className="px-5 py-2 font-medium">Quando</th>
               <th className="px-3 py-2 font-medium">Veículo</th>

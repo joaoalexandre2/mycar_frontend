@@ -2,6 +2,7 @@ import { useId, useState, type FormEvent } from "react";
 import { Gauge } from "lucide-react";
 import { Alert } from "../ui/Alert";
 import { Modal } from "../ui/Modal";
+import { classeDoCampo, classeDoRotulo } from "../ui/Campo";
 import { usosService } from "../../services/frota";
 import { mensagemErro } from "../../services/api";
 import { formatarKm } from "../../utils/formatters";
@@ -92,7 +93,7 @@ export function CorrigirKmModal({
     >
       <form id={idFormulario} onSubmit={(e) => void salvar(e)} className="space-y-4 px-6 py-5">
         <div>
-          <label htmlFor="km-atual" className="mb-1.5 block text-xs font-medium text-gray-700">
+          <label htmlFor="km-atual" className={classeDoRotulo}>
             Km no hodômetro
           </label>
           <input
@@ -101,7 +102,7 @@ export function CorrigirKmModal({
             inputMode="numeric"
             value={km}
             onChange={(e) => setKm(e.target.value)}
-            className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+            className={classeDoCampo}
             autoFocus
           />
           <p className="mt-1.5 text-xs text-gray-500">
@@ -111,7 +112,7 @@ export function CorrigirKmModal({
         </div>
 
         <div>
-          <label htmlFor="km-motivo" className="mb-1.5 block text-xs font-medium text-gray-700">
+          <label htmlFor="km-motivo" className={classeDoRotulo}>
             Motivo da correção
           </label>
           <input
@@ -121,7 +122,7 @@ export function CorrigirKmModal({
             value={motivo}
             onChange={(e) => setMotivo(e.target.value)}
             placeholder="Ex.: hodômetro digitado errado na saída"
-            className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+            className={classeDoCampo}
           />
           <p className="mt-1.5 text-xs text-gray-500">Fica registrado no histórico, com seu nome e a data.</p>
         </div>

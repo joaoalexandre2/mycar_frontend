@@ -26,12 +26,10 @@ import {
 } from "../../utils/agenda";
 import { ROTULO_STATUS_USO, type CentroCusto, type Motorista, type UsoVeiculo } from "../../types/frota";
 import type { VeiculoConta } from "../../types/conta";
+import { classeDoCampoEmLinha, classeDoRotulo } from "../../components/ui/Campo";
 
 const SEMANA = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
 const POR_DIA_NO_CALENDARIO = 3;
-
-const classeFiltro =
-  "h-11 rounded-lg border md:h-9 border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
 
 /** Texto curto de um uso dentro do calendário: hora, placa e quem vai usar. */
 const resumoDoUso = (uso: UsoVeiculo) =>
@@ -267,7 +265,7 @@ export function Agenda() {
               setFiltroVeiculo(e.target.value);
             }}
             aria-label="Filtrar por veículo"
-            className={classeFiltro}
+            className={classeDoCampoEmLinha}
           >
             <option value="">Todos os veículos</option>
             {veiculos.map((v) => (
@@ -283,7 +281,7 @@ export function Agenda() {
               setFiltroMotorista(e.target.value);
             }}
             aria-label="Filtrar por motorista"
-            className={classeFiltro}
+            className={classeDoCampoEmLinha}
           >
             <option value="">Todos os motoristas</option>
             {motoristas.map((m) => (
@@ -384,7 +382,7 @@ export function Agenda() {
           className="flex flex-wrap items-end gap-2 rounded-xl border border-gray-200 bg-white p-3"
         >
           <div className="min-w-40 flex-1">
-            <label htmlFor={`${idBase}-dia`} className="mb-1 block text-xs font-medium text-gray-700">
+            <label htmlFor={`${idBase}-dia`} className={classeDoRotulo}>
               Reservar em outro dia
             </label>
             <input

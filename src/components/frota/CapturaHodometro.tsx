@@ -6,12 +6,10 @@ import { lerKmDoHodometro } from "../../utils/leituraHodometro";
 import { mensagemErro } from "../../services/api";
 import { RecorteDoVisor } from "./RecorteDoVisor";
 import { Alert } from "../ui/Alert";
+import { classeDoCampo } from "../ui/Campo";
 
 /** Maior lado da foto do painel, em pixels: dá para ler o número e sobe rápido no celular. */
 const LADO_MAXIMO = 1280;
-
-const classeCampo =
-  "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
 
 /**
  * Km do hodômetro e a foto do painel. A foto vem da câmera (no celular abre
@@ -112,7 +110,7 @@ export function CapturaHodometro({
             value={km}
             onChange={(e) => onKm(e.target.value)}
             placeholder="Ex.: 45200"
-            className={`${classeCampo} mt-1.5`}
+            className={`${classeDoCampo} mt-1.5`}
           />
         </label>
         {dica && <p className="mt-1 text-xs text-gray-500">{dica}</p>}
