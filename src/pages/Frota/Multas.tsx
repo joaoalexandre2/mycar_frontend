@@ -8,7 +8,7 @@ import { motoristasService } from "../../services/frota";
 import { multasService, type PaginaDeMultas } from "../../services/frotaDiferenciais";
 import { mensagemErro } from "../../services/api";
 import { useConfirmar } from "../../hooks/useNotificacoes";
-import { formatarDataHora } from "../../utils/formatters";
+import { formatarDataHora, formatarMoeda } from "../../utils/formatters";
 import { lerValorEmReais } from "../../utils/numero";
 import { CampoEmReais } from "../../components/frota/CampoEmReais";
 import type { Motorista } from "../../types/frota";
@@ -72,11 +72,8 @@ export function Multas() {
 
   return (
     <div className="space-y-6 p-4 sm:p-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-xl font-bold text-gray-900">Multas da frota</h2>
-          <p className="mt-1 text-sm text-gray-500">Cada multa aponta quem estava com o veículo na data e hora da infração.</p>
-        </div>
+      {/* O título e o subtítulo da página já estão no cabeçalho (Header): aqui ficam só o filtro e a ação. */}
+      <div className="flex flex-wrap items-center justify-end gap-3">
         <div className="flex items-center gap-2">
           <select
             aria-label="Filtrar por situação"
@@ -127,7 +124,7 @@ export function Multas() {
                   </p>
                   <p className="text-xs text-gray-600">
                     Responsável: {m.motorista ? m.motorista.nome : "não identificado"}
-                    {m.valor !== null && ` · R$ ${Number(m.valor).toFixed(2).replace(".", ",")}`}
+                    {m.valor !== null && ` · ${formatarMoeda(Number(m.valor))}`}
                     {m.pontos !== null && ` · ${m.pontos} pontos`}
                   </p>
                 </div>
@@ -196,6 +193,9 @@ export function Multas() {
 function NovaMulta({ onSalva, onClose }: { onSalva: () => void; onClose: () => void }) {
   const [veiculos, setVeiculos] = useState<VeiculoConta[]>([]);
   const [motoristas, setMotoristas] = useState<Motorista[]>([]);
+  // Sem a lista, a multa ainda pode ser registrada com o responsável sugerido: só avisa, não trava.
+  const [erroMotoristas, setErroMotoristas] = useState(false);
+  const [versaoMotoristas, setVersaoMotoristas] = useState(0);
   const [veiculoId, setVeiculoId] = useState("");
   const [dataHora, setDataHora] = useState("");
   const [descricao, setDescricao] = useState("");
@@ -211,8 +211,26 @@ function NovaMulta({ onSalva, onClose }: { onSalva: () => void; onClose: () => v
 
   useEffect(() => {
     contaService.listarVeiculos({}).then((p) => setVeiculos(p.dados)).catch(() => setVeiculos([]));
-    motoristasService.listar().then(setMotoristas).catch(() => setMotoristas([]));
   }, []);
+
+  useEffect(() => {
+    let ativo = true;
+
+    motoristasService
+      .listar()
+      .then((lista) => {
+        if (!ativo) return;
+        setMotoristas(lista);
+        setErroMotoristas(false);
+      })
+      .catch(() => {
+        if (ativo) setErroMotoristas(true);
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, [versaoMotoristas]);
 
   // Assim que a data e o veículo estão escolhidos, mostra quem estava com o carro naquele momento.
   useEffect(() => {
@@ -304,6 +322,11 @@ function NovaMulta({ onSalva, onClose }: { onSalva: () => void; onClose: () => v
               <option key={m.id} value={m.id}>{m.nome}</option>
             ))}
           </select>
+          {erroMotoristas && (
+            <Alert tone="warning" className="mt-2" action={{ label: "Tentar de novo", onClick: () => setVersaoMotoristas((v) => v + 1) }}>
+              Não foi possível carregar a lista de motoristas. Você ainda pode registrar a multa com o responsável sugerido.
+            </Alert>
+          )}
         </div>
 
         <div>
