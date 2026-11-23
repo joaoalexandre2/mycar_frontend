@@ -35,11 +35,11 @@
   --g950: oklch(13% 0.028 261.692);
 }
 
-/* ---------- Visual Webmotors ----------
-   Tokens tirados do design system do site da Webmotors: neutros levemente
-   arroxeados (#2e2d37 no texto), cantos mais arredondados (cartões de 16 px,
-   botões de 10 px) e sombra suave. A cor principal é a marca (#e22446), definida
-   mais abaixo na escala "blue", que é a que o app inteiro usa. */
+/* ---------- Visual do app ----------
+   Neutros levemente arroxeados (#2e2d37 no texto), cantos mais arredondados
+   (cartões de 16 px, botões de 10 px) e sombra suave. A cor principal do app
+   fica num lugar só, no bloco "Cor principal do MyCar" mais abaixo (variáveis
+   --marca-*), que alimenta a escala "blue" usada pelo app inteiro. */
 :root {
   --color-gray-50: #fbfbff;
   --color-gray-100: #f1f1f7;
@@ -256,21 +256,43 @@ th {
   }
 }
 
-/* ---------- Cor principal (o app usa a escala "blue") ----------
-   A escolha padrão ("blue", ou nenhuma) é o vermelho da marca Webmotors; as
-   outras cores continuam trocando a escala inteira. */
+/* ---------- Cor principal do MyCar (decisão de identidade) ----------
+   ÚNICO lugar com os valores da escala da marca. O app inteiro usa as
+   utilidades "blue" do Tailwind (bg-blue-600, text-blue-700...); a escolha
+   padrão de cor ("blue", ou nenhuma) aponta a escala "blue" para cá, e as
+   outras cores (verde, roxo, laranja, vermelho) continuam trocando a escala
+   inteira. A bolinha da cor padrão em Configurações também lê daqui.
+
+   Onde trocar a marca (ver docs/marca.md):
+   1. Os valores --marca-50..900 abaixo.
+   2. index.html: <meta name="theme-color"> (HTML não lê variável CSS; o valor
+      fixo lá deve ser igual a --marca-600).
+   3. public/favicon.svg, se o ícone também mudar de cor. */
+:root {
+  --marca-50: #fbe4e8;
+  --marca-100: #f8c8d1;
+  --marca-200: #f191a2;
+  --marca-300: #e45770;
+  --marca-400: #e53858;
+  --marca-500: #e22446;
+  --marca-600: #e22446;
+  --marca-700: #c30b2b;
+  --marca-800: #a91b35;
+  --marca-900: #711223;
+}
+
 :root:not([data-cor]),
 :root[data-cor="blue"] {
-  --color-blue-50: #fbe4e8;
-  --color-blue-100: #f8c8d1;
-  --color-blue-200: #f191a2;
-  --color-blue-300: #e45770;
-  --color-blue-400: #e53858;
-  --color-blue-500: #e22446;
-  --color-blue-600: #e22446;
-  --color-blue-700: #c30b2b;
-  --color-blue-800: #a91b35;
-  --color-blue-900: #711223;
+  --color-blue-50: var(--marca-50);
+  --color-blue-100: var(--marca-100);
+  --color-blue-200: var(--marca-200);
+  --color-blue-300: var(--marca-300);
+  --color-blue-400: var(--marca-400);
+  --color-blue-500: var(--marca-500);
+  --color-blue-600: var(--marca-600);
+  --color-blue-700: var(--marca-700);
+  --color-blue-800: var(--marca-800);
+  --color-blue-900: var(--marca-900);
 }
 
 :root[data-cor="green"] {
@@ -443,7 +465,7 @@ th {
   --color-gray-900: var(--g900);
 }
 
-/* ---------- Ajustes do visual Webmotors ---------- */
+/* ---------- Ajustes do visual do app ---------- */
 
 /* Títulos em negrito e caixa normal (antes eram condensados e em maiúsculas). */
 .font-display {

@@ -495,9 +495,10 @@ function Sistema() {
 
 // Cores fixas (não "bg-blue-600"): a escala "blue" do app é trocada pela cor
 // escolhida, e a bolinha da cor padrão ficaria da cor ativa, igual a outra bolinha.
-// A chave "blue" é a cor padrão do app: o vermelho da marca Webmotors.
+// A chave "blue" é a cor padrão do app, a cor principal do MyCar: a bolinha lê
+// --marca-600 (definida uma vez só no index.css), que não muda com a escolha.
 const CORES: { chave: Cor; classe: string; nome: string }[] = [
-  { chave: "blue", classe: "bg-[#e22446]", nome: "Webmotors" },
+  { chave: "blue", classe: "bg-[var(--marca-600)]", nome: "MyCar" },
   { chave: "green", classe: "bg-[#16a34a]", nome: "Verde" },
   { chave: "purple", classe: "bg-[#9333ea]", nome: "Roxo" },
   { chave: "orange", classe: "bg-[#f97316]", nome: "Laranja" },
