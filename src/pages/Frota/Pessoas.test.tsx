@@ -362,3 +362,125 @@ describe("Pessoas: ligar o login a um cadastro de motorista", () => {
     expect(await screen.findByRole("button", { name: /Ligar a um motorista: Rui Rua/ })).toBeInTheDocument();
   });
 });
+
+describe("Pessoas: estado de acesso e reenvio do convite", () => {
+  const carla: PessoaDaFrota = {
+    id: 5, name: "Carla Convidada", email: "carla@x.com", papel: "gestor", permissoes: [], menus: [], motorista: null, acesso: "convite_enviado",
+  };
+  const comAcesso = (...extras: PessoaDaFrota[]) => ({
+    pessoas: [
+      { ...pessoas[0], motorista: null, acesso: "ativo" as const },
+      { ...pessoas[1], motorista: null, acesso: "ativo" as const },
+      ...extras,
+    ],
+    catalogo: {},
+    menus: {},
+  });
+
+  /** Erro como o axios entrega (isAxiosError + status + corpo do Laravel). */
+  const erroHttp = (status: number, message: string) =>
+    Object.assign(new Error(String(status)), { isAxiosError: true, response: { status, data: { message } } });
+
+  it("mostra quem ainda não entrou e oferece o reenvio só a essa pessoa, com alvo de 44px no celular", async () => {
+    vi.spyOn(pessoasFrotaService, "listar").mockResolvedValue(comAcesso(carla));
+
+    comUsuario("administrador")(<Pessoas />);
+
+    expect(await screen.findByText("Convite enviado: ainda não entrou no sistema.")).toBeInTheDocument();
+    expect(screen.getAllByText("Já entrou no sistema.")).toHaveLength(2);
+
+    const botao = screen.getByRole("button", { name: "Reenviar convite para Carla Convidada" });
+    expect(botao).toHaveClass("h-11");
+    expect(botao).toHaveClass("md:h-9");
+    expect(screen.getAllByRole("button", { name: /Reenviar convite/ })).toHaveLength(1);
+  });
+
+  it("reenvia e confirma na tela para qual e-mail foi", async () => {
+    vi.spyOn(pessoasFrotaService, "listar").mockResolvedValue(comAcesso(carla));
+    const reenviar = vi.spyOn(pessoasFrotaService, "reenviarConvite").mockResolvedValue({ mensagem: "Convite reenviado para carla@x.com." });
+    const usuario = userEvent.setup();
+
+    comUsuario("administrador")(<Pessoas />);
+
+    const botao = await screen.findByRole("button", { name: "Reenviar convite para Carla Convidada" });
+    botao.focus();
+    await usuario.keyboard("{Enter}");
+
+    expect(reenviar).toHaveBeenCalledWith(5);
+    const aviso = await screen.findByRole("status");
+    expect(aviso).toHaveTextContent("Convite reenviado para carla@x.com.");
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("sem mensagem do servidor, monta a confirmação com o e-mail da pessoa", async () => {
+    vi.spyOn(pessoasFrotaService, "listar").mockResolvedValue(comAcesso(carla));
+    vi.spyOn(pessoasFrotaService, "reenviarConvite").mockResolvedValue({ mensagem: null });
+    const usuario = userEvent.setup();
+
+    comUsuario("administrador")(<Pessoas />);
+
+    await usuario.click(await screen.findByRole("button", { name: "Reenviar convite para Carla Convidada" }));
+
+    expect(await screen.findByRole("status")).toHaveTextContent("Convite reenviado para carla@x.com.");
+  });
+
+  it("429: orienta a esperar um minuto, num alerta", async () => {
+    vi.spyOn(pessoasFrotaService, "listar").mockResolvedValue(comAcesso(carla));
+    vi.spyOn(pessoasFrotaService, "reenviarConvite").mockRejectedValue(erroHttp(429, "Too Many Attempts."));
+    const usuario = userEvent.setup();
+
+    comUsuario("administrador")(<Pessoas />);
+
+    await usuario.click(await screen.findByRole("button", { name: "Reenviar convite para Carla Convidada" }));
+
+    const alerta = await screen.findByRole("alert");
+    expect(alerta).toHaveTextContent("Acabamos de enviar um convite para Carla Convidada. Aguarde um minuto e tente reenviar de novo.");
+    expect(alerta).not.toHaveTextContent("Too Many");
+    expect(screen.getByRole("button", { name: "Reenviar convite para Carla Convidada" })).toBeEnabled();
+  });
+
+  it("422 (já entrou): mostra a mensagem do servidor e atualiza a lista sem apagar o alerta", async () => {
+    vi.spyOn(pessoasFrotaService, "listar")
+      .mockResolvedValueOnce(comAcesso(carla))
+      .mockResolvedValue(comAcesso({ ...carla, acesso: "ativo" }));
+    vi.spyOn(pessoasFrotaService, "reenviarConvite").mockRejectedValue(
+      erroHttp(422, 'Esta pessoa já entra no sistema. Se esqueceu a senha, ela pode usar "Esqueci minha senha".'),
+    );
+    const usuario = userEvent.setup();
+
+    comUsuario("administrador")(<Pessoas />);
+
+    await usuario.click(await screen.findByRole("button", { name: "Reenviar convite para Carla Convidada" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Esta pessoa já entra no sistema.");
+    await waitFor(() => expect(screen.queryByRole("button", { name: /Reenviar convite/ })).not.toBeInTheDocument());
+    expect(screen.getByRole("alert")).toHaveTextContent("Esta pessoa já entra no sistema.");
+    expect(screen.getAllByText("Já entrou no sistema.")).toHaveLength(3);
+  });
+
+  it("com o servidor antigo (sem o campo acesso), não afirma o estado nem oferece o reenvio", async () => {
+    const semCampo: PessoaDaFrota = { ...carla };
+    delete semCampo.acesso;
+    vi.spyOn(pessoasFrotaService, "listar").mockResolvedValue({ pessoas: [...pessoas, semCampo], catalogo: {}, menus: {} });
+
+    comUsuario("administrador")(<Pessoas />);
+
+    expect(await screen.findByText("Carla Convidada")).toBeInTheDocument();
+    expect(screen.queryByText(/ainda não entrou/)).not.toBeInTheDocument();
+    expect(screen.queryByText("Já entrou no sistema.")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Reenviar convite/ })).not.toBeInTheDocument();
+  });
+
+  it("não oferece o reenvio para a própria pessoa logada", async () => {
+    vi.spyOn(pessoasFrotaService, "listar").mockResolvedValue({
+      pessoas: [{ ...pessoas[0], acesso: "convite_enviado" }],
+      catalogo: {},
+      menus: {},
+    });
+
+    comUsuario("administrador", 1)(<Pessoas />);
+
+    expect(await screen.findByText("Ana Admin")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Reenviar convite/ })).not.toBeInTheDocument();
+  });
+});

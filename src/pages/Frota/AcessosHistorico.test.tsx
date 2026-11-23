@@ -47,6 +47,25 @@ describe("Histórico de acessos", () => {
     expect(screen.getByText("Rui Rua → Rui Rua (cadastro criado)")).toBeInTheDocument();
   });
 
+  it("mostra quem reenviou o convite para quem", async () => {
+    vi.spyOn(pessoasFrotaService, "acessos").mockResolvedValue([
+      {
+        id: 3,
+        quando: "2026-11-22T10:00:00Z",
+        ator: "Ana Admin",
+        alvo_tipo: "pessoa",
+        alvo_id: 5,
+        acao: "reenviou_convite",
+        detalhes: { nome: "Carla Convidada", papel: "gestor" },
+      },
+    ]);
+
+    render(<AcessosHistorico />);
+
+    expect(await screen.findByText(/reenviou o convite para/)).toBeInTheDocument();
+    expect(screen.getByText("Carla Convidada")).toBeInTheDocument();
+  });
+
   it("avisa quando ainda não há mudanças", async () => {
     vi.spyOn(pessoasFrotaService, "acessos").mockResolvedValue([]);
 
