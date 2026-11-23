@@ -312,7 +312,7 @@ export function Veiculos() {
                   <td data-label="Placa" className="px-5 py-4">
                     <Placa placa={veiculo.placa} uf={veiculo.uf} />
                     {!placaValida(veiculo.placa) && (
-                      <p className="mt-1 text-xs font-semibold text-red-600">
+                      <p className="mt-1 text-xs font-semibold text-(--tom-danger-texto)">
                         Placa fora do padrão: corrija em editar.
                       </p>
                     )}
@@ -344,7 +344,7 @@ export function Veiculos() {
                           IPVA{" "}
                           <span
                             className={`font-semibold ${
-                              veiculo.isentoIpva ? "text-emerald-700" : "text-gray-900"
+                              veiculo.isentoIpva ? "text-(--tom-success-texto)" : "text-gray-900"
                             }`}
                           >
                             {veiculo.isentoIpva
@@ -354,13 +354,13 @@ export function Veiculos() {
                                 : "—"}
                           </span>
                           {veiculo.ipvaAliquotaMedia && veiculo.ipvaEstimado !== null && (
-                            <span className="ml-1 text-xs text-amber-600">
+                            <span className="ml-1 text-xs text-(--tom-warning-texto)">
                               (alíquota média)
                             </span>
                           )}
                         </p>
                         {veiculo.possivelIsencaoIpva && (
-                          <p className="text-xs text-amber-600">
+                          <p className="text-xs text-(--tom-warning-texto)">
                             Carro com 15 a 20 anos: alguns estados isentam o IPVA. Confira na Sefaz.
                           </p>
                         )}
@@ -377,7 +377,7 @@ export function Veiculos() {
                           <p
                             className={
                               new Date(veiculo.proximoVencimentoLicenciamento) < new Date()
-                                ? "font-semibold text-red-600"
+                                ? "font-semibold text-(--tom-danger-texto)"
                                 : "text-gray-500"
                             }
                             title="Estimativa com base no final da placa. Confirme no Detran do seu estado."

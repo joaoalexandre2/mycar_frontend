@@ -7,6 +7,8 @@ import { catalogoEsteticaService, patioService } from "../../services/estetica";
 import { mensagemErro } from "../../services/api";
 import { formatarDataHora } from "../../utils/formatters";
 import type { AtendimentoDaEstetica, EtapaDoAtendimento, FormaDePagamento, PacoteDaEstetica, ServicoDaEstetica } from "../../types/estetica";
+import { Alert } from "../../components/ui/Alert";
+import { StatusChip } from "../../components/ui/StatusChip";
 
 const classeCampo =
   "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
@@ -72,15 +74,12 @@ export function Patio() {
         </button>
       </div>
 
-      {erroDeAcao && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">{erroDeAcao}</p>}
+      {erroDeAcao && <Alert tone="danger">{erroDeAcao}</Alert>}
 
       {erroDeCarga && (
-        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">
-          <span>{erroDeCarga}</span>
-          <button type="button" onClick={carregar} className="font-semibold underline">
-            Tentar de novo
-          </button>
-        </div>
+        <Alert tone="danger" action={{ label: "Tentar de novo", onClick: carregar }}>
+          {erroDeCarga}
+        </Alert>
       )}
 
       {carregando && !erroDeCarga && <p className="text-xs text-gray-500">Carregando...</p>}
@@ -105,7 +104,7 @@ export function Patio() {
                       <p className="text-xs text-gray-500">{[a.modelo, a.cliente_nome].filter(Boolean).join(" · ") || "Sem cliente informado"}</p>
                     </div>
                     {!a.pago && a.dias_em_aberto !== null && a.etapa === "entregue" && (
-                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">{a.dias_em_aberto} d em aberto</span>
+                      <StatusChip tone="warning">{a.dias_em_aberto} d em aberto</StatusChip>
                     )}
                   </div>
 
@@ -271,7 +270,7 @@ function NovoCarro({ onSalvo, onClose }: { onSalvo: () => void; onClose: () => v
           </fieldset>
         )}
 
-        {erro && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{erro}</p>}
+        {erro && <Alert tone="danger">{erro}</Alert>}
 
         <div className="flex justify-end gap-2">
           <button type="button" onClick={onClose} className="h-10 rounded-lg border border-gray-200 px-4 text-xs font-semibold text-gray-600 hover:bg-gray-50">Cancelar</button>

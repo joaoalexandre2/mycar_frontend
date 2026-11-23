@@ -1,6 +1,11 @@
+import { CLASSES_DO_TOM } from "./tons";
+
 /**
  * Falha ao carregar uma listagem. Fica no lugar do "nenhum registro": sem
  * isto, um servidor fora do ar parecia uma conta sem nada cadastrado.
+ *
+ * Não é um <Alert> (ocupa o lugar da lista, centralizado e com título), mas
+ * usa os mesmos tokens do tom "danger", que mudam entre o claro e o escuro.
  */
 export function ErroDeLista({
   mensagem,
@@ -15,11 +20,12 @@ export function ErroDeLista({
   return (
     <div
       role="alert"
-      className="flex flex-col items-center gap-3 border-b border-red-200 bg-red-50 px-5 py-8 text-center"
+      data-tom="danger"
+      className={`flex flex-col items-center gap-3 border-b px-5 py-8 text-center ${CLASSES_DO_TOM.danger}`}
     >
-      <p className="text-sm font-semibold text-red-800">{titulo}</p>
+      <p className="text-sm font-semibold">{titulo}</p>
 
-      <p className="max-w-md text-xs text-red-800">{mensagem}</p>
+      <p className="max-w-md text-xs">{mensagem}</p>
 
       <button
         type="button"

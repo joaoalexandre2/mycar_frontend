@@ -18,6 +18,7 @@ import { mensagemErro } from "../../services/api";
 import { formatarCpf, formatarData, soDigitos } from "../../utils/formatters";
 import { ClienteModal } from "./ClienteModal";
 import { InfoCard } from "../../components/ui/InfoCard";
+import { StatusChip } from "../../components/ui/StatusChip";
 
 const RESUMO_INICIAL: ResumoClientes = {
   total: 0,
@@ -421,13 +422,9 @@ export function Clientes() {
 
 function StatusCliente({ ativo }: { ativo: boolean }) {
   return (
-    <span
-      className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-        ativo ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
-      }`}
-    >
+    <StatusChip tone={ativo ? "success" : "neutral"}>
       {ativo ? "Ativo" : "Inativo"}
-    </span>
+    </StatusChip>
   );
 }
 

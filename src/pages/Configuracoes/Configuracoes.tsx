@@ -18,6 +18,7 @@ import {
   type Cor,
   type Tema,
 } from "../../utils/preferencias";
+import { Alert } from "../../components/ui/Alert";
 
 type Aba = "perfil" | "oficina" | "lembretes" | "sistema" | "aparencia";
 
@@ -299,7 +300,7 @@ function Oficina() {
   return (
     <Secao titulo="Oficina" descricao="Informações da sua oficina.">
       {falhaAoCarregar && (
-        <div className="mb-5 overflow-hidden rounded-lg border border-red-200">
+        <div className="mb-5 overflow-hidden rounded-lg border border-(--tom-danger-borda)">
           <ErroDeLista
             titulo="Não foi possível carregar os dados da oficina."
             mensagem={falhaAoCarregar}
@@ -412,7 +413,7 @@ function Lembretes() {
       descricao="Avisos por e-mail dos vencimentos dos seus veículos."
     >
       {falhaAoCarregar && (
-        <div className="mb-5 overflow-hidden rounded-lg border border-red-200">
+        <div className="mb-5 overflow-hidden rounded-lg border border-(--tom-danger-borda)">
           <ErroDeLista
             titulo="Não foi possível carregar a sua preferência."
             mensagem={falhaAoCarregar}
@@ -585,9 +586,9 @@ function Aparencia() {
         </div>
 
         {aviso && (
-          <p role="alert" className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
+          <Alert tone="warning">
             {aviso}
-          </p>
+          </Alert>
         )}
       </div>
     </Secao>
@@ -656,7 +657,8 @@ function Rodape({
       {aviso && (
         <span
           role="status"
-          className={`text-xs ${aviso.tipo === "ok" ? "text-green-600" : "text-red-600"}`}
+          data-tom={aviso.tipo === "ok" ? "success" : "danger"}
+          className={`text-xs ${aviso.tipo === "ok" ? "text-(--tom-success-texto)" : "text-(--tom-danger-texto)"}`}
         >
           {aviso.texto}
         </span>

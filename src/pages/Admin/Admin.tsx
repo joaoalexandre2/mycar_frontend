@@ -26,6 +26,8 @@ import {
 import { ConteudoUsuario } from "./ConteudoUsuario";
 import { mensagemErro } from "../../services/api";
 import type { Perfil } from "../../types/auth";
+import { Alert } from "../../components/ui/Alert";
+import { StatusChip } from "../../components/ui/StatusChip";
 
 type Aviso = { tipo: "ok" | "erro"; texto: string };
 
@@ -198,16 +200,9 @@ export function Admin() {
       </div>
 
       {aviso && (
-        <p
-          role="status"
-          className={`mb-5 rounded-lg border px-4 py-3 text-xs ${
-            aviso.tipo === "ok"
-              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-              : "border-red-200 bg-red-50 text-red-700"
-          }`}
-        >
+        <Alert tone={aviso.tipo === "ok" ? "success" : "danger"} className="mb-5">
           {aviso.texto}
-        </p>
+        </Alert>
       )}
 
       <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -387,15 +382,9 @@ export function Admin() {
                       : "Nunca entrou"}
                   </td>
                   <td data-label="E-mail" className="px-5 py-4">
-                    <span
-                      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                        conta.emailConfirmado
-                          ? "bg-emerald-50 text-emerald-700"
-                          : "bg-amber-50 text-amber-700"
-                      }`}
-                    >
+                    <StatusChip tone={conta.emailConfirmado ? "success" : "warning"}>
                       {conta.emailConfirmado ? "Confirmado" : "Pendente"}
-                    </span>
+                    </StatusChip>
                   </td>
                   <td
                     data-label="Uso"

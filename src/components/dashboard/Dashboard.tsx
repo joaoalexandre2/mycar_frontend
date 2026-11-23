@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useCarregarLista } from "../../hooks/useCarregarLista";
 import { ErroDeLista } from "../ui/ErroDeLista";
+import { StatusChip } from "../ui/StatusChip";
+import type { Tom } from "../ui/tons";
+import { TOM_DO_STATUS_OS } from "../../pages/OrdensServico/statusOrdemServico";
 import {
   ArrowUpRight,
   Car,
@@ -117,7 +120,7 @@ export function Dashboard() {
 
       {/* Cards principais */}
       {erroDaLista && (
-        <div className="mb-5 overflow-hidden rounded-xl border border-red-200">
+        <div className="mb-5 overflow-hidden rounded-xl border border-(--tom-danger-borda)">
           <ErroDeLista
             mensagem={erroDaLista}
             aoTentarDeNovo={recarregar}
@@ -354,15 +357,9 @@ export function Dashboard() {
                     <Wrench size={17} />
                   </div>
 
-                  <span
-                    className={`rounded-full px-2 py-1 text-xs font-semibold ${
-                      item.status === "atrasada"
-                        ? "bg-red-50 text-red-700"
-                        : "bg-yellow-50 text-yellow-700"
-                    }`}
-                  >
+                  <StatusChip tone={item.status === "atrasada" ? "danger" : "warning"}>
                     {item.status === "atrasada" ? "Atrasada" : "Agendada"}
-                  </span>
+                  </StatusChip>
                 </div>
 
                 <h4 className="text-xs font-semibold text-gray-900">
@@ -448,45 +445,22 @@ function Status({
 }: {
   status: StatusOrdemServico;
 }) {
-  const config: Record<StatusOrdemServico, { label: string; className: string }> = {
-    aberta: {
-      label: "Aberta",
-      className: "bg-sky-100 text-sky-800",
-    },
-
-    em_andamento: {
-      label: "Em andamento",
-      className: "bg-yellow-100 text-yellow-700",
-    },
-
-    aguardando_peca: {
-      label: "Aguardando peça",
-      className: "bg-orange-100 text-orange-700",
-    },
-
-    finalizada: {
-      label: "Concluída",
-      className: "bg-green-100 text-green-700",
-    },
-
-    cancelada: {
-      label: "Cancelada",
-      className: "bg-red-100 text-red-700",
-    },
+  // Rótulos do painel ("Concluída"); o tom é o mesmo das telas de OS.
+  const label: Record<StatusOrdemServico, string> = {
+    aberta: "Aberta",
+    em_andamento: "Em andamento",
+    aguardando_peca: "Aguardando peça",
+    finalizada: "Concluída",
+    cancelada: "Cancelada",
   };
 
   // Status desconhecido (dado antigo ou de uma versão futura) não pode derrubar a tela.
-  const item = config[status] ?? {
-    label: String(status).replace(/_/g, " "),
-    className: "bg-gray-100 text-gray-600",
-  };
+  const tom: Tom = TOM_DO_STATUS_OS[status] ?? "neutral";
 
   return (
-    <span
-      className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${item.className}`}
-    >
-      {item.label}
-    </span>
+    <StatusChip tone={tom}>
+      {label[status] ?? String(status).replace(/_/g, " ")}
+    </StatusChip>
   );
 }
 

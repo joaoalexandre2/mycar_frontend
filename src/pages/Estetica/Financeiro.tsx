@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { financeiroEsteticaService } from "../../services/estetica";
 import { mensagemErro } from "../../services/api";
 import type { FinanceiroDaEstetica } from "../../types/estetica";
+import { Alert } from "../../components/ui/Alert";
+import { StatusChip } from "../../components/ui/StatusChip";
 
 const NOME_DA_FORMA: Record<string, string> = { pix: "Pix", cartao: "Cartão", dinheiro: "Dinheiro", boleto: "Boleto", a_definir: "Forma não definida" };
 
@@ -36,7 +38,7 @@ export function Financeiro() {
         <p className="mt-1 text-sm text-gray-500">Quanto ainda falta receber, e de que forma.</p>
       </div>
 
-      {erro && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">{erro}</p>}
+      {erro && <Alert tone="danger">{erro}</Alert>}
 
       {dados && (
         <>
@@ -67,7 +69,7 @@ export function Financeiro() {
                   </div>
                   <p className="text-xs text-gray-700">
                     {reais(c.valor)}
-                    {c.dias_em_aberto !== null && <span className="ml-2 font-semibold text-amber-700">{c.dias_em_aberto} d em aberto</span>}
+                    {c.dias_em_aberto !== null && <StatusChip tone="warning" className="ml-2">{c.dias_em_aberto} d em aberto</StatusChip>}
                   </p>
                 </li>
               ))}

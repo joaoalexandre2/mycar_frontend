@@ -1,6 +1,9 @@
 import { idDoErro } from "../../hooks/useErrosDeCampo";
 
-/** Mensagem de erro de um campo, logo abaixo dele. Nada quando não há erro. */
+/**
+ * Mensagem de erro de um campo, logo abaixo dele. Nada quando não há erro.
+ * Fica leve (só o texto, sem caixa) e usa a cor de texto do tom "danger".
+ */
 export function ErroDoCampo({
   campo,
   mensagem,
@@ -17,7 +20,8 @@ export function ErroDoCampo({
     <p
       id={idDoErro(campo)}
       role="alert"
-      className="mt-1 text-xs font-medium text-red-700"
+      data-tom="danger"
+      className="mt-1 text-xs font-medium text-(--tom-danger-texto)"
     >
       {mensagem}
     </p>

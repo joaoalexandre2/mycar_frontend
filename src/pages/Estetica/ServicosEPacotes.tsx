@@ -5,6 +5,7 @@ import { mensagemErro } from "../../services/api";
 import { useCarregarLista } from "../../hooks/useCarregarLista";
 import { useConfirmar } from "../../hooks/useNotificacoes";
 import type { PacoteDaEstetica, ServicoDaEstetica } from "../../types/estetica";
+import { Alert } from "../../components/ui/Alert";
 
 const classeCampo =
   "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
@@ -62,15 +63,12 @@ export function ServicosEPacotes() {
       <section className="space-y-4">
         <h2 className="text-lg font-bold text-gray-900">Pacotes</h2>
         {servicos && servicos.length > 0 && <NovoPacote servicos={servicos} onSalvo={carregar} />}
-        {erroDeAcao && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">{erroDeAcao}</p>}
+        {erroDeAcao && <Alert tone="danger">{erroDeAcao}</Alert>}
 
         {erroDeCarga && (
-          <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">
-            <span>{erroDeCarga}</span>
-            <button type="button" onClick={carregar} className="font-semibold underline">
-              Tentar de novo
-            </button>
-          </div>
+          <Alert tone="danger" action={{ label: "Tentar de novo", onClick: carregar }}>
+            {erroDeCarga}
+          </Alert>
         )}
 
         {carregando && !erroDeCarga && <p className="text-xs text-gray-500">Carregando...</p>}
@@ -136,7 +134,7 @@ function NovoServico({ onSalvo }: { onSalvo: () => void }) {
       <button type="submit" className="flex h-10 items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 text-xs font-semibold text-white hover:bg-blue-700">
         <Plus size={14} /> Adicionar
       </button>
-      {erro && <p role="alert" className="text-xs text-red-600 sm:col-span-4">{erro}</p>}
+      {erro && <Alert tone="danger" className="sm:col-span-4">{erro}</Alert>}
     </form>
   );
 }
@@ -187,7 +185,7 @@ function NovoPacote({ servicos, onSalvo }: { servicos: ServicoDaEstetica[]; onSa
           </label>
         ))}
       </fieldset>
-      {erro && <p role="alert" className="text-xs text-red-600">{erro}</p>}
+      {erro && <Alert tone="danger">{erro}</Alert>}
       <button type="submit" className="h-10 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700">Criar pacote</button>
     </form>
   );

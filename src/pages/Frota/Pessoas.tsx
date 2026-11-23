@@ -4,6 +4,7 @@ import { centrosCustoService, motoristasService, pessoasFrotaService } from "../
 import { mensagemErro } from "../../services/api";
 import { useUsuarioDaFrota } from "../../hooks/usePodeNaFrota";
 import { useConfirmar } from "../../hooks/useNotificacoes";
+import { Alert } from "../../components/ui/Alert";
 import { Modal } from "../../components/ui/Modal";
 import type { CentroCusto, LigacaoDeMotorista, Motorista, PapelDaFrota, PessoaDaFrota } from "../../types/frota";
 
@@ -213,10 +214,10 @@ export function Pessoas() {
         <p className="text-xs text-gray-500">Motoristas são cadastrados na aba Motoristas.</p>
       </form>
 
-      {erro && <p role="alert" className="text-xs text-red-600">{erro}</p>}
-      {aviso && <p role="status" className="text-xs text-green-700">{aviso}</p>}
+      {erro && <Alert tone="danger">{erro}</Alert>}
+      {aviso && <Alert tone="success">{aviso}</Alert>}
       {pendencia && (
-        <p role="status" className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800">{pendencia}</p>
+        <Alert tone="warning">{pendencia}</Alert>
       )}
 
       {pessoas === null && !erro && <p className="text-xs text-gray-500">Carregando...</p>}
@@ -246,7 +247,7 @@ export function Pessoas() {
                     <p className="mt-1 text-xs text-gray-600">Cadastro de motorista: {p.motorista.nome}</p>
                   )}
                   {faltaCadastro && (
-                    <p className="mt-1 text-xs font-semibold text-amber-700">
+                    <p className="mt-1 text-xs font-semibold text-(--tom-warning-texto)">
                       Ainda não consegue reservar: falta um cadastro de motorista ligado a este login.
                     </p>
                   )}
@@ -254,7 +255,7 @@ export function Pessoas() {
                     <button
                       type="button"
                       onClick={() => abrirLigacao(p)}
-                      className="mt-2 inline-flex h-11 items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 text-xs font-semibold text-amber-800 hover:bg-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 md:h-9"
+                      className="mt-2 inline-flex h-11 items-center gap-2 rounded-lg border border-(--tom-warning-borda) bg-(--tom-warning-fundo) px-3 text-xs font-semibold text-(--tom-warning-texto) hover:border-(--tom-warning-texto) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 md:h-9"
                     >
                       <Link2 size={14} aria-hidden="true" /> Ligar a um motorista
                       <span className="sr-only">: {p.name}</span>
@@ -404,9 +405,9 @@ function LigarMotoristaModal({
       rodape={
         <div className="space-y-2">
           {erro && (
-            <p id={idErro} role="alert" className="whitespace-pre-line text-xs text-red-600">
+            <Alert tone="danger" id={idErro} className="whitespace-pre-line">
               {erro}
-            </p>
+            </Alert>
           )}
           <div className="flex flex-wrap justify-end gap-2">
             <button
@@ -482,7 +483,7 @@ function LigarMotoristaModal({
               ))}
             </select>
             {erroCampo === "motorista" && (
-              <p id={idErroMotorista} className="mt-1 text-xs text-red-600">
+              <p id={idErroMotorista} className="mt-1 text-xs text-(--tom-danger-texto)">
                 Escolha o motorista que será ligado a {pessoa.name}.
               </p>
             )}
@@ -516,12 +517,12 @@ function LigarMotoristaModal({
                 ))}
               </select>
               {erroCampo === "centro" && (
-                <p id={idErroCentro} className="mt-1 text-xs text-red-600">
+                <p id={idErroCentro} className="mt-1 text-xs text-(--tom-danger-texto)">
                   Escolha o centro de custo: as reservas de {pessoa.name} saem nele.
                 </p>
               )}
               {erroCentros && (
-                <p id={`${id}-erro-centros`} className="mt-1 text-xs text-red-600">
+                <p id={`${id}-erro-centros`} className="mt-1 text-xs text-(--tom-danger-texto)">
                   Não deu para carregar os centros de custo: {erroCentros}
                 </p>
               )}

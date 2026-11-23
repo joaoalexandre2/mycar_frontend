@@ -20,13 +20,16 @@ import type {
   ServicosDaConta,
   SituacaoServico,
 } from "../../types/conta";
+import { Alert } from "../../components/ui/Alert";
+import { StatusChip } from "../../components/ui/StatusChip";
+import type { Tom } from "../../components/ui/tons";
 
-const SITUACAO: Record<SituacaoServico, { texto: string; classe: string }> = {
-  em_dia: { texto: "Em dia", classe: "bg-emerald-50 text-emerald-700" },
-  vence_em_breve: { texto: "Trocar em breve", classe: "bg-amber-50 text-amber-700" },
-  vencido: { texto: "Vencido", classe: "bg-red-50 text-red-600" },
-  sem_aviso: { texto: "Sem aviso", classe: "bg-gray-100 text-gray-500" },
-  anterior: { texto: "Anterior", classe: "bg-gray-100 text-gray-500" },
+const SITUACAO: Record<SituacaoServico, { texto: string; tom: Tom }> = {
+  em_dia: { texto: "Em dia", tom: "success" },
+  vence_em_breve: { texto: "Trocar em breve", tom: "warning" },
+  vencido: { texto: "Vencido", tom: "danger" },
+  sem_aviso: { texto: "Sem aviso", tom: "neutral" },
+  anterior: { texto: "Anterior", tom: "neutral" },
 };
 
 const NATUREZA: Record<NaturezaServico, string> = {
@@ -157,12 +160,9 @@ export function Servicos() {
       </div>
 
       {erro && (
-        <p
-          role="alert"
-          className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700"
-        >
+        <Alert tone="danger" className="mb-5">
           {erro}
-        </p>
+        </Alert>
       )}
 
       {dados && vigentes.length > 0 && (
@@ -318,11 +318,7 @@ export function Servicos() {
                         )}
                       </td>
                       <td data-label="Situação" className="px-5 py-4">
-                        <span
-                          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${situacao.classe}`}
-                        >
-                          {situacao.texto}
-                        </span>
+                        <StatusChip tone={situacao.tom}>{situacao.texto}</StatusChip>
                       </td>
                       <td className="px-5 py-4 text-right">
                         <div className="flex justify-end gap-3">

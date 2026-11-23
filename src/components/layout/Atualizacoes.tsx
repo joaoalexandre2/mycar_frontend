@@ -5,6 +5,7 @@ import { contaService } from "../../services/conta";
 import { manutencoesService } from "../../services/manutencoes";
 import { mensagemErro } from "../../services/api";
 import { useAuth } from "../../hooks/useAuth";
+import { Alert } from "../ui/Alert";
 import { ehConta, perfilDe } from "../../utils/perfil";
 import { formatarData, formatarKm } from "../../utils/formatters";
 import { mensagemKmDesconhecida, podeInformarKm, situacaoPorKm } from "../../utils/avisoPorKm";
@@ -221,19 +222,16 @@ export function Atualizacoes() {
           </div>
 
           {erro ? (
-            <p
-              role="alert"
-              className="px-4 py-4 text-xs text-red-600"
-            >
+            <Alert tone="danger" className="m-3">
               {erro}
-            </p>
+            </Alert>
           ) : avisos === null ? (
             <p className="px-4 py-4 text-xs text-gray-500">Carregando...</p>
           ) : avisos.length === 0 ? (
             <p className="flex items-center gap-2 px-4 py-5 text-xs text-gray-500">
               <CircleCheck
                 size={16}
-                className="text-emerald-500"
+                className="text-(--tom-success-texto)"
                 aria-hidden="true"
               />
               Tudo em dia. Nada precisa de atenção agora.
@@ -247,7 +245,7 @@ export function Atualizacoes() {
                 >
                   <span
                     className={`mt-0.5 shrink-0 ${
-                      aviso.tom === "atrasado" ? "text-red-600" : "text-amber-600"
+                      aviso.tom === "atrasado" ? "text-(--tom-danger-texto)" : "text-(--tom-warning-texto)"
                     }`}
                   >
                     {aviso.tom === "atrasado" ? (
@@ -291,7 +289,7 @@ export function Atualizacoes() {
 
                   <span
                     className={`shrink-0 text-xs font-semibold ${
-                      aviso.tom === "atrasado" ? "text-red-600" : "text-gray-600"
+                      aviso.tom === "atrasado" ? "text-(--tom-danger-texto)" : "text-gray-600"
                     }`}
                   >
                     {aviso.prazo}

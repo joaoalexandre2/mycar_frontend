@@ -18,8 +18,9 @@ describe("cores de situação distinguíveis", () => {
     const alerta = screen.getByText("1").className;
     const perigo = screen.getByText("2").className;
 
-    expect(alerta).toContain("text-amber-700");
-    expect(perigo).toContain("text-red-600");
+    // Tokens de tom (mudam no escuro) no lugar de text-amber-700/text-red-600.
+    expect(alerta).toContain("text-(--tom-warning-texto)");
+    expect(perigo).toContain("text-(--tom-danger-texto)");
     expect(alerta).not.toContain("blue");
   });
 
@@ -31,9 +32,11 @@ describe("cores de situação distinguíveis", () => {
       </>,
     );
 
+    // Viraram StatusChip: o tom sai em data-tom, e nenhum usa a escala da marca.
+    expect(screen.getByText("Aberta")).toHaveAttribute("data-tom", "neutral");
+    expect(screen.getByText("Cancelada")).toHaveAttribute("data-tom", "danger");
     expect(screen.getByText("Aberta").className).not.toContain("blue");
-    expect(screen.getByText("Aberta").className).not.toContain("red");
-    expect(screen.getByText("Cancelada").className).toContain("red");
+    expect(screen.getByText("Cancelada").className).not.toContain("blue");
   });
 
   it("InfoCard: o valor encolhe para caber no cartão", () => {

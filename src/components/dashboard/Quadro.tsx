@@ -10,14 +10,14 @@ export function Quadro({
   titulo: string;
   valor: ReactNode;
   detalhe?: string;
-  /** "alerta" pinta o número em âmbar; "perigo" em vermelho. */
+  /** "alerta" pinta o número no tom warning (âmbar); "perigo" no danger (vermelho). */
   tom?: "normal" | "alerta" | "perigo";
 }) {
   const cor =
     tom === "perigo"
-      ? "text-red-600"
+      ? "text-(--tom-danger-texto)"
       : tom === "alerta"
-        ? "text-amber-700"
+        ? "text-(--tom-warning-texto)"
         : "text-gray-900";
 
   return (

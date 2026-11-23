@@ -245,7 +245,7 @@ export function SelectComBusca<T = unknown>({
           )}
 
           {!carregando && resultado?.falhou && (
-            <li className="px-3 py-2 text-red-600">
+            <li className="px-3 py-2 text-(--tom-danger-texto)">
               Não foi possível buscar agora.
             </li>
           )}

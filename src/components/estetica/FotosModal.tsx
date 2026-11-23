@@ -4,6 +4,7 @@ import { Modal } from "../ui/Modal";
 import { patioService } from "../../services/estetica";
 import { mensagemErro } from "../../services/api";
 import type { AtendimentoDaEstetica } from "../../types/estetica";
+import { Alert } from "../ui/Alert";
 
 const classeCampo =
   "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
@@ -90,7 +91,7 @@ export function FotosModal({ atendimento, onAtualizado, onClose }: { atendimento
           </button>
         </form>
 
-        {erro && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{erro}</p>}
+        {erro && <Alert tone="danger">{erro}</Alert>}
       </div>
     </Modal>
   );

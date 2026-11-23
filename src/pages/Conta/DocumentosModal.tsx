@@ -12,15 +12,18 @@ import type {
   TipoDocumento,
   VeiculoConta,
 } from "../../types/conta";
+import { Alert } from "../../components/ui/Alert";
+import { StatusChip } from "../../components/ui/StatusChip";
+import type { Tom } from "../../components/ui/tons";
 
 const classeCampo =
   "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
 
-const SITUACAO: Record<SituacaoDocumento, { texto: string; classe: string }> = {
-  em_dia: { texto: "Em dia", classe: "bg-emerald-50 text-emerald-700" },
-  vence_em_breve: { texto: "Vence em breve", classe: "bg-amber-50 text-amber-700" },
-  vencido: { texto: "Vencido", classe: "bg-red-50 text-red-600" },
-  sem_data: { texto: "Sem data", classe: "bg-gray-100 text-gray-500" },
+const SITUACAO: Record<SituacaoDocumento, { texto: string; tom: Tom }> = {
+  em_dia: { texto: "Em dia", tom: "success" },
+  vence_em_breve: { texto: "Vence em breve", tom: "warning" },
+  vencido: { texto: "Vencido", tom: "danger" },
+  sem_data: { texto: "Sem data", tom: "neutral" },
 };
 
 function textoDeDias(item: Documento) {
@@ -196,9 +199,9 @@ export function DocumentosModal({
           </label>
 
           {erro && (
-            <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
+            <Alert tone="danger">
               {erro}
-            </p>
+            </Alert>
           )}
 
           <div className="flex justify-end">
@@ -242,11 +245,7 @@ export function DocumentosModal({
                   </div>
 
                   <div className="flex shrink-0 items-center gap-3">
-                    <span
-                      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${situacao.classe}`}
-                    >
-                      {situacao.texto}
-                    </span>
+                    <StatusChip tone={situacao.tom}>{situacao.texto}</StatusChip>
                     <button
                       type="button"
                       onClick={() => void remover(item.id)}

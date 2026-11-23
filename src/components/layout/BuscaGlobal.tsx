@@ -9,6 +9,7 @@ import { mensagemErro } from "../../services/api";
 import { useAuth } from "../../hooks/useAuth";
 import { ehConta, perfilDe } from "../../utils/perfil";
 import { formatarCpf, formatarMoeda } from "../../utils/formatters";
+import { Alert } from "../ui/Alert";
 
 interface Resultado {
   chave: string;
@@ -171,12 +172,9 @@ function PainelDeBusca({ aoFechar }: { aoFechar: () => void }) {
           ) : buscando ? (
             <p className="text-xs text-gray-500">Buscando...</p>
           ) : atual?.erro ? (
-            <p
-              role="alert"
-              className="text-xs text-red-600"
-            >
+            <Alert tone="danger">
               {atual.erro}
-            </p>
+            </Alert>
           ) : atual && atual.resultados.length === 0 ? (
             <p className="text-xs text-gray-500">
               Nada encontrado para “{termo}”.
