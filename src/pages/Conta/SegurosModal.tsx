@@ -14,6 +14,8 @@ import type {
   TipoSeguro,
   VeiculoConta,
 } from "../../types/conta";
+import { Alert } from "../../components/ui/Alert";
+import { StatusChip } from "../../components/ui/StatusChip";
 
 const classeCampo =
   "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
@@ -347,18 +349,15 @@ export function SegurosModal({
           </label>
 
           {erroDeCarga && (
-            <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
-              <span>{erroDeCarga}</span>
-              <button type="button" onClick={recarregar} className="font-semibold underline">
-                Tentar de novo
-              </button>
-            </div>
+            <Alert tone="danger" action={{ label: "Tentar de novo", onClick: recarregar }}>
+              {erroDeCarga}
+            </Alert>
           )}
 
           {erro && (
-            <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
+            <Alert tone="danger">
               {erro}
-            </p>
+            </Alert>
           )}
 
           <div className="flex justify-end">
@@ -400,9 +399,7 @@ export function SegurosModal({
                         </span>
                       )}
                       {ehMelhor && dados.seguros.filter((s) => s.tipo === "proposta").length > 1 && (
-                        <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-bold uppercase text-emerald-700">
-                          Mais barata
-                        </span>
+                        <StatusChip tone="success">Mais barata</StatusChip>
                       )}
                     </p>
                     <p className="mt-1 text-xs text-gray-500">
@@ -425,19 +422,13 @@ export function SegurosModal({
 
                   <div className="flex shrink-0 items-center gap-3">
                     {item.economiaVsApolice !== null && (
-                      <span
-                        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                          item.economiaVsApolice > 0
-                            ? "bg-emerald-50 text-emerald-700"
-                            : "bg-amber-50 text-amber-700"
-                        }`}
-                      >
+                      <StatusChip tone={item.economiaVsApolice > 0 ? "success" : "warning"}>
                         {item.economiaVsApolice > 0
                           ? `Economiza ${formatarMoeda(item.economiaVsApolice)}/ano`
                           : item.economiaVsApolice < 0
                             ? `${formatarMoeda(Math.abs(item.economiaVsApolice))}/ano a mais`
                             : "Igual ao atual"}
-                      </span>
+                      </StatusChip>
                     )}
                     <button
                       type="button"

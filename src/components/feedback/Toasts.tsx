@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { CircleAlert, CircleCheck, TriangleAlert, X } from "lucide-react";
 import type { TipoToast } from "../../contexts/notificacoesDefinition";
+import { CLASSES_DO_TOM } from "../ui/tons";
 
 export interface ToastItem {
   id: number;
@@ -14,10 +15,11 @@ const DURACAO_MS: Record<TipoToast, number> = {
   erro: 8000,
 };
 
+// Os mesmos tons do Alert (mudam entre o claro e o escuro).
 const ESTILO: Record<TipoToast, string> = {
-  sucesso: "border-green-200 bg-green-50 text-green-900",
-  aviso: "border-amber-200 bg-amber-50 text-amber-900",
-  erro: "border-red-200 bg-red-50 text-red-900",
+  sucesso: CLASSES_DO_TOM.success,
+  aviso: CLASSES_DO_TOM.warning,
+  erro: CLASSES_DO_TOM.danger,
 };
 
 const ICONE = {

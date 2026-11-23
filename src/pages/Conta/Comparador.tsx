@@ -16,6 +16,7 @@ import {
 } from "../../utils/comparador";
 import type { ResultadoComparador } from "../../types/comparador";
 import type { VeiculoConta } from "../../types/conta";
+import { Alert } from "../../components/ui/Alert";
 
 const classeCampo =
   "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
@@ -115,12 +116,9 @@ export function Comparador() {
       </div>
 
       {(erro ?? veiculosDaConta.erro) && (
-        <p
-          role="alert"
-          className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700"
-        >
+        <Alert tone="danger" className="mb-5">
           {erro ?? veiculosDaConta.erro}
-        </p>
+        </Alert>
       )}
 
       <form
@@ -234,16 +232,16 @@ export function Comparador() {
       </form>
 
       {resultado?.status === "sem_configuracao" && (
-        <div className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-xs text-amber-800">
+        <Alert tone="warning" className="mb-5">
           O comparador automático ainda não foi ativado pela equipe do MyCar.
           Enquanto isso, use os atalhos das lojas abaixo.
-        </div>
+        </Alert>
       )}
       {resultado?.status === "indisponivel" && (
-        <div className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-xs text-amber-800">
+        <Alert tone="warning" className="mb-5">
           A loja não respondeu agora. Tente de novo em instantes ou use os
           atalhos abaixo.
-        </div>
+        </Alert>
       )}
       {resultado?.status === "sem_resultados" && (
         <div className="mb-5 rounded-2xl border border-gray-200 bg-white px-5 py-4 text-xs text-gray-600">

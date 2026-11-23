@@ -5,6 +5,7 @@ import { authService } from "../../services/auth";
 import { mensagemErro } from "../../services/api";
 import { fotoDePerfil } from "../../utils/imagem";
 import { Avatar } from "./Avatar";
+import { Alert } from "../ui/Alert";
 
 /**
  * O ícone da pessoa no cabeçalho: ao clicar, abre as opções de foto. No celular,
@@ -118,9 +119,9 @@ export function AvatarMenu() {
           )}
 
           {erro && (
-            <p role="alert" className="px-3 py-2 text-xs text-red-600">
+            <Alert tone="danger" className="mt-1">
               {erro}
-            </p>
+            </Alert>
           )}
         </div>
       )}

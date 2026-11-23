@@ -4,6 +4,7 @@ import { mensagemErro } from "../../services/api";
 import { ListaComBusca } from "../ui/ListaComBusca";
 import { modeloDaFipe, modelosDistintos, versoesDoModelo } from "../../utils/fipeModelos";
 import type { TipoVeiculo } from "../../types/veiculo";
+import { Alert } from "../ui/Alert";
 
 export interface FipeSelecao {
   marcaId: string;
@@ -214,7 +215,7 @@ export function FipeSeletor({
         />
       </div>
 
-      {erro && <p className="text-xs text-red-600">{erro}</p>}
+      {erro && <Alert tone="danger">{erro}</Alert>}
     </div>
   );
 }

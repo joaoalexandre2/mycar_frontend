@@ -4,6 +4,7 @@ import { historicoEsteticaService } from "../../services/estetica";
 import { mensagemErro } from "../../services/api";
 import { formatarData, formatarDataHora } from "../../utils/formatters";
 import type { HistoricoDaPlaca } from "../../types/estetica";
+import { Alert } from "../../components/ui/Alert";
 
 const ETAPA_TEXTO = { entrada: "Na entrada", atendimento: "Em atendimento", entrega: "Pronto", entregue: "Entregue" } as const;
 
@@ -46,7 +47,7 @@ export function HistoricoPlaca() {
         </button>
       </form>
 
-      {erro && <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-xs text-red-600">{erro}</p>}
+      {erro && <Alert tone="danger">{erro}</Alert>}
 
       {historico && (
         <div className="space-y-4">

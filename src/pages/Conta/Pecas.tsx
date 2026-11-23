@@ -17,6 +17,7 @@ import type {
   PecaCatalogo,
   VeiculoConta,
 } from "../../types/conta";
+import { Alert } from "../../components/ui/Alert";
 
 const SUGESTOES = ["amortecedor", "coifa", "pastilha", "bateria", "correia", "óleo"];
 
@@ -238,11 +239,7 @@ function PecaItem({
               className={classeCampo}
             />
           </div>
-          {erro && (
-            <p role="alert" className="text-xs text-red-600">
-              {erro}
-            </p>
-          )}
+          {erro && <Alert tone="danger">{erro}</Alert>}
           <button
             type="submit"
             disabled={salvando}
@@ -254,9 +251,9 @@ function PecaItem({
       )}
 
       {!aberto && erro && (
-        <p role="alert" className="mt-1 text-xs text-red-600">
+        <Alert tone="danger" className="mt-1">
           {erro}
-        </p>
+        </Alert>
       )}
     </li>
   );
@@ -346,12 +343,9 @@ export function Pecas() {
       </div>
 
       {(erro ?? veiculosDaConta.erro) && (
-        <p
-          role="alert"
-          className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700"
-        >
+        <Alert tone="danger" className="mb-5">
           {erro ?? veiculosDaConta.erro}
-        </p>
+        </Alert>
       )}
 
       <div className="mb-5 rounded-2xl border border-gray-200 bg-white p-5">

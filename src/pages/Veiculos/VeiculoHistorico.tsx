@@ -16,25 +16,11 @@ import {
 import { mensagemErro } from "../../services/api";
 import { ErroDeLista } from "../../components/ui/ErroDeLista";
 import { formatarData, formatarMoeda } from "../../utils/formatters";
-import type { StatusOrdemServico } from "../../types/ordemServico";
 import { FichaTecnicaCard } from "./FichaTecnicaCard";
 import { PecasCard } from "./PecasCard";
-
-const STATUS_OS_LABEL: Record<StatusOrdemServico, string> = {
-  aberta: "Aberta",
-  em_andamento: "Em andamento",
-  aguardando_peca: "Aguardando peça",
-  finalizada: "Finalizada",
-  cancelada: "Cancelada",
-};
-
-const STATUS_OS_CLASSE: Record<StatusOrdemServico, string> = {
-  aberta: "bg-blue-100 text-blue-700",
-  em_andamento: "bg-yellow-100 text-yellow-700",
-  aguardando_peca: "bg-orange-100 text-orange-700",
-  finalizada: "bg-green-100 text-green-700",
-  cancelada: "bg-red-100 text-red-700",
-};
+import { StatusChip } from "../../components/ui/StatusChip";
+import type { Tom } from "../../components/ui/tons";
+import { STATUS_LABEL, TOM_DO_STATUS_OS } from "../OrdensServico/statusOrdemServico";
 
 interface EventoTimeline {
   data: string;
@@ -42,7 +28,7 @@ interface EventoTimeline {
   titulo: string;
   descricao: string;
   valor: number | null;
-  badge?: { label: string; classe: string };
+  badge?: { label: string; tom: Tom };
 }
 
 function montarTimeline(historico: HistoricoVeiculo): EventoTimeline[] {
@@ -56,8 +42,8 @@ function montarTimeline(historico: HistoricoVeiculo): EventoTimeline[] {
       descricao: ordem.descricao,
       valor: ordem.valor,
       badge: {
-        label: STATUS_OS_LABEL[ordem.status],
-        classe: STATUS_OS_CLASSE[ordem.status],
+        label: STATUS_LABEL[ordem.status],
+        tom: TOM_DO_STATUS_OS[ordem.status],
       },
     });
   }
@@ -151,7 +137,7 @@ export function VeiculoHistorico({
         >
           <ArrowLeft size={17} />
         </button>
-        <div className="overflow-hidden rounded-xl border border-red-200">
+        <div className="overflow-hidden rounded-xl border border-(--tom-danger-borda)">
           <ErroDeLista
             titulo="Não foi possível carregar o histórico."
             mensagem={erro ?? "Tente de novo em instantes."}
@@ -284,11 +270,7 @@ export function VeiculoHistorico({
                       {evento.titulo}
                     </h4>
                     {evento.badge && (
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-semibold ${evento.badge.classe}`}
-                      >
-                        {evento.badge.label}
-                      </span>
+                      <StatusChip tone={evento.badge.tom}>{evento.badge.label}</StatusChip>
                     )}
                   </div>
 

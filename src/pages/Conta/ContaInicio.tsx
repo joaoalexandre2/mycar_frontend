@@ -9,6 +9,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { formatarData, formatarKm, formatarMoeda } from "../../utils/formatters";
 import { mensagemKmDesconhecida, podeInformarKm, situacaoPorKm } from "../../utils/avisoPorKm";
 import type { ResumoConta, TipoVencimento, Vencimento } from "../../types/conta";
+import { Alert } from "../../components/ui/Alert";
 
 const ROTULO_TIPO = {
   ipva: "IPVA",
@@ -60,10 +61,10 @@ function prazoDoVencimento(item: Vencimento) {
 }
 
 const CLASSE_DO_TOM = {
-  atrasado: "text-red-600",
+  atrasado: "text-(--tom-danger-texto)",
   // Âmbar, não "blue": a escala blue é a cor da marca (vermelha) e ficaria
   // igual ao "atrasado".
-  breve: "text-amber-700",
+  breve: "text-(--tom-warning-texto)",
   normal: "text-gray-900",
 } as const;
 
@@ -119,12 +120,9 @@ export function ContaInicio() {
       </div>
 
       {erro && (
-        <p
-          role="alert"
-          className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700"
-        >
+        <Alert tone="danger" className="mb-5">
           {erro}
-        </p>
+        </Alert>
       )}
 
       <div className="mb-5 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">

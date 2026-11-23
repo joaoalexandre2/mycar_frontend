@@ -14,6 +14,8 @@ import type {
   ManutencaoFicha,
   VeiculoConta,
 } from "../../types/conta";
+import { Alert } from "../../components/ui/Alert";
+import { CLASSES_DO_TOM } from "../../components/ui/tons";
 
 type Chave = keyof NonNullable<ManutencaoFicha>;
 type Campo = { chave: Chave; rotulo: string; numerico?: boolean };
@@ -239,12 +241,9 @@ export function FichaTecnica() {
       </div>
 
       {(erro ?? veiculosDaConta.erro) && (
-        <p
-          role="alert"
-          className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700"
-        >
+        <Alert tone="danger" className="mb-5">
           {erro ?? veiculosDaConta.erro}
-        </p>
+        </Alert>
       )}
 
       {veiculosDaConta.carregado && veiculosDaConta.total === 0 && (
@@ -334,10 +333,9 @@ export function FichaTecnica() {
                 {avisoDeAno && (
                   <p
                     role="status"
+                    data-tom={avisoDeAno.nivel === "forte" ? "warning" : "neutral"}
                     className={`mb-4 flex items-start gap-2 rounded-lg border px-3 py-2 text-xs ${
-                      avisoDeAno.nivel === "forte"
-                        ? "border-amber-200 bg-amber-50 text-amber-800"
-                        : "border-gray-200 bg-gray-50 text-gray-600"
+                      CLASSES_DO_TOM[avisoDeAno.nivel === "forte" ? "warning" : "neutral"]
                     }`}
                   >
                     <TriangleAlert size={14} className="mt-0.5 shrink-0" />

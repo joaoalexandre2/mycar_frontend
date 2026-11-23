@@ -6,13 +6,17 @@ import {
   type BarraDeProgresso,
 } from "../../utils/progressoServico";
 import type { Servico, SituacaoServico } from "../../types/conta";
+import { StatusChip } from "../../components/ui/StatusChip";
+import type { Tom } from "../../components/ui/tons";
 
-const SITUACAO: Record<SituacaoServico, { texto: string; pilula: string; barra: string }> = {
-  em_dia: { texto: "Em dia", pilula: "bg-gray-100 text-gray-600", barra: "bg-gray-800" },
-  vence_em_breve: { texto: "Trocar em breve", pilula: "bg-amber-100 text-amber-800", barra: "bg-amber-500" },
-  vencido: { texto: "Vencido", pilula: "bg-red-100 text-red-700", barra: "bg-red-600" },
-  sem_aviso: { texto: "Sem aviso", pilula: "bg-gray-100 text-gray-500", barra: "bg-gray-300" },
-  anterior: { texto: "Anterior", pilula: "bg-gray-100 text-gray-500", barra: "bg-gray-300" },
+// Mesmos tons da lista de Serviços (em dia = success, em breve = warning,
+// vencido = danger). A barra de progresso segue com as cores de antes.
+const SITUACAO: Record<SituacaoServico, { texto: string; tom: Tom; barra: string }> = {
+  em_dia: { texto: "Em dia", tom: "success", barra: "bg-gray-800" },
+  vence_em_breve: { texto: "Trocar em breve", tom: "warning", barra: "bg-amber-500" },
+  vencido: { texto: "Vencido", tom: "danger", barra: "bg-red-600" },
+  sem_aviso: { texto: "Sem aviso", tom: "neutral", barra: "bg-gray-300" },
+  anterior: { texto: "Anterior", tom: "neutral", barra: "bg-gray-300" },
 };
 
 function numero(n: number) {
@@ -107,11 +111,9 @@ export function CartaoServico({ servico }: { servico: Servico }) {
           </p>
         </div>
 
-        <span
-          className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${situacao.pilula}`}
-        >
+        <StatusChip tone={situacao.tom} className="shrink-0">
           {situacao.texto}
-        </span>
+        </StatusChip>
       </header>
 
       <div className="mt-4 space-y-3">
@@ -128,7 +130,7 @@ export function CartaoServico({ servico }: { servico: Servico }) {
       </div>
 
       <footer className="mt-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-gray-100 pt-3 text-xs">
-        <span className={servico.situacao === "vencido" ? "font-semibold text-red-600" : "text-gray-600"}>
+        <span className={servico.situacao === "vencido" ? "font-semibold text-(--tom-danger-texto)" : "text-gray-600"}>
           {restante || "—"}
         </span>
         <span className="text-gray-500">

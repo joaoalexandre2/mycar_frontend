@@ -17,6 +17,7 @@ import { formatarData, formatarKm, formatarMoeda } from "../../utils/formatters"
 import { diasAteData } from "../../utils/prazos";
 import type { OrigemKmConhecida, VeiculoConta } from "../../types/conta";
 import { ROTULO_TIPO, temEstimativas, tipoDe } from "../../utils/tipoVeiculo";
+import { Alert } from "../../components/ui/Alert";
 
 export interface AcoesDoVeiculo {
   atualizarFipe: () => void;
@@ -93,7 +94,7 @@ function Imposto({
       </p>
       {isento ? (
         <>
-          <p className="font-display text-xl leading-tight font-semibold text-emerald-700">
+          <p className="font-display text-xl leading-tight font-semibold text-(--tom-success-texto)">
             Isento
           </p>
           <p className="text-xs text-gray-500">mais de 20 anos de fabricação</p>
@@ -104,12 +105,12 @@ function Imposto({
         </p>
       )}
       {aliquotaMedia && valor !== null && !isento && (
-        <p className="text-xs text-amber-600">alíquota média do país</p>
+        <p className="text-xs text-(--tom-warning-texto)">alíquota média do país</p>
       )}
       {vencimento && !isento && (
         <p
           className={`mt-0.5 text-xs ${
-            perto ? "font-semibold text-blue-600" : "text-gray-500"
+            perto ? "font-semibold text-(--tom-warning-texto)" : "text-gray-500"
           }`}
         >
           vence (est.) {formatarData(vencimento)}
@@ -242,13 +243,10 @@ export function CartaoVeiculo({
 
       <div className="flex flex-1 flex-col gap-3 p-4">
         {!placaValida(veiculo.placa) && (
-          <p
-            role="alert"
-            className="rounded-xl bg-red-50 px-3 py-2 text-xs font-semibold text-red-600"
-          >
+          <Alert tone="danger" className="font-semibold">
             A placa "{veiculo.placa}" está fora do padrão. Toque em editar e
             corrija a placa (ABC1234 ou ABC1D23).
-          </p>
+          </Alert>
         )}
 
         <div className="flex items-end justify-between gap-3">
@@ -318,7 +316,7 @@ export function CartaoVeiculo({
         )}
 
         {veiculo.possivelIsencaoIpva && (
-          <p className="text-xs text-amber-600">
+          <p className="text-xs text-(--tom-warning-texto)">
             Carro com 15 a 20 anos: alguns estados isentam o IPVA. Confira na Sefaz.
           </p>
         )}

@@ -11,6 +11,9 @@ import type {
   StatusSugestao,
   Sugestao,
 } from "../../types/sugestoes";
+import { Alert } from "../../components/ui/Alert";
+import { StatusChip } from "../../components/ui/StatusChip";
+import type { Tom } from "../../components/ui/tons";
 
 const LIMITE_IMAGENS = 3;
 
@@ -24,12 +27,13 @@ const CATEGORIAS: { chave: CategoriaSugestao; rotulo: string }[] = [
   { chave: "outro", rotulo: "Outro" },
 ];
 
-const STATUS: { chave: StatusSugestao; rotulo: string; classe: string }[] = [
-  { chave: "nova", rotulo: "Recebida", classe: "bg-gray-100 text-gray-600" },
-  { chave: "em_analise", rotulo: "Em análise", classe: "bg-amber-50 text-amber-700" },
-  { chave: "planejada", rotulo: "Planejada", classe: "bg-blue-50 text-blue-700" },
-  { chave: "feita", rotulo: "Feita", classe: "bg-emerald-50 text-emerald-700" },
-  { chave: "recusada", rotulo: "Não vai entrar", classe: "bg-red-50 text-red-600" },
+// "Planejada" usava a escala blue, que é a cor da marca: passou a info.
+const STATUS: { chave: StatusSugestao; rotulo: string; tom: Tom }[] = [
+  { chave: "nova", rotulo: "Recebida", tom: "neutral" },
+  { chave: "em_analise", rotulo: "Em análise", tom: "warning" },
+  { chave: "planejada", rotulo: "Planejada", tom: "info" },
+  { chave: "feita", rotulo: "Feita", tom: "success" },
+  { chave: "recusada", rotulo: "Não vai entrar", tom: "danger" },
 ];
 
 const rotuloCategoria = (chave: CategoriaSugestao) =>
@@ -39,9 +43,7 @@ function Selo({ status }: { status: StatusSugestao }) {
   const item = STATUS.find((s) => s.chave === status) ?? STATUS[0];
 
   return (
-    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${item.classe}`}>
-      {item.rotulo}
-    </span>
+    <StatusChip tone={item.tom}>{item.rotulo}</StatusChip>
   );
 }
 
@@ -103,7 +105,7 @@ function RespostaDaEquipe({
         onChange={(e) => setResposta(e.target.value)}
         className={`${classeCampo} py-2`}
       />
-      {erro && <p className="text-xs text-red-600">{erro}</p>}
+      {erro && <p className="text-xs text-(--tom-danger-texto)">{erro}</p>}
     </div>
   );
 }
@@ -308,14 +310,14 @@ export function Sugestoes() {
         </div>
 
         {erroDoEnvio && (
-          <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
+          <Alert tone="danger">
             {erroDoEnvio}
-          </p>
+          </Alert>
         )}
         {enviada && (
-          <p role="status" className="rounded-lg bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+          <Alert tone="success">
             Sugestão enviada. Obrigado! Você acompanha o andamento na lista abaixo.
-          </p>
+          </Alert>
         )}
 
         <div className="flex justify-end">
@@ -380,12 +382,9 @@ export function Sugestoes() {
 
         {!lista ? (
           erroDeCarga ? (
-            <div role="alert" className="flex flex-wrap items-center justify-between gap-3 p-5 text-xs text-red-600">
-              <span>{erroDeCarga}</span>
-              <button type="button" onClick={recarregar} className="font-semibold underline">
-                Tentar de novo
-              </button>
-            </div>
+            <Alert tone="danger" className="m-5" action={{ label: "Tentar de novo", onClick: recarregar }}>
+              {erroDeCarga}
+            </Alert>
           ) : (
             <p className="p-5 text-xs text-gray-500">Carregando...</p>
           )

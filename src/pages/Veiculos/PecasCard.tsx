@@ -9,6 +9,7 @@ import {
 import { mensagemErro } from "../../services/api";
 import { ErroDeLista } from "../../components/ui/ErroDeLista";
 import { dataISOLocal, formatarData } from "../../utils/formatters";
+import { Alert } from "../../components/ui/Alert";
 
 const FORM_VAZIO = {
   tipo: "",
@@ -200,9 +201,9 @@ export function PecasCard({ veiculoId }: { veiculoId: number }) {
             </label>
           </div>
           {erroDoForm && (
-            <p role="alert" className="text-xs font-medium text-red-700">
+            <Alert tone="danger">
               {erroDoForm}
-            </p>
+            </Alert>
           )}
           <div className="flex justify-end gap-2">
             <button

@@ -15,6 +15,8 @@ import {
   type VeiculoConta,
 } from "../../types/conta";
 import type { Motorista } from "../../types/frota";
+import { Alert } from "../../components/ui/Alert";
+import { StatusChip } from "../../components/ui/StatusChip";
 
 const classeCampo =
   "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
@@ -424,9 +426,9 @@ export function AbastecimentosModal({
           )}
 
           {erro && (
-            <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
+            <Alert tone="danger">
               {erro}
-            </p>
+            </Alert>
           )}
 
           <div className="flex justify-end">
@@ -469,7 +471,7 @@ export function AbastecimentosModal({
                   {item.alertas.length > 0 && (
                     <ul className="mt-1 space-y-0.5">
                       {item.alertas.map((alerta) => (
-                        <li key={alerta.codigo} className="text-xs text-amber-700">
+                        <li key={alerta.codigo} className="text-xs text-(--tom-warning-texto)">
                           {alerta.mensagem}
                         </li>
                       ))}
@@ -493,9 +495,7 @@ export function AbastecimentosModal({
 
                 <div className="flex shrink-0 items-center gap-3">
                   {item.consumoKmL !== null && (
-                    <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-                      {numero(item.consumoKmL, 2, " km/l")}
-                    </span>
+                    <StatusChip tone="success">{numero(item.consumoKmL, 2, " km/l")}</StatusChip>
                   )}
                   <button
                     type="button"

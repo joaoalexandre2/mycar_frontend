@@ -5,6 +5,7 @@ import { mensagemErro } from "../../services/api";
 import { meusMycarsService } from "../../services/meusMycars";
 import { ORDEM_PERFIS, PERFIS } from "../../utils/perfil";
 import type { Perfil } from "../../types/auth";
+import { Alert } from "../ui/Alert";
 
 const ROTULO_DO_NOME: Partial<Record<Perfil, string>> = {
   oficina: "Nome da oficina",
@@ -111,9 +112,9 @@ export function NovoMycarModal({
         )}
 
         {erro && (
-          <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
+          <Alert tone="danger">
             {erro}
-          </p>
+          </Alert>
         )}
 
         <div className="flex justify-end gap-2">
