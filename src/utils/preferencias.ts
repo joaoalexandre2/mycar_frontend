@@ -63,15 +63,18 @@ export function salvarAparencia(tema: Tema, cor: Cor) {
 }
 
 /**
- * O app tem um visual só, inspirado na Webmotors (Figtree, vermelho da marca,
- * cantos arredondados). O atributo data-estilo continua sendo posto na raiz
- * para o CSS poder se apoiar nele, mas não varia mais por perfil.
+ * O app tem um visual só (Figtree, cor principal do MyCar, cantos
+ * arredondados). O atributo data-estilo continua sendo posto na raiz para o
+ * CSS poder se apoiar nele, mas não varia mais por perfil. O valor não é
+ * gravado em lugar nenhum (sai do usuário logado a cada carga), e a cor
+ * escolhida continua na mesma chave ("mycar_cor") com os mesmos valores:
+ * "blue" segue sendo a cor principal do MyCar.
  */
-export type Estilo = "webmotors";
+export type Estilo = "mycar";
 
 /** Estilo do usuário logado; sem usuário (telas públicas), nenhum atributo. */
 export function estiloDoPerfil(usuario: Usuario | null | undefined): Estilo | null {
-  return usuario ? "webmotors" : null;
+  return usuario ? "mycar" : null;
 }
 
 /** Cor que o usuário já escolheu neste navegador; null se nunca escolheu. */
@@ -95,7 +98,7 @@ export function aplicarEstilo(estilo: Estilo | null) {
 
 /**
  * Aplica o que está salvo neste navegador. Quem nunca escolheu cor fica na
- * padrão ("blue"), que no visual Webmotors é o vermelho da marca.
+ * padrão ("blue"), que é a cor principal do MyCar (--marca-* no index.css).
  */
 export function aplicarAparenciaSalva(estilo: Estilo | null = null) {
   aplicarEstilo(estilo);

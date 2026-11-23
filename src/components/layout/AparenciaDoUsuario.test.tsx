@@ -83,7 +83,7 @@ describe("AparenciaDoUsuario", () => {
 
         const { unmount } = montar("/", { ...semEscolha, perfil });
 
-        expect(document.documentElement.dataset.estilo).toBe("webmotors");
+        expect(document.documentElement.dataset.estilo).toBe("mycar");
         expect(document.documentElement.dataset.cor).toBe("blue");
 
         unmount();
@@ -93,7 +93,7 @@ describe("AparenciaDoUsuario", () => {
     it("quem já escolheu uma cor na conta mantém a cor, e o estilo continua", () => {
       montar("/", { ...semEscolha, perfil: "frota", tema: "claro", cor: "green" });
 
-      expect(document.documentElement.dataset.estilo).toBe("webmotors");
+      expect(document.documentElement.dataset.estilo).toBe("mycar");
       expect(document.documentElement.dataset.cor).toBe("green");
     });
 
@@ -102,7 +102,7 @@ describe("AparenciaDoUsuario", () => {
 
       montar("/", semEscolha);
 
-      expect(document.documentElement.dataset.estilo).toBe("webmotors");
+      expect(document.documentElement.dataset.estilo).toBe("mycar");
       expect(document.documentElement.dataset.cor).toBe("purple");
     });
 
@@ -112,11 +112,11 @@ describe("AparenciaDoUsuario", () => {
 
       montar("/", semPerfil);
 
-      expect(document.documentElement.dataset.estilo).toBe("webmotors");
+      expect(document.documentElement.dataset.estilo).toBe("mycar");
     });
 
     it("o login não recebe o atributo de estilo, mesmo com usuário logado", () => {
-      document.documentElement.dataset.estilo = "webmotors";
+      document.documentElement.dataset.estilo = "mycar";
 
       montar("/login", semEscolha);
 
