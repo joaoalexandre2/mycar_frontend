@@ -10,10 +10,7 @@ import { CampoEmReais } from "./CampoEmReais";
 import type { CategoriaDeDespesa, DespesaAvulsa, DespesaAvulsaPayload } from "../../types/financeiro";
 import type { Motorista } from "../../types/frota";
 import type { VeiculoConta } from "../../types/conta";
-
-const classeCampo =
-  "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
-const rotulo = "mb-1.5 block text-xs font-medium text-gray-700";
+import { classeDoCampo, classeDoRotulo } from "../ui/Campo";
 
 interface Props {
   despesa: DespesaAvulsa | null;
@@ -105,8 +102,8 @@ export function DespesaAvulsaModal({ despesa, categorias, veiculos, motoristas, 
       <form onSubmit={(e) => void salvar(e)} className="space-y-4 px-6 py-5">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="despesa-data" className={rotulo}>Data</label>
-            <input id="despesa-data" type="date" value={data} onChange={(e) => setData(e.target.value)} className={classeCampo} />
+            <label htmlFor="despesa-data" className={classeDoRotulo}>Data</label>
+            <input id="despesa-data" type="date" value={data} onChange={(e) => setData(e.target.value)} className={classeDoCampo} />
           </div>
           <CampoEmReais
             id="despesa-valor"
@@ -117,14 +114,12 @@ export function DespesaAvulsaModal({ despesa, categorias, veiculos, motoristas, 
               setErroValor(null);
             }}
             erro={erroValor}
-            classeCampo={classeCampo}
-            classeRotulo={rotulo}
           />
         </div>
 
         <div>
-          <label htmlFor="despesa-categoria" className={rotulo}>Categoria</label>
-          <select id="despesa-categoria" value={categoriaId} onChange={(e) => setCategoriaId(e.target.value)} className={classeCampo}>
+          <label htmlFor="despesa-categoria" className={classeDoRotulo}>Categoria</label>
+          <select id="despesa-categoria" value={categoriaId} onChange={(e) => setCategoriaId(e.target.value)} className={classeDoCampo}>
             <option value="">Escolha...</option>
             {categoriasAtivas.map((c) => (
               <option key={c.id} value={c.id}>{c.nome}</option>
@@ -134,8 +129,8 @@ export function DespesaAvulsaModal({ despesa, categorias, veiculos, motoristas, 
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="despesa-veiculo" className={rotulo}>Veículo (opcional)</label>
-            <select id="despesa-veiculo" value={veiculoId} onChange={(e) => setVeiculoId(e.target.value)} className={classeCampo}>
+            <label htmlFor="despesa-veiculo" className={classeDoRotulo}>Veículo (opcional)</label>
+            <select id="despesa-veiculo" value={veiculoId} onChange={(e) => setVeiculoId(e.target.value)} className={classeDoCampo}>
               <option value="">Sem veículo</option>
               {veiculos.map((v) => (
                 <option key={v.id} value={v.id}>{v.placa} · {v.marca} {v.modelo}</option>
@@ -143,8 +138,8 @@ export function DespesaAvulsaModal({ despesa, categorias, veiculos, motoristas, 
             </select>
           </div>
           <div>
-            <label htmlFor="despesa-motorista" className={rotulo}>Motorista (opcional)</label>
-            <select id="despesa-motorista" value={motoristaId} onChange={(e) => setMotoristaId(e.target.value)} className={classeCampo}>
+            <label htmlFor="despesa-motorista" className={classeDoRotulo}>Motorista (opcional)</label>
+            <select id="despesa-motorista" value={motoristaId} onChange={(e) => setMotoristaId(e.target.value)} className={classeDoCampo}>
               <option value="">Sem motorista</option>
               {motoristas.map((m) => (
                 <option key={m.id} value={m.id}>{m.nome}</option>
@@ -154,8 +149,8 @@ export function DespesaAvulsaModal({ despesa, categorias, veiculos, motoristas, 
         </div>
 
         <div>
-          <label htmlFor="despesa-centro" className={rotulo}>Centro de custo (opcional)</label>
-          <select id="despesa-centro" value={centroId} onChange={(e) => setCentroId(e.target.value)} className={classeCampo}>
+          <label htmlFor="despesa-centro" className={classeDoRotulo}>Centro de custo (opcional)</label>
+          <select id="despesa-centro" value={centroId} onChange={(e) => setCentroId(e.target.value)} className={classeDoCampo}>
             <option value="">Sem centro de custo</option>
             {centros.map((c) => (
               <option key={c.id} value={c.id}>{c.nome}</option>
@@ -165,12 +160,12 @@ export function DespesaAvulsaModal({ despesa, categorias, veiculos, motoristas, 
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="despesa-descricao" className={rotulo}>Descrição</label>
-            <input id="despesa-descricao" type="text" maxLength={160} value={descricao} onChange={(e) => setDescricao(e.target.value)} className={classeCampo} />
+            <label htmlFor="despesa-descricao" className={classeDoRotulo}>Descrição</label>
+            <input id="despesa-descricao" type="text" maxLength={160} value={descricao} onChange={(e) => setDescricao(e.target.value)} className={classeDoCampo} />
           </div>
           <div>
-            <label htmlFor="despesa-comprovante" className={rotulo}>Nº do comprovante</label>
-            <input id="despesa-comprovante" type="text" maxLength={80} value={comprovante} onChange={(e) => setComprovante(e.target.value)} className={classeCampo} />
+            <label htmlFor="despesa-comprovante" className={classeDoRotulo}>Nº do comprovante</label>
+            <input id="despesa-comprovante" type="text" maxLength={80} value={comprovante} onChange={(e) => setComprovante(e.target.value)} className={classeDoCampo} />
           </div>
         </div>
 

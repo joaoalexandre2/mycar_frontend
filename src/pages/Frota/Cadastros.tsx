@@ -14,10 +14,7 @@ import { useConfirmar } from "../../hooks/useNotificacoes";
 import { formatarData } from "../../utils/formatters";
 import { situacaoDaCnh } from "../../utils/motorista";
 import type { CentroCusto, EstadoAcessoMotorista, Motorista } from "../../types/frota";
-
-const classeCampo =
-  "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
-const rotulo = "mb-1.5 block text-xs font-medium text-gray-700";
+import { classeDoCampo, classeDoRotulo } from "../../components/ui/Campo";
 
 type Aba = "motoristas" | "centros" | "historico";
 
@@ -367,7 +364,7 @@ function AcessoMotoristaModal({
           {motorista.nome} recebe por e-mail um link para criar a senha. Com ela, reserva os veículos e registra saída e chegada.
         </p>
         <div>
-          <label htmlFor="mot-acesso-email" className={rotulo}>E-mail do motorista</label>
+          <label htmlFor="mot-acesso-email" className={classeDoRotulo}>E-mail do motorista</label>
           <input
             id="mot-acesso-email"
             type="email"
@@ -377,7 +374,7 @@ function AcessoMotoristaModal({
             maxLength={255}
             readOnly={emailFixo !== null}
             onChange={(e) => setEmail(e.target.value)}
-            className={`${classeCampo} read-only:bg-gray-50`}
+            className={`${classeDoCampo} read-only:bg-gray-50`}
             autoFocus={emailFixo === null}
           />
           {emailFixo && <p className="mt-1 text-xs text-gray-500">O convite vai para o e-mail do login já criado.</p>}
@@ -483,16 +480,16 @@ function MotoristaModal({
     <Modal titulo={motorista ? "Editar motorista" : "Novo motorista"} icone={<UserRound size={16} />} onClose={onClose}>
       <form onSubmit={(e) => void salvar(e)} className="space-y-4 px-6 py-5">
         <div>
-          <label htmlFor="mot-nome" className={rotulo}>Nome</label>
-          <input id="mot-nome" type="text" value={nome} maxLength={120} onChange={(e) => setNome(e.target.value)} className={classeCampo} autoFocus />
+          <label htmlFor="mot-nome" className={classeDoRotulo}>Nome</label>
+          <input id="mot-nome" type="text" value={nome} maxLength={120} onChange={(e) => setNome(e.target.value)} className={classeDoCampo} autoFocus />
         </div>
         <div>
-          <label htmlFor="mot-tel" className={rotulo}>Telefone</label>
-          <input id="mot-tel" type="text" value={telefone} maxLength={30} onChange={(e) => setTelefone(e.target.value)} className={classeCampo} />
+          <label htmlFor="mot-tel" className={classeDoRotulo}>Telefone</label>
+          <input id="mot-tel" type="text" value={telefone} maxLength={30} onChange={(e) => setTelefone(e.target.value)} className={classeDoCampo} />
         </div>
         <div>
-          <label htmlFor="mot-centro" className={rotulo}>Centro de custo</label>
-          <select id="mot-centro" value={centroId} onChange={(e) => setCentroId(e.target.value)} className={classeCampo}>
+          <label htmlFor="mot-centro" className={classeDoRotulo}>Centro de custo</label>
+          <select id="mot-centro" value={centroId} onChange={(e) => setCentroId(e.target.value)} className={classeDoCampo}>
             <option value="">Escolha...</option>
             {(centros ?? []).map((c) => (
               <option key={c.id} value={c.id}>{c.nome}</option>
@@ -513,12 +510,12 @@ function MotoristaModal({
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="mot-cnh" className={rotulo}>CNH (número)</label>
-            <input id="mot-cnh" type="text" value={cnh} maxLength={20} onChange={(e) => setCnh(e.target.value)} className={classeCampo} />
+            <label htmlFor="mot-cnh" className={classeDoRotulo}>CNH (número)</label>
+            <input id="mot-cnh" type="text" value={cnh} maxLength={20} onChange={(e) => setCnh(e.target.value)} className={classeDoCampo} />
           </div>
           <div>
-            <label htmlFor="mot-validade" className={rotulo}>Validade da CNH</label>
-            <input id="mot-validade" type="date" value={validade} onChange={(e) => setValidade(e.target.value)} className={classeCampo} />
+            <label htmlFor="mot-validade" className={classeDoRotulo}>Validade da CNH</label>
+            <input id="mot-validade" type="date" value={validade} onChange={(e) => setValidade(e.target.value)} className={classeDoCampo} />
           </div>
         </div>
 
@@ -728,12 +725,12 @@ function CentroModal({
     <Modal titulo={centro ? "Editar centro de custo" : "Novo centro de custo"} icone={<Building2 size={16} />} onClose={onClose}>
       <form onSubmit={(e) => void salvar(e)} className="space-y-4 px-6 py-5">
         <div>
-          <label htmlFor="cc-nome" className={rotulo}>Nome</label>
-          <input id="cc-nome" type="text" value={nome} maxLength={80} onChange={(e) => setNome(e.target.value)} className={classeCampo} autoFocus />
+          <label htmlFor="cc-nome" className={classeDoRotulo}>Nome</label>
+          <input id="cc-nome" type="text" value={nome} maxLength={80} onChange={(e) => setNome(e.target.value)} className={classeDoCampo} autoFocus />
         </div>
         <div>
-          <label htmlFor="cc-codigo" className={rotulo}>Código (opcional)</label>
-          <input id="cc-codigo" type="text" value={codigo} maxLength={30} onChange={(e) => setCodigo(e.target.value)} placeholder="Como está no sistema contábil" className={classeCampo} />
+          <label htmlFor="cc-codigo" className={classeDoRotulo}>Código (opcional)</label>
+          <input id="cc-codigo" type="text" value={codigo} maxLength={30} onChange={(e) => setCodigo(e.target.value)} placeholder="Como está no sistema contábil" className={classeDoCampo} />
         </div>
 
         {erro && (

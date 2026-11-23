@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Camera, Gauge, Pencil, Trash2 } from "lucide-react";
 import { Modal } from "../ui/Modal";
+import { classeDoCampo, classeDoRotulo } from "../ui/Campo";
 import { CapturaHodometro } from "./CapturaHodometro";
 import { ChecklistModal } from "./ChecklistModal";
 import { TrocarCentroModal } from "./TrocarCentroModal";
@@ -422,7 +423,7 @@ export function UsoDetalheModal({
 
             {registrandoSaida ? (
               <div>
-                <label htmlFor="uso-motivo-saida" className="mb-1.5 block text-xs font-medium text-gray-700">
+                <label htmlFor="uso-motivo-saida" className={classeDoRotulo}>
                   Motivo
                 </label>
                 <input
@@ -432,7 +433,7 @@ export function UsoDetalheModal({
                   onChange={(e) => aoMudarMotivo(e.target.value)}
                   maxLength={160}
                   placeholder="Ex.: entrega em Campinas"
-                  className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+                  className={classeDoCampo}
                 />
               </div>
             ) : (

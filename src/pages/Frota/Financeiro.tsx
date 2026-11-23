@@ -13,9 +13,7 @@ import { dataISOLocal, formatarData, formatarMoeda } from "../../utils/formatter
 import type { CategoriaDeDespesa, DespesaAvulsa, FiltroFinanceiro, ResumoFinanceiro } from "../../types/financeiro";
 import type { Motorista } from "../../types/frota";
 import type { VeiculoConta } from "../../types/conta";
-
-const classeCampo =
-  "h-10 rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
+import { classeDoCampoEmLinha } from "../../components/ui/Campo";
 
 /** Primeiro dia do mês atual, em dias de Brasília. */
 function inicioDoMes(): string {
@@ -125,17 +123,17 @@ export function Financeiro() {
   return (
     <div className="space-y-6 p-4 sm:p-8">
       <div className="flex flex-wrap items-end gap-3">
-        <label className="text-xs text-gray-600">
+        <label className="text-xs text-gray-700">
           De
-          <input type="date" aria-label="Data inicial" value={filtro.de ?? ""} onChange={(e) => alterarFiltro({ de: e.target.value || undefined })} className={`${classeCampo} mt-1 block`} />
+          <input type="date" aria-label="Data inicial" value={filtro.de ?? ""} onChange={(e) => alterarFiltro({ de: e.target.value || undefined })} className={`${classeDoCampoEmLinha} mt-1 block`} />
         </label>
-        <label className="text-xs text-gray-600">
+        <label className="text-xs text-gray-700">
           Até
-          <input type="date" aria-label="Data final" value={filtro.ate ?? ""} onChange={(e) => alterarFiltro({ ate: e.target.value || undefined })} className={`${classeCampo} mt-1 block`} />
+          <input type="date" aria-label="Data final" value={filtro.ate ?? ""} onChange={(e) => alterarFiltro({ ate: e.target.value || undefined })} className={`${classeDoCampoEmLinha} mt-1 block`} />
         </label>
-        <label className="text-xs text-gray-600">
+        <label className="text-xs text-gray-700">
           Veículo
-          <select aria-label="Filtrar por veículo" value={filtro.veiculoId ?? ""} onChange={(e) => alterarFiltro({ veiculoId: e.target.value ? Number(e.target.value) : undefined })} className={`${classeCampo} mt-1 block w-56`}>
+          <select aria-label="Filtrar por veículo" value={filtro.veiculoId ?? ""} onChange={(e) => alterarFiltro({ veiculoId: e.target.value ? Number(e.target.value) : undefined })} className={`${classeDoCampoEmLinha} mt-1 block w-56`}>
             <option value="">Todos</option>
             {veiculos.map((v) => (
               <option key={v.id} value={v.id}>{v.placa} · {v.marca} {v.modelo}</option>
@@ -177,8 +175,8 @@ export function Financeiro() {
 
           <section className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
             <h2 className={`px-5 pt-4 ${TITULO_DE_SECAO}`}>Por veículo</h2>
-            <table className="tabela-cartoes mt-3 w-full text-left text-xs">
-              <thead className="bg-gray-50 text-gray-500">
+            <table className="tabela-cartoes mt-3 w-full text-left text-sm">
+              <thead className="bg-gray-50 text-xs text-gray-500">
                 <tr>
                   <th className="px-5 py-2 font-medium">Veículo</th>
                   <th className="px-3 py-2 text-right font-medium">Combustível</th>
@@ -215,8 +213,8 @@ export function Financeiro() {
           <div className="grid gap-6 lg:grid-cols-2">
             <section className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
               <h2 className={`px-5 pt-4 ${TITULO_DE_SECAO}`}>Por mês</h2>
-              <table className="tabela-cartoes mt-3 w-full text-left text-xs">
-                <thead className="bg-gray-50 text-gray-500">
+              <table className="tabela-cartoes mt-3 w-full text-left text-sm">
+                <thead className="bg-gray-50 text-xs text-gray-500">
                   <tr>
                     <th className="px-5 py-2 font-medium">Mês</th>
                     <th className="px-3 py-2 text-right font-medium">Combustível</th>
@@ -242,8 +240,8 @@ export function Financeiro() {
 
             <section className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
               <h2 className={`px-5 pt-4 ${TITULO_DE_SECAO}`}>Por motorista e por centro de custo</h2>
-              <table className="tabela-cartoes mt-3 w-full text-left text-xs">
-                <thead className="bg-gray-50 text-gray-500">
+              <table className="tabela-cartoes mt-3 w-full text-left text-sm">
+                <thead className="bg-gray-50 text-xs text-gray-500">
                   <tr>
                     <th className="px-5 py-2 font-medium">Quem</th>
                     <th className="px-5 py-2 text-right font-medium">Total</th>
@@ -274,8 +272,8 @@ export function Financeiro() {
 
       <section className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
         <h2 className={`px-5 pt-4 ${TITULO_DE_SECAO}`}>Despesas avulsas</h2>
-        <table className="tabela-cartoes mt-3 w-full text-left text-xs">
-          <thead className="bg-gray-50 text-gray-500">
+        <table className="tabela-cartoes mt-3 w-full text-left text-sm">
+          <thead className="bg-gray-50 text-xs text-gray-500">
             <tr>
               <th className="px-5 py-2 font-medium">Data</th>
               <th className="px-3 py-2 font-medium">Categoria</th>

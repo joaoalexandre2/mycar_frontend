@@ -4,10 +4,7 @@ import { Alert } from "../../components/ui/Alert";
 import { centrosCustoService } from "../../services/frota";
 import { mensagemErro } from "../../services/api";
 import type { CentroCusto, TrocaDeCentro } from "../../types/frota";
-
-const classeCampo =
-  "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
-const rotulo = "mb-1.5 block text-xs font-medium text-gray-700";
+import { classeDoCampo, classeDoRotulo } from "../../components/ui/Campo";
 
 /** Relatório das trocas de centro de custo da frota, com filtros por período e centro. */
 export function HistoricoCentros() {
@@ -62,16 +59,16 @@ export function HistoricoCentros() {
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div>
-          <label htmlFor="hc-de" className={rotulo}>De</label>
-          <input id="hc-de" type="date" value={de} onChange={(e) => setDe(e.target.value)} className={classeCampo} />
+          <label htmlFor="hc-de" className={classeDoRotulo}>De</label>
+          <input id="hc-de" type="date" value={de} onChange={(e) => setDe(e.target.value)} className={classeDoCampo} />
         </div>
         <div>
-          <label htmlFor="hc-ate" className={rotulo}>Até</label>
-          <input id="hc-ate" type="date" value={ate} min={de || undefined} onChange={(e) => setAte(e.target.value)} className={classeCampo} />
+          <label htmlFor="hc-ate" className={classeDoRotulo}>Até</label>
+          <input id="hc-ate" type="date" value={ate} min={de || undefined} onChange={(e) => setAte(e.target.value)} className={classeDoCampo} />
         </div>
         <div>
-          <label htmlFor="hc-centro" className={rotulo}>Centro de custo</label>
-          <select id="hc-centro" value={centroId} onChange={(e) => setCentroId(e.target.value)} className={classeCampo}>
+          <label htmlFor="hc-centro" className={classeDoRotulo}>Centro de custo</label>
+          <select id="hc-centro" value={centroId} onChange={(e) => setCentroId(e.target.value)} className={classeDoCampo}>
             <option value="">Todos</option>
             {centros.map((c) => (
               <option key={c.id} value={c.id}>{c.nome}</option>

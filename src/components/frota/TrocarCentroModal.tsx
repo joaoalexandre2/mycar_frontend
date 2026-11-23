@@ -9,10 +9,7 @@ import { centrosCustoService, motivosTrocaCentroService, usosService } from "../
 import { mensagemErro } from "../../services/api";
 import { ehAdministradorOuGestor } from "../../utils/permissoes";
 import type { CentroCusto, MotivoTrocaCentro, TrocaDeCentro, UsoVeiculo } from "../../types/frota";
-
-const classeCampo =
-  "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
-const rotulo = "mb-1.5 block text-xs font-medium text-gray-700";
+import { classeDoCampo, classeDoRotulo } from "../ui/Campo";
 
 /** Onde a frota cadastra os motivos: a aba "Motivos de troca" é a primeira da Gestão da frota. */
 const ROTA_DOS_MOTIVOS = "/frota/configuracoes";
@@ -124,8 +121,8 @@ export function TrocarCentroModal({
     <Modal titulo="Trocar centro de custo" subtitulo={`Atual: ${uso.centroCusto ?? "sem centro"}`} icone={<Building2 size={16} />} onClose={onClose}>
       <form onSubmit={(e) => void salvar(e)} className="space-y-4 px-6 py-5">
         <div>
-          <label htmlFor="tc-centro" className={rotulo}>Novo centro de custo</label>
-          <select id="tc-centro" value={centroId} onChange={(e) => setCentroId(e.target.value)} className={classeCampo} autoFocus>
+          <label htmlFor="tc-centro" className={classeDoRotulo}>Novo centro de custo</label>
+          <select id="tc-centro" value={centroId} onChange={(e) => setCentroId(e.target.value)} className={classeDoCampo} autoFocus>
             <option value="">Escolha...</option>
             {centros
               .filter((c) => c.id !== uso.centroCustoId)
@@ -135,8 +132,8 @@ export function TrocarCentroModal({
           </select>
         </div>
         <div>
-          <label htmlFor="tc-motivo" className={rotulo}>Motivo</label>
-          <select id="tc-motivo" value={motivoId} onChange={(e) => setMotivoId(e.target.value)} className={classeCampo}>
+          <label htmlFor="tc-motivo" className={classeDoRotulo}>Motivo</label>
+          <select id="tc-motivo" value={motivoId} onChange={(e) => setMotivoId(e.target.value)} className={classeDoCampo}>
             <option value="">Escolha...</option>
             {(motivos ?? []).map((m) => (
               <option key={m.id} value={m.id}>{m.nome}</option>

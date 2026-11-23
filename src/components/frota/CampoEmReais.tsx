@@ -1,5 +1,6 @@
 import { lerValorEmReais } from "../../utils/numero";
 import { formatarMoeda } from "../../utils/formatters";
+import { classeDoCampo, classeDoRotulo } from "../ui/Campo";
 
 interface Props {
   id: string;
@@ -8,8 +9,6 @@ interface Props {
   onChange: (texto: string) => void;
   /** Erro de validação do último envio; some quando a pessoa volta a digitar. */
   erro: string | null;
-  classeCampo: string;
-  classeRotulo: string;
 }
 
 /**
@@ -17,7 +16,7 @@ interface Props {
  * valor válido, como ele será gravado ("2.500" → R$ 2.500,00), para quem
  * colou de planilha conferir antes de salvar.
  */
-export function CampoEmReais({ id, rotulo, valor, onChange, erro, classeCampo, classeRotulo }: Props) {
+export function CampoEmReais({ id, rotulo, valor, onChange, erro }: Props) {
   const lido = lerValorEmReais(valor);
   const idDoErro = `${id}-erro`;
   const idDaPrevia = `${id}-previa`;
@@ -25,7 +24,7 @@ export function CampoEmReais({ id, rotulo, valor, onChange, erro, classeCampo, c
 
   return (
     <div>
-      <label htmlFor={id} className={classeRotulo}>{rotulo}</label>
+      <label htmlFor={id} className={classeDoRotulo}>{rotulo}</label>
       <input
         id={id}
         type="text"
@@ -34,9 +33,9 @@ export function CampoEmReais({ id, rotulo, valor, onChange, erro, classeCampo, c
         onChange={(e) => onChange(e.target.value)}
         aria-invalid={erro ? true : undefined}
         aria-describedby={erro ? idDoErro : mostrarPrevia ? idDaPrevia : undefined}
-        className={`${classeCampo}${erro ? " border-red-400" : ""}`}
+        className={classeDoCampo}
       />
-      {erro && <p id={idDoErro} className="mt-1 text-xs text-red-600">{erro}</p>}
+      {erro && <p id={idDoErro} className="mt-1 text-xs font-medium text-(--tom-danger-texto)">{erro}</p>}
       {mostrarPrevia && <p id={idDaPrevia} className="mt-1 text-xs text-gray-500">Será gravado {formatarMoeda(lido.valor)}</p>}
     </div>
   );

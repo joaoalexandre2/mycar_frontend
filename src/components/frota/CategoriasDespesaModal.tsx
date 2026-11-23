@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Tags } from "lucide-react";
 import { Alert } from "../ui/Alert";
 import { Modal } from "../ui/Modal";
+import { classeDoCampo, classeDoRotulo } from "../ui/Campo";
 import { categoriasDeDespesaService } from "../../services/financeiro";
 import { mensagemErro } from "../../services/api";
 import type { CategoriaDeDespesa } from "../../types/financeiro";
@@ -66,14 +67,14 @@ export function CategoriasDespesaModal({ categorias, onAlterou, onClose }: Props
 
         <form onSubmit={(e) => void criar(e)} className="flex items-end gap-2">
           <div className="flex-1">
-            <label htmlFor="nova-categoria" className="mb-1.5 block text-xs font-medium text-gray-700">Nova categoria</label>
+            <label htmlFor="nova-categoria" className={classeDoRotulo}>Nova categoria</label>
             <input
               id="nova-categoria"
               type="text"
               maxLength={60}
               value={nome}
               onChange={(e) => setNome(e.target.value)}
-              className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+              className={classeDoCampo}
             />
           </div>
           <button type="submit" className="h-10 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700">

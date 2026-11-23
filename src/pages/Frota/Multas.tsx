@@ -14,10 +14,7 @@ import { CampoEmReais } from "../../components/frota/CampoEmReais";
 import type { Motorista } from "../../types/frota";
 import type { Multa, SugestaoDeResponsavel } from "../../types/frota";
 import type { VeiculoConta } from "../../types/conta";
-
-const classeCampo =
-  "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
-const rotulo = "mb-1.5 block text-xs font-medium text-gray-700";
+import { classeDoCampo, classeDoRotulo } from "../../components/ui/Campo";
 
 const SITUACOES: { valor: Multa["situacao"]; texto: string }[] = [
   { valor: "aberta", texto: "Aberta" },
@@ -82,7 +79,7 @@ export function Multas() {
               setSituacao(e.target.value);
               setPagina(1);
             }}
-            className={`${classeCampo} w-40`}
+            className={`${classeDoCampo} w-40`}
           >
             <option value="">Todas</option>
             {SITUACOES.map((s) => (
@@ -292,8 +289,8 @@ function NovaMulta({ onSalva, onClose }: { onSalva: () => void; onClose: () => v
     <Modal titulo="Nova multa" icone={<FileWarning size={16} />} onClose={onClose} larguraMax="max-w-lg">
       <form onSubmit={(e) => void salvar(e)} className="space-y-4 px-6 py-5">
         <div>
-          <label htmlFor="multa-veiculo" className={rotulo}>Veículo</label>
-          <select id="multa-veiculo" value={veiculoId} onChange={(e) => setVeiculoId(e.target.value)} className={classeCampo}>
+          <label htmlFor="multa-veiculo" className={classeDoRotulo}>Veículo</label>
+          <select id="multa-veiculo" value={veiculoId} onChange={(e) => setVeiculoId(e.target.value)} className={classeDoCampo}>
             <option value="">Escolha...</option>
             {veiculos.map((v) => (
               <option key={v.id} value={v.id}>{v.placa} · {v.marca} {v.modelo}</option>
@@ -302,8 +299,8 @@ function NovaMulta({ onSalva, onClose }: { onSalva: () => void; onClose: () => v
         </div>
 
         <div>
-          <label htmlFor="multa-data" className={rotulo}>Data e hora da infração</label>
-          <input id="multa-data" type="datetime-local" value={dataHora} onChange={(e) => setDataHora(e.target.value)} className={classeCampo} />
+          <label htmlFor="multa-data" className={classeDoRotulo}>Data e hora da infração</label>
+          <input id="multa-data" type="datetime-local" value={dataHora} onChange={(e) => setDataHora(e.target.value)} className={classeDoCampo} />
         </div>
 
         <div className="rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-700">
@@ -315,8 +312,8 @@ function NovaMulta({ onSalva, onClose }: { onSalva: () => void; onClose: () => v
         </div>
 
         <div>
-          <label htmlFor="multa-motorista" className={rotulo}>Responsável (opcional, substitui a sugestão)</label>
-          <select id="multa-motorista" value={motoristaId} onChange={(e) => setMotoristaId(e.target.value)} className={classeCampo}>
+          <label htmlFor="multa-motorista" className={classeDoRotulo}>Responsável (opcional, substitui a sugestão)</label>
+          <select id="multa-motorista" value={motoristaId} onChange={(e) => setMotoristaId(e.target.value)} className={classeDoCampo}>
             <option value="">Usar a sugestão</option>
             {motoristas.map((m) => (
               <option key={m.id} value={m.id}>{m.nome}</option>
@@ -330,8 +327,8 @@ function NovaMulta({ onSalva, onClose }: { onSalva: () => void; onClose: () => v
         </div>
 
         <div>
-          <label htmlFor="multa-descricao" className={rotulo}>Infração</label>
-          <input id="multa-descricao" type="text" maxLength={160} value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Ex.: excesso de velocidade" className={classeCampo} />
+          <label htmlFor="multa-descricao" className={classeDoRotulo}>Infração</label>
+          <input id="multa-descricao" type="text" maxLength={160} value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Ex.: excesso de velocidade" className={classeDoCampo} />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -344,12 +341,10 @@ function NovaMulta({ onSalva, onClose }: { onSalva: () => void; onClose: () => v
               setErroValor(null);
             }}
             erro={erroValor}
-            classeCampo={classeCampo}
-            classeRotulo={rotulo}
           />
           <div>
-            <label htmlFor="multa-pontos" className={rotulo}>Pontos</label>
-            <input id="multa-pontos" type="number" min={0} max={40} value={pontos} onChange={(e) => setPontos(e.target.value)} className={classeCampo} />
+            <label htmlFor="multa-pontos" className={classeDoRotulo}>Pontos</label>
+            <input id="multa-pontos" type="number" min={0} max={40} value={pontos} onChange={(e) => setPontos(e.target.value)} className={classeDoCampo} />
           </div>
         </div>
 

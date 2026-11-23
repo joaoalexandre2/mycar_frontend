@@ -6,9 +6,7 @@ import { painelFrotaService } from "../../services/frotaDiferenciais";
 import { mensagemErro } from "../../services/api";
 import { dataISOLocal, formatarData, formatarDataHora } from "../../utils/formatters";
 import type { AlertasDaFrota, PainelDeDisponibilidade } from "../../types/frota";
-
-const classeCampo =
-  "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
+import { classeDoCampo, classeDoRotulo } from "../../components/ui/Campo";
 
 /** Data de hoje no fuso local, no formato AAAA-MM-DD. (toISOString usa UTC e pode mostrar o dia seguinte.) */
 function diaDeHoje(deslocamento = 0): string {
@@ -119,12 +117,12 @@ export function PainelFrota() {
         <h2 id="painel-uso" className={TITULO_DE_SECAO}>Uso dos veículos</h2>
         <div className="flex flex-wrap items-end gap-4">
           <div>
-            <label htmlFor="painel-de" className="mb-1.5 block text-xs font-medium text-gray-700">De</label>
-            <input id="painel-de" type="date" value={de} max={ate} onChange={(e) => setDe(e.target.value)} className={classeCampo} />
+            <label htmlFor="painel-de" className={classeDoRotulo}>De</label>
+            <input id="painel-de" type="date" value={de} max={ate} onChange={(e) => setDe(e.target.value)} className={classeDoCampo} />
           </div>
           <div>
-            <label htmlFor="painel-ate" className="mb-1.5 block text-xs font-medium text-gray-700">Até</label>
-            <input id="painel-ate" type="date" value={ate} min={de} onChange={(e) => setAte(e.target.value)} className={classeCampo} />
+            <label htmlFor="painel-ate" className={classeDoRotulo}>Até</label>
+            <input id="painel-ate" type="date" value={ate} min={de} onChange={(e) => setAte(e.target.value)} className={classeDoCampo} />
           </div>
           {painel && (
             <p className="text-sm text-gray-700">

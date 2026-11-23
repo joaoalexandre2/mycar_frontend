@@ -7,11 +7,7 @@ import { mensagemErro } from "../../services/api";
 import { fimAoMudarInicio, hojeAs } from "../../utils/agenda";
 import type { VeiculoConta } from "../../types/conta";
 import type { CentroCusto, Motorista, UsoVeiculo } from "../../types/frota";
-
-const classeCampo =
-  "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400";
-
-const rotulo = "mb-1.5 block text-xs font-medium text-gray-700";
+import { classeDaAreaDeTexto, classeDoCampo, classeDoRotulo } from "../ui/Campo";
 
 /**
  * Reserva de um veículo: quem vai usar, quando e para quê. O servidor bloqueia
@@ -142,7 +138,7 @@ export function UsoFormModal({
     >
       <form id={idFormulario} onSubmit={(e) => void salvar(e)} noValidate className="space-y-4 px-6 py-5">
         <div>
-          <label htmlFor="uso-veiculo" className={rotulo}>
+          <label htmlFor="uso-veiculo" className={classeDoRotulo}>
             Veículo
           </label>
           <select
@@ -150,7 +146,7 @@ export function UsoFormModal({
             value={veiculoId}
             onChange={(e) => escolherVeiculo(e.target.value)}
             disabled={emUso}
-            className={classeCampo}
+            className={classeDoCampo}
           >
             <option value="">Selecione o veículo</option>
             {veiculos.map((v) => (
@@ -178,14 +174,14 @@ export function UsoFormModal({
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="uso-motorista" className={rotulo}>
+              <label htmlFor="uso-motorista" className={classeDoRotulo}>
                 Motorista
               </label>
               <select
                 id="uso-motorista"
                 value={motoristaId}
                 onChange={(e) => setMotoristaId(e.target.value)}
-                className={classeCampo}
+                className={classeDoCampo}
               >
                 <option value="">Sem motorista definido</option>
                 {motoristas.map((m) => (
@@ -197,14 +193,14 @@ export function UsoFormModal({
             </div>
 
             <div>
-              <label htmlFor="uso-centro" className={rotulo}>
+              <label htmlFor="uso-centro" className={classeDoRotulo}>
                 Centro de custo
               </label>
               <select
                 id="uso-centro"
                 value={centroId}
                 onChange={(e) => setCentroId(e.target.value)}
-                className={classeCampo}
+                className={classeDoCampo}
               >
                 <option value="">Padrão do veículo</option>
                 {centros.map((c) => (
@@ -219,7 +215,7 @@ export function UsoFormModal({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="uso-inicio" className={rotulo}>
+            <label htmlFor="uso-inicio" className={classeDoRotulo}>
               Início
             </label>
             <input
@@ -235,12 +231,12 @@ export function UsoFormModal({
               }}
               disabled={emUso}
               required
-              className={classeCampo}
+              className={classeDoCampo}
             />
           </div>
 
           <div>
-            <label htmlFor="uso-fim" className={rotulo}>
+            <label htmlFor="uso-fim" className={classeDoRotulo}>
               Fim previsto
             </label>
             <input
@@ -250,13 +246,13 @@ export function UsoFormModal({
               min={inicio || undefined}
               onChange={(e) => setFim(e.target.value)}
               required
-              className={classeCampo}
+              className={classeDoCampo}
             />
           </div>
         </div>
 
         <div>
-          <label htmlFor="uso-finalidade" className={rotulo}>
+          <label htmlFor="uso-finalidade" className={classeDoRotulo}>
             Finalidade
           </label>
           <input
@@ -266,12 +262,12 @@ export function UsoFormModal({
             maxLength={160}
             onChange={(e) => setFinalidade(e.target.value)}
             placeholder="Ex.: visita a clientes, entrega em Campinas"
-            className={classeCampo}
+            className={classeDoCampo}
           />
         </div>
 
         <div>
-          <label htmlFor="uso-obs" className={rotulo}>
+          <label htmlFor="uso-obs" className={classeDoRotulo}>
             Observações
           </label>
           <textarea
@@ -280,7 +276,7 @@ export function UsoFormModal({
             maxLength={2000}
             rows={2}
             onChange={(e) => setObservacoes(e.target.value)}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-700 outline-none focus:border-blue-500"
+            className={classeDaAreaDeTexto}
           />
         </div>
 

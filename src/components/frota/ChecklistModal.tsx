@@ -5,8 +5,7 @@ import { Alert } from "../ui/Alert";
 import { checklistService } from "../../services/frotaDiferenciais";
 import { mensagemErro } from "../../services/api";
 import type { ModeloDeChecklist, MomentoDoChecklist, RespostaDeChecklists, SituacaoDoItem } from "../../types/frota";
-
-const rotulo = "mb-1.5 block text-xs font-medium text-gray-700";
+import { classeDaAreaDeTexto, classeDoCampo, classeDoRotulo } from "../ui/Campo";
 
 const TEXTO_DO_MOMENTO: Record<MomentoDoChecklist, string> = {
   saida: "saída",
@@ -253,7 +252,7 @@ export function ChecklistModal({
                     Problema
                   </label>
                   {comModelo && (
-                    <label className="flex items-center gap-1.5 text-xs text-gray-600">
+                    <label className="flex items-center gap-1.5 text-xs text-gray-700">
                       <input type="radio" name={item.chave} checked={resposta?.situacao === "na"} onChange={() => responder(item.chave, { situacao: "na" })} />
                       Não se aplica
                     </label>
@@ -272,7 +271,7 @@ export function ChecklistModal({
                     maxLength={255}
                     value={resposta.observacao}
                     onChange={(e) => responder(item.chave, { observacao: e.target.value })}
-                    className="h-9 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500"
+                    className={classeDoCampo}
                   />
                 )}
               </fieldset>
@@ -280,13 +279,13 @@ export function ChecklistModal({
           })}
 
           <div>
-            <label htmlFor="checklist-obs" className={rotulo}>Observações (opcional)</label>
+            <label htmlFor="checklist-obs" className={classeDoRotulo}>Observações (opcional)</label>
             <textarea
               id="checklist-obs"
               value={observacoes}
               maxLength={1000}
               onChange={(e) => setObservacoes(e.target.value)}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-700 outline-none focus:border-blue-500"
+              className={classeDaAreaDeTexto}
               rows={3}
             />
           </div>

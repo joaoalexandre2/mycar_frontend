@@ -3,10 +3,7 @@ import { motivosTrocaCentroService } from "../../services/frota";
 import { Alert } from "../../components/ui/Alert";
 import { mensagemErro } from "../../services/api";
 import type { MotivoTrocaCentro } from "../../types/frota";
-
-const classeCampo =
-  "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
-const rotulo = "mb-1.5 block text-xs font-medium text-gray-700";
+import { classeDoCampo, classeDoRotulo } from "../../components/ui/Campo";
 
 /** Motivos que a frota usa para trocar o centro de custo de um uso. */
 export function MotivosTroca() {
@@ -71,7 +68,7 @@ export function MotivosTroca() {
     <div className="space-y-6">
       <form onSubmit={(e) => void criar(e)} className="space-y-4 rounded-xl border border-gray-200 bg-white p-5">
         <div>
-          <label htmlFor="mot-nome" className={rotulo}>Novo motivo</label>
+          <label htmlFor="mot-nome" className={classeDoRotulo}>Novo motivo</label>
           <input
             id="mot-nome"
             type="text"
@@ -79,7 +76,7 @@ export function MotivosTroca() {
             maxLength={120}
             onChange={(e) => setNome(e.target.value)}
             placeholder="Ex.: lançado errado pelo motorista"
-            className={classeCampo}
+            className={classeDoCampo}
           />
         </div>
         <button
