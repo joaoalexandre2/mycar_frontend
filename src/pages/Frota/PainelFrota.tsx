@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { AlertTriangle, CalendarClock, ClipboardCheck, CreditCard, Gauge } from "lucide-react";
 import { Alert } from "../../components/ui/Alert";
+import { TITULO_DE_SECAO, TITULO_DE_SUBSECAO } from "../../components/ui/escalaDeTitulos";
 import { painelFrotaService } from "../../services/frotaDiferenciais";
 import { mensagemErro } from "../../services/api";
 import { dataISOLocal, formatarData, formatarDataHora } from "../../utils/formatters";
@@ -61,15 +62,14 @@ export function PainelFrota() {
 
   return (
     <div className="space-y-8 p-4 sm:p-8">
-      <div>
-        <h2 className="text-xl font-bold text-gray-900">Painel da frota</h2>
-        <p className="mt-1 text-sm text-gray-500">O que precisa de atenção e como os veículos estão sendo usados.</p>
-      </div>
+      {/* O título "Painel da frota" é o h1 do cabeçalho; aqui fica só o texto de apoio. */}
+      <p className="text-sm text-gray-500">O que precisa de atenção e como os veículos estão sendo usados.</p>
 
       {erro && <Alert tone="danger">{erro}</Alert>}
 
       {alertas && (
-        <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <section aria-labelledby="painel-alertas" className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <h2 id="painel-alertas" className={`${TITULO_DE_SECAO} col-span-full`}>Alertas</h2>
           <Cartao icone={<CreditCard size={16} />} titulo="CNH">
             {alertas.cnh.length === 0 ? (
               <p className="text-xs text-gray-500">Nenhuma CNH vencida ou a vencer em 30 dias.</p>
@@ -115,7 +115,8 @@ export function PainelFrota() {
         </section>
       )}
 
-      <section className="space-y-4">
+      <section aria-labelledby="painel-uso" className="space-y-4">
+        <h2 id="painel-uso" className={TITULO_DE_SECAO}>Uso dos veículos</h2>
         <div className="flex flex-wrap items-end gap-4">
           <div>
             <label htmlFor="painel-de" className="mb-1.5 block text-xs font-medium text-gray-700">De</label>
@@ -169,9 +170,9 @@ export function PainelFrota() {
 function Cartao({ icone, titulo, children }: { icone: React.ReactNode; titulo: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2 rounded-xl border border-gray-200 bg-white p-4">
-      <p className="flex items-center gap-2 text-xs font-semibold tracking-wide text-gray-500 uppercase">
+      <h3 className={`flex items-center gap-2 ${TITULO_DE_SUBSECAO}`}>
         {icone} {titulo}
-      </p>
+      </h3>
       {children}
     </div>
   );

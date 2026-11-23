@@ -11,6 +11,7 @@ import { Cadastros } from "./Cadastros";
 import { mesVizinho, paraCampoDeHorario, periodoDaGrade } from "../../utils/agenda";
 import type { VeiculoConta } from "../../types/conta";
 import type { CentroCusto, Motorista, UsoVeiculo } from "../../types/frota";
+import { conferirHierarquiaDaPagina } from "../../test/hierarquiaDeTitulos";
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -101,7 +102,17 @@ describe("Agenda", () => {
     agenda();
 
     expect(await screen.findByRole("button", { name: /09:00 · AAA1B25 · Maria Silva/ })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { level: 3, name: /\d{4}/ })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: /\d{4}/ })).toBeInTheDocument();
+  });
+
+  it("títulos: o mês é a seção (h2), os dias da lista são h3 e o título da tela não se repete", async () => {
+    simularAgenda();
+    const { container } = agenda();
+
+    await screen.findByRole("button", { name: /09:00 · AAA1B25 · Maria Silva/ });
+    expect(screen.getAllByRole("heading", { level: 3 }).length).toBeGreaterThan(0);
+    conferirHierarquiaDaPagina(container, "Agenda");
+    expect(screen.queryByRole("heading", { name: /Agenda de veículos/ })).not.toBeInTheDocument();
   });
 
   it("clicar no uso abre o detalhe com as ações da saída", async () => {

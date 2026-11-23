@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { CalendarDays, ChevronLeft, ChevronRight, FileUp, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, FileUp, Plus } from "lucide-react";
 import { contaService } from "../../services/conta";
 import { centrosCustoService, motoristasService, usosService } from "../../services/frota";
 import { mensagemErro } from "../../services/api";
@@ -11,6 +11,7 @@ import { ImportarPlanilhaModal } from "../../components/frota/ImportarPlanilhaMo
 import { Modal } from "../../components/ui/Modal";
 import { Alert } from "../../components/ui/Alert";
 import { CLASSES_DO_TOM } from "../../components/ui/tons";
+import { TITULO_DE_SECAO, TITULO_DE_SUBSECAO } from "../../components/ui/escalaDeTitulos";
 import { TOM_DO_STATUS_USO } from "../../components/frota/tomDoStatusUso";
 import {
   descreverJanela,
@@ -197,14 +198,9 @@ export function Agenda() {
 
   return (
     <div className="space-y-6 p-4 sm:p-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h2 className="flex items-center gap-2 text-xl font-bold text-gray-900">
-            <CalendarDays size={22} /> Agenda de veículos
-          </h2>
-          <p className="mt-1 text-sm text-gray-500">Quem vai usar cada veículo e quando.</p>
-        </div>
-
+      {/* O título e o subtítulo da tela ficam só no cabeçalho (h1); repetir aqui
+          fazia o leitor de tela ler o mesmo título duas vezes. */}
+      <div className="flex flex-wrap items-end justify-end gap-4">
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
@@ -261,7 +257,7 @@ export function Agenda() {
           </button>
         </div>
 
-        <h3 className="text-base font-semibold text-gray-900 capitalize md:min-w-40">{rotuloDoMes(ano, mes)}</h3>
+        <h2 className={`${TITULO_DE_SECAO} capitalize md:min-w-40`}>{rotuloDoMes(ano, mes)}</h2>
 
         <div className="ml-auto flex flex-wrap gap-2">
           <select
@@ -418,7 +414,7 @@ export function Agenda() {
           return (
             <section key={dia.data} aria-labelledby={idTitulo} className="rounded-xl border border-gray-200 bg-white p-3">
               <div className="mb-2 flex items-center justify-between gap-2">
-                <h3 id={idTitulo} className="text-xs font-bold text-gray-700">
+                <h3 id={idTitulo} className={TITULO_DE_SUBSECAO}>
                   {dia.data.slice(8, 10)}/{dia.data.slice(5, 7)}
                   {dia.data === hoje && <span className="ml-2 text-blue-600">hoje</span>}
                 </h3>

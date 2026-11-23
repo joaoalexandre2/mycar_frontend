@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { conferirHierarquiaDaPagina } from "../../test/hierarquiaDeTitulos";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { conferirTabelaCartoes } from "../../test/tabelaCartoes";
 import userEvent from "@testing-library/user-event";
@@ -279,5 +280,17 @@ describe("Ocorrências: fotos logo depois de registrar", () => {
       within(fotos).getByRole("button", { name: /Foto depois/ }),
     ];
     alvos.forEach((alvo) => expect(alvo).toHaveClass("h-11", "md:h-9"));
+  });
+});
+
+describe("Ocorrências: títulos", () => {
+  it("títulos: a lista é uma seção h2, sem repetir o título da página", async () => {
+    prepararServicos();
+
+    const { container } = renderizar("gestor");
+
+    expect(await screen.findByText("Retrovisor quebrado")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "Ocorrências registradas" })).toBeInTheDocument();
+    conferirHierarquiaDaPagina(container, "Ocorrências");
   });
 });

@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { conferirHierarquiaDaPagina } from "../../test/hierarquiaDeTitulos";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { qrService } from "../../services/frotaDiferenciais";
@@ -50,5 +51,17 @@ describe("Página do QR do veículo", () => {
     pagina("errado");
 
     expect(await screen.findByRole("alert")).toHaveTextContent("QR Code não reconhecido para a sua frota.");
+  });
+
+  it("títulos: as reservas de hoje são uma seção h2", async () => {
+    vi.spyOn(qrService, "resolver").mockResolvedValue({
+      veiculo: { id: 1, placa: "AAA1A11", nome: "Fiat Strada", km_atual: null },
+      reservas: [],
+    });
+
+    const { container } = pagina("abc");
+
+    expect(await screen.findByRole("heading", { level: 2, name: "Reservas de hoje" })).toBeInTheDocument();
+    conferirHierarquiaDaPagina(container, "QR Code do veículo");
   });
 });
