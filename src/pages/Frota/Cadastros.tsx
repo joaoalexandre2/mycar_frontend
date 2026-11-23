@@ -1,5 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Building2, History, Pencil, Plus, Send, Trash2, UserRound } from "lucide-react";
+import { isAxiosError } from "axios";
+import { Abas } from "../../components/ui/Abas";
 import { Alert } from "../../components/ui/Alert";
 import { StatusChip } from "../../components/ui/StatusChip";
 import { Modal } from "../../components/ui/Modal";
@@ -27,14 +29,14 @@ export function Cadastros() {
 
   const abas = (
     [
-      ["motoristas", "Motoristas", UserRound, "motoristas"],
-      ["centros", "Centros de custo", Building2, "centros_custo"],
-      ["historico", "Histórico de centros", History, "centros_custo"],
+      { chave: "motoristas", titulo: "Motoristas", icone: UserRound, permissao: "motoristas" },
+      { chave: "centros", titulo: "Centros de custo", icone: Building2, permissao: "centros_custo" },
+      { chave: "historico", titulo: "Histórico de centros", icone: History, permissao: "centros_custo" },
     ] as const
-  ).filter(([, , , permissao]) => pode(permissao));
+  ).filter(({ permissao }) => pode(permissao));
 
   // Sem permissão para a aba escolhida (ou para a inicial), vale a primeira que a pessoa pode ver.
-  const atual = abas.some(([chave]) => chave === aba) ? aba : abas[0]?.[0];
+  const atual = abas.some(({ chave }) => chave === aba) ? aba : abas[0]?.chave;
 
   if (!podeVer("cadastros")) {
     return (
@@ -45,37 +47,62 @@ export function Cadastros() {
   }
 
   return (
+    // O título e o subtítulo da página já estão no cabeçalho (Header): o corpo começa nas abas.
     <div className="space-y-6 p-4 sm:p-8">
-      <div>
-        <h2 className="text-xl font-bold text-gray-900">Motoristas e centros de custo</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          Quem dirige os veículos da frota, a que área cada gasto e cada viagem pertence e quem pode fazer o quê.
-        </p>
-      </div>
-
-      <div role="tablist" className="flex gap-1 overflow-x-auto border-b border-gray-200">
-        {abas.map(([chave, titulo, Icone]) => (
-          <button
-            key={chave}
-            type="button"
-            role="tab"
-            aria-selected={atual === chave}
-            onClick={() => setAba(chave)}
-            className={`-mb-px flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-semibold ${
-              atual === chave
-                ? "border-blue-600 text-blue-700"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            <Icone size={14} /> {titulo}
-          </button>
-        ))}
-      </div>
-
-      {atual === "motoristas" && <Motoristas />}
-      {atual === "centros" && <Centros />}
-      {atual === "historico" && <HistoricoCentros />}
+      <Abas itens={abas} atual={atual} onMudar={setAba} rotulo="Motoristas e centros de custo">
+        {atual === "motoristas" && <Motoristas />}
+        {atual === "centros" && <Centros />}
+        {atual === "historico" && <HistoricoCentros />}
+      </Abas>
     </div>
+  );
+}
+
+// ------------------------------------------------- remoção recusada pelo histórico
+
+/**
+ * Com histórico (usos, veículos), o servidor responde 422 e não apaga nada: o
+ * cadastro fica como estava. Os outros erros seguem como erro comum.
+ */
+function recusadoPorHistorico(error: unknown) {
+  return isAxiosError(error) && error.response?.status === 422;
+}
+
+/** A explicação do servidor, com o atalho para desativar (reversível) no lugar de apagar. */
+function RemocaoRecusada({
+  nome,
+  ativo,
+  mensagem,
+  onDesativar,
+}: {
+  nome: string;
+  ativo: boolean;
+  mensagem: string;
+  onDesativar: () => void;
+}) {
+  if (!ativo) {
+    return (
+      <Alert tone="warning">
+        {nome} tem histórico e por isso não foi apagado. O cadastro já está desativado: não aparece nas novas
+        escolhas, e o histórico continua guardado.
+      </Alert>
+    );
+  }
+
+  return (
+    <Alert
+      tone="warning"
+      action={{
+        label: (
+          <>
+            Desativar <span className="sr-only">{nome}</span>
+          </>
+        ),
+        onClick: onDesativar,
+      }}
+    >
+      {mensagem} Desativar não apaga nada e dá para reativar depois.
+    </Alert>
   );
 }
 
@@ -87,6 +114,7 @@ function Motoristas() {
   const [editando, setEditando] = useState<Motorista | "novo" | null>(null);
   // Erro de uma ação (desativar, remover) fica separado do erro da carga da lista.
   const [erroDeAcao, setErroDeAcao] = useState<string | null>(null);
+  const [recusa, setRecusa] = useState<{ motorista: Motorista; mensagem: string } | null>(null);
   const [convidando, setConvidando] = useState<Motorista | null>(null);
   const [confirmacao, setConfirmacao] = useState<string | null>(null);
   const { carregando, erro: erroDeCarga, recarregar: carregar } = useCarregarLista(
@@ -99,6 +127,7 @@ function Motoristas() {
 
   async function alternarAtivo(m: Motorista) {
     setErroDeAcao(null);
+    setRecusa(null);
     try {
       await motoristasService.atualizar(m.id, { nome: m.nome, ativo: !m.ativo });
       carregar();
@@ -108,14 +137,24 @@ function Motoristas() {
   }
 
   async function remover(m: Motorista) {
-    if (!(await pedirConfirmacao({ mensagem: `Remover o motorista ${m.nome}?`, confirmarTexto: "Remover", perigo: true }))) return;
+    const confirmou = await pedirConfirmacao({
+      mensagem: `Remover o motorista ${m.nome}? Se ele já tiver usos de veículo no histórico, o sistema não apaga o cadastro e você poderá desativá-lo.`,
+      confirmarTexto: "Remover",
+      perigo: true,
+    });
+    if (!confirmou) return;
 
     setErroDeAcao(null);
+    setRecusa(null);
     try {
       await motoristasService.remover(m.id);
       carregar();
     } catch (error) {
-      setErroDeAcao(mensagemErro(error));
+      if (recusadoPorHistorico(error)) {
+        setRecusa({ motorista: m, mensagem: mensagemErro(error) });
+      } else {
+        setErroDeAcao(mensagemErro(error));
+      }
     }
   }
 
@@ -135,6 +174,15 @@ function Motoristas() {
         <Alert tone="danger">
           {erroDeAcao}
         </Alert>
+      )}
+
+      {recusa && (
+        <RemocaoRecusada
+          nome={recusa.motorista.nome}
+          ativo={recusa.motorista.ativo}
+          mensagem={recusa.mensagem}
+          onDesativar={() => void alternarAtivo(recusa.motorista)}
+        />
       )}
 
       {confirmacao && (
@@ -365,10 +413,14 @@ function MotoristaModal({
   const [telefone, setTelefone] = useState(motorista?.telefone ?? "");
   const [cnh, setCnh] = useState(motorista?.cnhNumero ?? "");
   const [validade, setValidade] = useState(motorista?.cnhValidade ?? "");
-  const [centros, setCentros] = useState<CentroCusto[]>([]);
+  // null enquanto carrega: só com a resposta dá para dizer que não há centro nenhum.
+  const [centros, setCentros] = useState<CentroCusto[] | null>(null);
   const [centroId, setCentroId] = useState(motorista?.centroCustoId ? String(motorista.centroCustoId) : "");
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
+  // Na primeira configuração ainda não há centro: cria ali mesmo, sem fechar o motorista nem perder o que foi digitado.
+  const [criandoCentro, setCriandoCentro] = useState(false);
+  const podeCriarCentro = usePodeNaFrota()("centros_custo");
 
   useEffect(() => {
     let ativo = true;
@@ -427,6 +479,7 @@ function MotoristaModal({
   }
 
   return (
+    <>
     <Modal titulo={motorista ? "Editar motorista" : "Novo motorista"} icone={<UserRound size={16} />} onClose={onClose}>
       <form onSubmit={(e) => void salvar(e)} className="space-y-4 px-6 py-5">
         <div>
@@ -441,11 +494,22 @@ function MotoristaModal({
           <label htmlFor="mot-centro" className={rotulo}>Centro de custo</label>
           <select id="mot-centro" value={centroId} onChange={(e) => setCentroId(e.target.value)} className={classeCampo}>
             <option value="">Escolha...</option>
-            {centros.map((c) => (
+            {(centros ?? []).map((c) => (
               <option key={c.id} value={c.id}>{c.nome}</option>
             ))}
           </select>
           <p className="mt-1 text-xs text-gray-500">As reservas do motorista saem nesse centro de custo.</p>
+          {centros?.length === 0 && (
+            <Alert
+              tone="info"
+              className="mt-2"
+              action={podeCriarCentro ? { label: "Cadastrar centro de custo", onClick: () => setCriandoCentro(true) } : undefined}
+            >
+              {podeCriarCentro
+                ? "Ainda não há centro de custo ativo para escolher. Cadastre um (por exemplo, Vendas ou Entregas) sem sair daqui: o que você já digitou continua no formulário."
+                : "Ainda não há centro de custo ativo para escolher. Peça a quem gerencia os centros de custo da frota para cadastrar um."}
+            </Alert>
+          )}
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
@@ -472,6 +536,20 @@ function MotoristaModal({
         </div>
       </form>
     </Modal>
+
+    {/* Fora do <form> do motorista: o submit do centro não pode subir até ele pela árvore do React. */}
+    {criandoCentro && (
+      <CentroModal
+        centro={null}
+        onSalvo={(novo) => {
+          setCriandoCentro(false);
+          setCentros((atuais) => [...(atuais ?? []), novo]);
+          setCentroId(String(novo.id));
+        }}
+        onClose={() => setCriandoCentro(false)}
+      />
+    )}
+    </>
   );
 }
 
@@ -483,6 +561,7 @@ function Centros() {
   const [editando, setEditando] = useState<CentroCusto | "novo" | null>(null);
   // Erro de uma ação (desativar, remover) fica separado do erro da carga da lista.
   const [erroDeAcao, setErroDeAcao] = useState<string | null>(null);
+  const [recusa, setRecusa] = useState<{ centro: CentroCusto; mensagem: string } | null>(null);
   const { carregando, erro: erroDeCarga, recarregar: carregar } = useCarregarLista(
     "centros",
     async (ativo) => {
@@ -493,6 +572,7 @@ function Centros() {
 
   async function alternarAtivo(c: CentroCusto) {
     setErroDeAcao(null);
+    setRecusa(null);
     try {
       await centrosCustoService.atualizar(c.id, { nome: c.nome, codigo: c.codigo, ativo: !c.ativo });
       carregar();
@@ -502,15 +582,25 @@ function Centros() {
   }
 
   async function remover(c: CentroCusto) {
-    if (!(await pedirConfirmacao({ mensagem: `Remover o centro de custo ${c.nome}?`, confirmarTexto: "Remover", perigo: true }))) return;
+    const confirmou = await pedirConfirmacao({
+      mensagem: `Remover o centro de custo ${c.nome}? Se ele tiver veículos ou usos ligados, o sistema não apaga o cadastro e você poderá desativá-lo.`,
+      confirmarTexto: "Remover",
+      perigo: true,
+    });
+    if (!confirmou) return;
 
     setErroDeAcao(null);
+    setRecusa(null);
     try {
       await centrosCustoService.remover(c.id);
       carregar();
     } catch (error) {
-      // Com histórico, o servidor pede para desativar em vez de apagar.
-      setErroDeAcao(mensagemErro(error));
+      // Com histórico, o servidor recusa (nada é apagado) e pede para desativar em vez de apagar.
+      if (recusadoPorHistorico(error)) {
+        setRecusa({ centro: c, mensagem: mensagemErro(error) });
+      } else {
+        setErroDeAcao(mensagemErro(error));
+      }
     }
   }
 
@@ -530,6 +620,15 @@ function Centros() {
         <Alert tone="danger">
           {erroDeAcao}
         </Alert>
+      )}
+
+      {recusa && (
+        <RemocaoRecusada
+          nome={recusa.centro.nome}
+          ativo={recusa.centro.ativo}
+          mensagem={recusa.mensagem}
+          onDesativar={() => void alternarAtivo(recusa.centro)}
+        />
       )}
 
       {erroDeCarga && (
@@ -591,7 +690,7 @@ function CentroModal({
   onClose,
 }: {
   centro: CentroCusto | null;
-  onSalvo: () => void;
+  onSalvo: (salvo: CentroCusto) => void;
   onClose: () => void;
 }) {
   const [nome, setNome] = useState(centro?.nome ?? "");
@@ -613,13 +712,11 @@ function CentroModal({
     try {
       setSalvando(true);
 
-      if (centro) {
-        await centrosCustoService.atualizar(centro.id, { ...payload, ativo: centro.ativo });
-      } else {
-        await centrosCustoService.criar(payload);
-      }
+      const salvo = centro
+        ? await centrosCustoService.atualizar(centro.id, { ...payload, ativo: centro.ativo })
+        : await centrosCustoService.criar(payload);
 
-      onSalvo();
+      onSalvo(salvo);
     } catch (error) {
       setErro(mensagemErro(error));
     } finally {

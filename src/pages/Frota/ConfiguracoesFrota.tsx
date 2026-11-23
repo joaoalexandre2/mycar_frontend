@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { History, ListChecks, UserCog, Users } from "lucide-react";
+import { Abas } from "../../components/ui/Abas";
 import { AcessosHistorico } from "./AcessosHistorico";
 import { Grupos } from "./Grupos";
 import { MotivosTroca } from "./MotivosTroca";
@@ -17,50 +18,25 @@ export function ConfiguracoesFrota() {
 
   const abas = (
     [
-      ["motivos", "Motivos de troca", ListChecks, "centros_custo"],
-      ["grupos", "Grupos de usuários", Users, "grupos"],
-      ["pessoas", "Pessoas e papéis", UserCog, "pessoas"],
-      ["acessos", "Histórico de acessos", History, "pessoas"],
+      { chave: "motivos", titulo: "Motivos de troca", icone: ListChecks, permissao: "centros_custo" },
+      { chave: "grupos", titulo: "Grupos de usuários", icone: Users, permissao: "grupos" },
+      { chave: "pessoas", titulo: "Pessoas e papéis", icone: UserCog, permissao: "pessoas" },
+      { chave: "acessos", titulo: "Histórico de acessos", icone: History, permissao: "pessoas" },
     ] as const
-  ).filter(([chave, , , permissao]) => (chave === "pessoas" || chave === "acessos" ? ehAdministrador : pode(permissao)));
+  ).filter(({ chave, permissao }) => (chave === "pessoas" || chave === "acessos" ? ehAdministrador : pode(permissao)));
 
   // Sem permissão para a aba escolhida (ou para a inicial), vale a primeira que a pessoa pode ver.
-  const atual = abas.some(([chave]) => chave === aba) ? aba : abas[0]?.[0];
+  const atual = abas.some(({ chave }) => chave === aba) ? aba : abas[0]?.chave;
 
   return (
+    // O título e o subtítulo da página já estão no cabeçalho (Header): o corpo começa nas abas.
     <div className="space-y-6 p-4 sm:p-8">
-      <div>
-        <h2 className="text-xl font-bold text-gray-900">Gestão da frota</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          Os motivos das trocas de centro de custo, os grupos de usuários e quem é administrador ou gestor.
-        </p>
-      </div>
-
-      {abas.length > 0 && (
-        <div role="tablist" className="flex gap-1 overflow-x-auto border-b border-gray-200">
-          {abas.map(([chave, titulo, Icone]) => (
-            <button
-              key={chave}
-              type="button"
-              role="tab"
-              aria-selected={atual === chave}
-              onClick={() => setAba(chave)}
-              className={`-mb-px flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-semibold ${
-                atual === chave
-                  ? "border-blue-600 text-blue-700"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              <Icone size={14} /> {titulo}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {atual === "motivos" && <MotivosTroca />}
-      {atual === "grupos" && <Grupos />}
-      {atual === "pessoas" && <Pessoas />}
-      {atual === "acessos" && <AcessosHistorico />}
+      <Abas itens={abas} atual={atual} onMudar={setAba} rotulo="Gestão da frota">
+        {atual === "motivos" && <MotivosTroca />}
+        {atual === "grupos" && <Grupos />}
+        {atual === "pessoas" && <Pessoas />}
+        {atual === "acessos" && <AcessosHistorico />}
+      </Abas>
     </div>
   );
 }

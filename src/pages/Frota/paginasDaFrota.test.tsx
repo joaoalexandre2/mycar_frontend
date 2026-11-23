@@ -445,7 +445,8 @@ describe("Cadastros: motoristas", () => {
     await userEvent.click(screen.getByRole("button", { name: "Remover Maria Silva" }));
     await userEvent.click(await screen.findByRole("button", { name: "Remover" }));
 
-    expect(await screen.findByRole("alert")).toHaveTextContent("Desative-o em vez de apagar");
+    // A recusa vem como aviso (não erro), com o atalho para desativar na própria mensagem.
+    expect((await screen.findByText(/Desative-o em vez de apagar/)).closest("[data-tom]")).toHaveAttribute("data-tom", "warning");
   });
 });
 
@@ -485,6 +486,8 @@ describe("Cadastros: centros de custo", () => {
     await userEvent.click(await screen.findByRole("button", { name: "Remover Entregas" }));
     await userEvent.click(await screen.findByRole("button", { name: "Remover" }));
 
-    expect(await screen.findByRole("alert")).toHaveTextContent("Desative-o em vez de apagar");
+    const aviso = (await screen.findByText(/Desative-o em vez de apagar/)).closest("[data-tom]") as HTMLElement;
+    expect(aviso).toHaveAttribute("data-tom", "warning");
+    expect(within(aviso).getByRole("button", { name: "Desativar Entregas" })).toBeInTheDocument();
   });
 });

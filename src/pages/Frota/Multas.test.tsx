@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NotificacoesProvider } from "../../contexts/NotificacoesProvider";
-import { multasService } from "../../services/frotaDiferenciais";
-import type { Multa } from "../../types/frota";
+import { contaService } from "../../services/conta/veiculos";
+import { motoristasService } from "../../services/frota";
+import { multasService } from "../../services/frotaDiferenciais";import type { Multa } from "../../types/frota";
 import { Multas } from "./Multas";
 
 afterEach(() => vi.restoreAllMocks());
@@ -74,5 +75,47 @@ describe("Multas da frota", () => {
     await waitFor(() => expect(listar).toHaveBeenLastCalledWith(expect.objectContaining({ pagina: 1 })));
     expect(listar).toHaveBeenCalledTimes(3);
     expect(await screen.findByText("Infração 1")).toBeInTheDocument();
+  });
+
+  it("mostra o valor no formato de moeda do app e não repete o título do cabeçalho", async () => {
+    vi.spyOn(multasService, "listar").mockResolvedValue({
+      dados: [{ ...multa(1), valor: "1500.5" }],
+      paginaAtual: 1,
+      totalPaginas: 1,
+      totalRegistros: 1,
+    });
+
+    renderizar();
+
+    // Antes saía "R$ 1500,50" (toFixed à mão, sem o separador de milhar).
+    expect(await screen.findByText(/R\$\s1\.500,50/)).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { level: 2 })).not.toBeInTheDocument();
+  });
+
+  it("avisa quando os motoristas não carregam, sem travar o registro, e tenta de novo", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(multasService, "listar").mockResolvedValue({ dados: [], paginaAtual: 1, totalPaginas: 0, totalRegistros: 0 });
+    vi.spyOn(contaService, "listarVeiculos").mockResolvedValue({ dados: [] } as unknown as Awaited<ReturnType<typeof contaService.listarVeiculos>>);
+    const listarMotoristas = vi
+      .spyOn(motoristasService, "listar")
+      .mockRejectedValueOnce(new Error("rede fora"))
+      .mockResolvedValueOnce([{ id: 2, nome: "Maria", telefone: null, cnhNumero: null, cnhValidade: null, ativo: true }]);
+
+    renderizar();
+
+    await user.click(await screen.findByRole("button", { name: /Nova multa/ }));
+
+    const aviso = await screen.findByText(/Não foi possível carregar a lista de motoristas/);
+    const caixa = aviso.closest("[data-tom]") as HTMLElement;
+    expect(caixa).toHaveAttribute("data-tom", "warning");
+    // O resto do formulário segue utilizável.
+    expect(screen.getByRole("button", { name: "Registrar multa" })).toBeEnabled();
+    expect(screen.getByLabelText("Infração")).toBeEnabled();
+
+    await user.click(within(caixa).getByRole("button", { name: "Tentar de novo" }));
+
+    expect(await screen.findByRole("option", { name: "Maria" })).toBeInTheDocument();
+    expect(screen.queryByText(/Não foi possível carregar a lista de motoristas/)).not.toBeInTheDocument();
+    expect(listarMotoristas).toHaveBeenCalledTimes(2);
   });
 });
