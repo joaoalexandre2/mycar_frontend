@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Pencil, Plus, Tags, Trash2 } from "lucide-react";
 import { Alert } from "../../components/ui/Alert";
+import { TITULO_DE_SECAO } from "../../components/ui/escalaDeTitulos";
 import { CategoriasDespesaModal } from "../../components/frota/CategoriasDespesaModal";
 import { DespesaAvulsaModal } from "../../components/frota/DespesaAvulsaModal";
 import { useConfirmar } from "../../hooks/useNotificacoes";
@@ -175,7 +176,7 @@ export function Financeiro() {
           </p>
 
           <section className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-            <h3 className="px-5 pt-4 text-sm font-semibold text-gray-900">Por veículo</h3>
+            <h2 className={`px-5 pt-4 ${TITULO_DE_SECAO}`}>Por veículo</h2>
             <table className="tabela-cartoes mt-3 w-full text-left text-xs">
               <thead className="bg-gray-50 text-gray-500">
                 <tr>
@@ -213,7 +214,7 @@ export function Financeiro() {
 
           <div className="grid gap-6 lg:grid-cols-2">
             <section className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-              <h3 className="px-5 pt-4 text-sm font-semibold text-gray-900">Por mês</h3>
+              <h2 className={`px-5 pt-4 ${TITULO_DE_SECAO}`}>Por mês</h2>
               <table className="tabela-cartoes mt-3 w-full text-left text-xs">
                 <thead className="bg-gray-50 text-gray-500">
                   <tr>
@@ -240,7 +241,7 @@ export function Financeiro() {
             </section>
 
             <section className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-              <h3 className="px-5 pt-4 text-sm font-semibold text-gray-900">Por motorista e por centro de custo</h3>
+              <h2 className={`px-5 pt-4 ${TITULO_DE_SECAO}`}>Por motorista e por centro de custo</h2>
               <table className="tabela-cartoes mt-3 w-full text-left text-xs">
                 <thead className="bg-gray-50 text-gray-500">
                   <tr>
@@ -272,7 +273,7 @@ export function Financeiro() {
       )}
 
       <section className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-        <h3 className="px-5 pt-4 text-sm font-semibold text-gray-900">Despesas avulsas</h3>
+        <h2 className={`px-5 pt-4 ${TITULO_DE_SECAO}`}>Despesas avulsas</h2>
         <table className="tabela-cartoes mt-3 w-full text-left text-xs">
           <thead className="bg-gray-50 text-gray-500">
             <tr>

@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { conferirHierarquiaDaPagina } from "../../test/hierarquiaDeTitulos";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NotificacoesProvider } from "../../contexts/NotificacoesProvider";
@@ -128,5 +129,15 @@ describe("Financeiro da frota", () => {
         expect.objectContaining({ categoriaId: 2, valor: 45.5, veiculoId: null, motoristaId: null, centroCustoId: null }),
       ),
     );
+  });
+
+  it("títulos: cada tabela é uma seção h2, sem repetir o título da página", async () => {
+    prepararServicos();
+
+    const { container } = renderizar();
+
+    expect(await screen.findByRole("heading", { level: 2, name: "Por veículo" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "Despesas avulsas" })).toBeInTheDocument();
+    conferirHierarquiaDaPagina(container, "Financeiro");
   });
 });

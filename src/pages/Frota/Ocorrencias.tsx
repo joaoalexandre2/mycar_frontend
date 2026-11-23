@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Pencil, Plus, Trash2 } from "lucide-react";
 import { Alert } from "../../components/ui/Alert";
+import { TITULO_DE_SECAO } from "../../components/ui/escalaDeTitulos";
 import { OcorrenciaModal } from "../../components/frota/OcorrenciaModal";
 import { useConfirmar } from "../../hooks/useNotificacoes";
 import { useUsuarioDaFrota } from "../../hooks/usePodeNaFrota";
@@ -136,8 +137,9 @@ export function Ocorrencias() {
         </section>
       )}
 
-      <section className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-        <table className="tabela-cartoes w-full text-left text-xs">
+      <section aria-labelledby="ocorrencias-lista" className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+        <h2 id="ocorrencias-lista" className={`px-5 pt-4 ${TITULO_DE_SECAO}`}>Ocorrências registradas</h2>
+        <table className="tabela-cartoes mt-3 w-full text-left text-xs">
           <thead className="bg-gray-50 text-gray-500">
             <tr>
               <th className="px-5 py-2 font-medium">Quando</th>

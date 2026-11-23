@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Download, Printer } from "lucide-react";
 import { Alert } from "../../components/ui/Alert";
+import { TITULO_DE_SECAO } from "../../components/ui/escalaDeTitulos";
 import { contaService } from "../../services/conta/veiculos";
 import { motoristasService, centrosCustoService } from "../../services/frota";
 import { categoriasDeDespesaService } from "../../services/financeiro";
@@ -166,7 +167,7 @@ export function Relatorios() {
       {relatorio && (
         <section className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
           <div className="flex items-center justify-between px-5 pt-4">
-            <h3 className="text-sm font-semibold text-gray-900">{relatorio.titulo}</h3>
+            <h2 className={TITULO_DE_SECAO}>{relatorio.titulo}</h2>
             <span className="text-xs text-gray-500">{relatorio.totalLinhas} registro(s)</span>
           </div>
           {/* No celular cada linha vira um cartão: a primeira coluna do relatório é o

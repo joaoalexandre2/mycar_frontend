@@ -73,7 +73,7 @@ describe("título do documento", () => {
   it.each([
     ["/", oficina, "Dashboard · MyCar"],
     ["/clientes", oficina, "Clientes · MyCar"],
-    ["/agenda", frota, "Agenda de veículos · MyCar"],
+    ["/agenda", frota, "Agenda · MyCar"],
   ])("%s mostra o nome da tela na aba", (rota, usuario, esperado) => {
     vi.spyOn(api, "get").mockResolvedValue({ data: [] } as never);
 

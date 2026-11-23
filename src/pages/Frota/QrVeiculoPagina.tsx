@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Alert } from "../../components/ui/Alert";
+import { TITULO_DE_SECAO } from "../../components/ui/escalaDeTitulos";
 import { StatusChip } from "../../components/ui/StatusChip";
 import { Car } from "lucide-react";
 import { ChecklistModal } from "../../components/frota/ChecklistModal";
@@ -61,7 +62,7 @@ export function QrVeiculoPagina() {
       </div>
 
       <section className="space-y-3">
-        <h2 className="text-sm font-semibold text-gray-900">Reservas de hoje</h2>
+        <h2 className={TITULO_DE_SECAO}>Reservas de hoje</h2>
 
         {dados.reservas.length === 0 && (
           <p className="rounded-lg bg-gray-50 px-4 py-4 text-xs text-gray-500">

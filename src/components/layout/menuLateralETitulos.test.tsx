@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import api from "../../services/api";
@@ -111,15 +111,70 @@ describe("títulos do Header na frota", () => {
   });
 
   it.each([
-    ["/agenda", "Agenda de veículos"],
-    ["/frota/cadastros", "Motoristas e centros de custo"],
+    ["/agenda", "Agenda"],
+    ["/frota/cadastros", "Motoristas e centros"],
     ["/frota/configuracoes", "Gestão da frota"],
+    ["/qr/abc123", "QR Code do veículo"],
   ])("%s tem o próprio título, não o do Início", (rota, titulo) => {
     vi.spyOn(api, "get").mockResolvedValue({ data: [] } as never);
 
     comUsuario(frota, rota, <Header aoAbrirMenu={() => {}} />);
 
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(titulo);
+  });
+
+  // Uma tela, um nome: o item do menu e o h1 do cabeçalho dizem a mesma coisa.
+  it.each([
+    "/",
+    "/veiculos",
+    "/agenda",
+    "/frota/ocorrencias",
+    "/frota/cadastros",
+    "/frota/configuracoes",
+    "/frota/painel",
+    "/frota/multas",
+    "/frota/financeiro",
+    "/frota/relatorios",
+    "/frota/checklists",
+  ])("%s: o nome no menu é o título do cabeçalho, e o item fica marcado", (rota) => {
+    vi.spyOn(api, "get").mockResolvedValue({ data: [] } as never);
+    const administrador: Usuario = { ...frota, papel: "administrador", menus: ["veiculos", "agenda", "cadastros"] };
+
+    comUsuario(
+      administrador,
+      rota,
+      <>
+        <Header aoAbrirMenu={() => {}} />
+        <Sidebar aberta aoFechar={() => {}} />
+      </>,
+    );
+
+    const titulos = screen.getAllByRole("heading", { level: 1 });
+    expect(titulos).toHaveLength(1);
+
+    const menu = screen.getByRole("navigation", { name: "Principal" });
+    const item = within(menu).getAllByRole("link").find((link) => link.getAttribute("href") === rota);
+
+    expect(item).toBeDefined();
+    expect(item).toHaveAccessibleName(titulos[0].textContent ?? "");
+    expect(item).toHaveAttribute("aria-current", "page");
+  });
+
+  it("pessoa: a tela de veículos se chama Meus veículos no menu e no cabeçalho", () => {
+    vi.spyOn(api, "get").mockResolvedValue({ data: [] } as never);
+    const pessoa: Usuario = { ...frota, perfil: "pessoa" };
+
+    comUsuario(
+      pessoa,
+      "/veiculos",
+      <>
+        <Header aoAbrirMenu={() => {}} />
+        <Sidebar aberta aoFechar={() => {}} />
+      </>,
+    );
+
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Meus veículos");
+    expect(screen.getByRole("link", { name: "Meus veículos" })).toHaveAttribute("aria-current", "page");
   });
 });
 

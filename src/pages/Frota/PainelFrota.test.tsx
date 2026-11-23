@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { conferirHierarquiaDaPagina } from "../../test/hierarquiaDeTitulos";
 import { render, screen } from "@testing-library/react";
 import { painelFrotaService } from "../../services/frotaDiferenciais";
 import { PainelFrota } from "./PainelFrota";
@@ -49,5 +50,17 @@ describe("Painel da frota", () => {
     expect(screen.getByRole("meter", { name: "Uso real de AAA1A11" })).toHaveAttribute("aria-valuenow", "5");
     expect(screen.getByText(/disponível 87.5%/)).toBeInTheDocument();
     expect(screen.getByText(/reservado 12.5% \(90 h\)/)).toBeInTheDocument();
+  });
+
+  it("títulos: as seções são h2, os cartões h3, sem repetir o título da página", async () => {
+    vi.spyOn(painelFrotaService, "alertas").mockResolvedValue(alertas);
+    vi.spyOn(painelFrotaService, "disponibilidade").mockResolvedValue(painel);
+
+    const { container } = render(<PainelFrota />);
+
+    expect(await screen.findByRole("heading", { level: 2, name: "Alertas" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "Uso dos veículos" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: "CNH" })).toBeInTheDocument();
+    conferirHierarquiaDaPagina(container, "Painel da frota");
   });
 });

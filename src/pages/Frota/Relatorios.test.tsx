@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { conferirHierarquiaDaPagina } from "../../test/hierarquiaDeTitulos";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NotificacoesProvider } from "../../contexts/NotificacoesProvider";
@@ -87,5 +88,15 @@ describe("Relatórios da frota", () => {
     await waitFor(() =>
       expect(baixar).toHaveBeenCalledWith("utilizacao", expect.objectContaining({ de: expect.any(String), ate: expect.any(String) })),
     );
+  });
+
+  it("títulos: o relatório escolhido é uma seção h2, sem repetir o título da página", async () => {
+    prepararServicos();
+
+    const { container } = renderizar();
+
+    await screen.findByText("AAA1A11");
+    expect(screen.getAllByRole("heading", { level: 2 })).toHaveLength(1);
+    conferirHierarquiaDaPagina(container, "Relatórios");
   });
 });

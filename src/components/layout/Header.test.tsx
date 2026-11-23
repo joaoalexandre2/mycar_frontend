@@ -339,7 +339,7 @@ describe("Header: título longo no celular", () => {
       </AuthContext.Provider>,
     );
 
-    const titulo = screen.getByRole("heading", { level: 1, name: "Motoristas e centros de custo" });
+    const titulo = screen.getByRole("heading", { level: 1, name: "Motoristas e centros" });
     expect(titulo).toHaveClass("truncate", "text-lg", "sm:text-[22px]");
 
     const esquerda = screen.getByRole("button", { name: "Abrir menu" }).parentElement!;

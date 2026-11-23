@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
   import { useAuth } from "../../hooks/useAuth";
   import { AvatarMenu } from "./AvatarMenu";
   import { ehConta, perfilDe } from "../../utils/perfil";
+  import type { Perfil } from "../../types/auth";
+  import { TITULO_DA_PAGINA } from "../ui/escalaDeTitulos";
 
   const TITULOS: Record<string, { titulo: string; subtitulo: string }> = {
     "/": { titulo: "Dashboard", subtitulo: "Visão geral do seu sistema automotivo." },
@@ -20,18 +22,20 @@ import { useEffect, useState } from "react";
   };
 
   // Pessoa (Cuidados com seu carro) e frota usam outras telas nas mesmas rotas.
+  // O título é o mesmo nome do item no menu lateral (Sidebar): uma tela, um nome.
+  // Quando o nome do menu é curto, o nome completo aparece no subtítulo.
   const TITULOS_CONTA: Record<string, { titulo: string; subtitulo: string }> = {
     "/": { titulo: "Início", subtitulo: "Seu carro e o que vence em breve." },
-    "/veiculos": { titulo: "Veículos", subtitulo: "Valor, IPVA e licenciamento estimados." },
-    "/agenda": { titulo: "Agenda de veículos", subtitulo: "Quem vai usar cada veículo e quando." },
-    "/frota/ocorrencias": { titulo: "Ocorrências da frota", subtitulo: "Acidentes, avarias e problemas, com as fotos antes e depois do reparo." },
-    "/frota/cadastros": { titulo: "Motoristas e centros de custo", subtitulo: "Quem dirige a frota e a que área cada gasto pertence." },
+    "/veiculos": { titulo: "Meus veículos", subtitulo: "Valor, IPVA e licenciamento estimados." },
+    "/agenda": { titulo: "Agenda", subtitulo: "Agenda de veículos: quem vai usar cada veículo e quando." },
+    "/frota/ocorrencias": { titulo: "Ocorrências", subtitulo: "Acidentes, avarias e problemas, com as fotos antes e depois do reparo." },
+    "/frota/cadastros": { titulo: "Motoristas e centros", subtitulo: "Motoristas e centros de custo: quem dirige a frota e a que área cada gasto pertence." },
     "/frota/configuracoes": { titulo: "Gestão da frota", subtitulo: "Motivos de troca, grupos de usuários, papéis e histórico de acessos." },
     "/frota/painel": { titulo: "Painel da frota", subtitulo: "Alertas, checklists e uso dos veículos." },
-    "/frota/multas": { titulo: "Multas da frota", subtitulo: "Quem estava com o veículo em cada infração." },
-    "/frota/financeiro": { titulo: "Financeiro da frota", subtitulo: "Quanto cada veículo, motorista e centro de custo gastou." },
-    "/frota/relatorios": { titulo: "Relatórios da frota", subtitulo: "Utilização, custos, multas e vencimentos, com exportação para o Excel." },
-    "/frota/checklists": { titulo: "Checklists da frota", subtitulo: "Os itens que o motorista confere na saída e na devolução." },
+    "/frota/multas": { titulo: "Multas", subtitulo: "Quem estava com o veículo em cada infração." },
+    "/frota/financeiro": { titulo: "Financeiro", subtitulo: "Quanto cada veículo, motorista e centro de custo gastou." },
+    "/frota/relatorios": { titulo: "Relatórios", subtitulo: "Utilização, custos, multas e vencimentos, com exportação para o Excel." },
+    "/frota/checklists": { titulo: "Checklists", subtitulo: "Os itens que o motorista confere na saída e na devolução." },
     "/estetica": { titulo: "Pátio", subtitulo: "Do check-in à entrega, com as fotos de cada carro." },
     "/estetica/placas": { titulo: "Histórico por placa", subtitulo: "Serviços, valores e retorno previsto de cada carro." },
     "/estetica/servicos": { titulo: "Serviços e pacotes", subtitulo: "O catálogo que aparece no pátio." },
@@ -45,6 +49,23 @@ import { useEffect, useState } from "react";
     "/admin": { titulo: "Administração", subtitulo: "Visão geral da plataforma." },
   };
 
+  // Na frota o menu chama a tela de veículos de "Veículos da frota".
+  const TITULOS_FROTA: Record<string, { titulo: string; subtitulo: string }> = {
+    ...TITULOS_CONTA,
+    "/veiculos": { titulo: "Veículos da frota", subtitulo: "Valor, IPVA e licenciamento estimados." },
+  };
+
+  // A página do QR Code (/qr/:token) não está no menu; sem isto o cabeçalho dizia "Início".
+  const TITULO_DO_QR = { titulo: "QR Code do veículo", subtitulo: "As reservas de hoje e o checklist deste veículo." };
+
+  function tituloDaRota(perfil: Perfil, pathname: string) {
+    if (!ehConta(perfil)) return TITULOS[pathname] ?? TITULOS["/"];
+    if (perfil !== "frota") return TITULOS_CONTA[pathname] ?? TITULOS_CONTA["/"];
+    if (pathname.startsWith("/qr/")) return TITULO_DO_QR;
+
+    return TITULOS_FROTA[pathname] ?? TITULOS_FROTA["/"];
+  }
+
   interface HeaderProps {
     aoAbrirMenu: () => void;
     /** Para o botão do menu dizer se ele está aberto (leitor de tela). */
@@ -55,8 +76,7 @@ import { useEffect, useState } from "react";
     const { usuario } = useAuth();
     const { pathname } = useLocation();
     const [despesasAbertas, setDespesasAbertas] = useState(false);
-    const titulos = ehConta(perfilDe(usuario)) ? TITULOS_CONTA : TITULOS;
-    const { titulo, subtitulo } = titulos[pathname] ?? titulos["/"];
+    const { titulo, subtitulo } = tituloDaRota(perfilDe(usuario), pathname);
 
     // O título da aba/janela acompanha a tela (leitor de tela e histórico do
     // navegador mostravam "MyCar" em todas).
@@ -82,7 +102,7 @@ import { useEffect, useState } from "react";
           </button>
 
           <div className="min-w-0">
-            <h1 className="truncate text-lg font-bold text-gray-900 sm:text-[22px]">
+            <h1 className={`truncate ${TITULO_DA_PAGINA}`}>
               {titulo}
             </h1>
 
