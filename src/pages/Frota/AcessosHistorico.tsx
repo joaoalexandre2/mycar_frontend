@@ -13,6 +13,7 @@ const ROTULO_DA_ACAO: Record<EventoDeAcesso["acao"], string> = {
   mudou_papel: "mudou o papel de",
   salvou: "salvou o modelo",
   ligou_motorista: "ligou a um cadastro de motorista",
+  reenviou_convite: "reenviou o convite para",
 };
 
 /** Quem mudou acesso na frota e quando. Só o administrador vê. */

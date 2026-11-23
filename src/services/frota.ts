@@ -535,6 +535,13 @@ export const pessoasFrotaService = {
     return data;
   },
 
+  /** Reenvia o convite (link novo para definir a senha) a quem ainda não entrou no sistema. */
+  async reenviarConvite(id: number): Promise<{ mensagem: string | null }> {
+    const { data } = await api.post<{ message?: string }>(`/conta/pessoas/${id}/convite`);
+
+    return { mensagem: typeof data?.message === "string" ? data.message : null };
+  },
+
   /** Liga o login da pessoa (papel motorista) a um cadastro de motorista, existente ou criado agora. */
   async ligarMotorista(id: number, ligacao: LigacaoDeMotorista): Promise<PessoaDaFrota> {
     const { data } = await api.post<PessoaDaFrota>(`/conta/pessoas/${id}/motorista`, ligacao);

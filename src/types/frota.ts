@@ -205,7 +205,15 @@ export interface PessoaDaFrota {
    * (undefined) = servidor antigo, que ainda não informa: a tela não oferece a ligação.
    */
   motorista?: { id: number; nome: string } | null;
+  /**
+   * convite_enviado: ainda não entrou no sistema (dá para reenviar o convite); ativo: já entrou.
+   * Ausente (undefined) = servidor antigo, que ainda não informa: a tela não oferece o reenvio.
+   */
+  acesso?: EstadoAcessoPessoa;
 }
+
+/** Mesmo critério do estado de acesso do motorista, sem o "sem_acesso": toda pessoa da lista já tem login. */
+export type EstadoAcessoPessoa = "convite_enviado" | "ativo";
 
 /** Ligar uma pessoa a um cadastro de motorista: a um existente sem login, ou criando o cadastro com o nome dela. */
 export type LigacaoDeMotorista =
@@ -237,7 +245,7 @@ export interface EventoDeAcesso {
   ator: string | null;
   alvo_tipo: "grupo" | "pessoa" | "modelo";
   alvo_id: number | null;
-  acao: "criou" | "editou" | "removeu" | "convidou" | "mudou_papel" | "salvou" | "ligou_motorista";
+  acao: "criou" | "editou" | "removeu" | "convidou" | "mudou_papel" | "salvou" | "ligou_motorista" | "reenviou_convite";
   detalhes: Record<string, unknown> | null;
 }
 

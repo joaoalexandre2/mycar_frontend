@@ -1,5 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState, type FormEvent } from "react";
-import { Link2, UserPlus } from "lucide-react";
+import { isAxiosError } from "axios";
+import { Link2, Send, UserPlus } from "lucide-react";
 import { centrosCustoService, motoristasService, pessoasFrotaService } from "../../services/frota";
 import { mensagemErro } from "../../services/api";
 import { useUsuarioDaFrota } from "../../hooks/usePodeNaFrota";
@@ -24,6 +25,12 @@ const nomesDosPapeis: Record<PapelDaFrota, string> = {
 /** O servidor diz a que cadastro de motorista o login está ligado (servidor antigo não manda o campo). */
 const informaLigacao = (pessoa: PessoaDaFrota) => pessoa.motorista !== undefined;
 
+/**
+ * Só oferece o reenvio quando o servidor diz que a pessoa ainda não entrou. Servidor antigo
+ * (sem o campo) ou valor desconhecido: a tela não afirma nada nem oferece a ação.
+ */
+const aguardaPrimeiroAcesso = (pessoa: PessoaDaFrota) => pessoa.acesso === "convite_enviado";
+
 /** Pessoas da frota e seus papéis. Só o administrador chega aqui. */
 export function Pessoas() {
   const usuario = useUsuarioDaFrota();
@@ -42,6 +49,8 @@ export function Pessoas() {
   const [enviando, setEnviando] = useState(false);
   // Pessoa cujo login está sendo ligado a um cadastro de motorista (modal aberto).
   const [ligando, setLigando] = useState<PessoaDaFrota | null>(null);
+  // Pessoa cujo convite está sendo reenviado agora (o botão dela fica ocupado).
+  const [reenviandoId, setReenviandoId] = useState<number | null>(null);
   // Textos do que cada permissão e menu quer dizer (vêm junto da lista).
   const [rotulos, setRotulos] = useState<{ permissoes: Record<string, string>; menus: Record<string, string> }>({ permissoes: {}, menus: {} });
 
@@ -167,6 +176,36 @@ export function Pessoas() {
     }
   }
 
+  async function reenviarConvite(pessoa: PessoaDaFrota) {
+    setErro(null);
+    setAviso(null);
+    setPendencia(null);
+
+    try {
+      setReenviandoId(pessoa.id);
+      const { mensagem } = await pessoasFrotaService.reenviarConvite(pessoa.id);
+      setAviso(mensagem ?? `Convite reenviado para ${pessoa.email}.`);
+    } catch (error) {
+      const status = isAxiosError(error) ? error.response?.status : undefined;
+
+      if (status === 429) {
+        // Vale tanto para o intervalo do convite quanto para o limite de pedidos da rota.
+        setErro(`Acabamos de enviar um convite para ${pessoa.name}. Aguarde um minuto e tente reenviar de novo.`);
+      } else {
+        setErro(mensagemErro(error));
+        // 422: a pessoa já entrou; 404: saiu da frota. Atualiza só a lista, sem apagar a mensagem.
+        if (status === 422 || status === 404) {
+          pessoasFrotaService
+            .listar()
+            .then((resposta) => setPessoas(resposta.pessoas))
+            .catch(() => undefined);
+        }
+      }
+    } finally {
+      setReenviandoId(null);
+    }
+  }
+
   function abrirLigacao(pessoa: PessoaDaFrota) {
     setErro(null);
     setAviso(null);
@@ -227,6 +266,8 @@ export function Pessoas() {
           {pessoas.map((p) => {
             const euMesmo = p.id === usuario?.id;
             const faltaCadastro = p.papel === "motorista" && semCadastroDeMotorista(p);
+            const podeReenviar = !euMesmo && aguardaPrimeiroAcesso(p);
+            const reenviando = reenviandoId === p.id;
 
             return (
               <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
@@ -235,6 +276,12 @@ export function Pessoas() {
                     {p.name} {euMesmo && <span className="text-xs font-normal text-gray-500">(você)</span>}
                   </p>
                   <p className="text-xs text-gray-500">{p.email}</p>
+                  {p.acesso === "convite_enviado" && (
+                    <p className="mt-1 text-xs font-semibold text-(--tom-warning-texto)">
+                      Convite enviado: ainda não entrou no sistema.
+                    </p>
+                  )}
+                  {p.acesso === "ativo" && <p className="mt-1 text-xs text-gray-500">Já entrou no sistema.</p>}
                   <p className="mt-1 text-xs text-gray-600">
                     {p.papel === "administrador"
                       ? "Pode tudo, como administrador."
@@ -259,6 +306,19 @@ export function Pessoas() {
                     >
                       <Link2 size={14} aria-hidden="true" /> Ligar a um motorista
                       <span className="sr-only">: {p.name}</span>
+                    </button>
+                  )}
+                  {podeReenviar && (
+                    <button
+                      type="button"
+                      onClick={() => void reenviarConvite(p)}
+                      disabled={reenviando}
+                      aria-busy={reenviando}
+                      // O nome acessível começa pelo texto visível e diz de quem é o convite.
+                      aria-label={`${reenviando ? "Reenviando convite" : "Reenviar convite"} para ${p.name}`}
+                      className="mt-2 flex h-11 w-fit items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-700 hover:border-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-60 md:h-9"
+                    >
+                      <Send size={14} aria-hidden="true" /> {reenviando ? "Reenviando convite" : "Reenviar convite"}
                     </button>
                   )}
                 </div>
