@@ -5,9 +5,7 @@ import { patioService } from "../../services/estetica";
 import { mensagemErro } from "../../services/api";
 import type { AtendimentoDaEstetica } from "../../types/estetica";
 import { Alert } from "../ui/Alert";
-
-const classeCampo =
-  "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
+import { classeDoCampo, classeDoRotulo } from "../ui/Campo";
 
 const NOME_DO_MOMENTO = { checkin: "Check-in (chegada)", checkout: "Checkout (entrega)" } as const;
 
@@ -66,7 +64,7 @@ export function FotosModal({ atendimento, onAtualizado, onClose }: { atendimento
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {detalhe.fotos?.map((f) => (
               <figure key={f.id} className="space-y-1">
-                <img src={f.url} alt={`${NOME_DO_MOMENTO[f.momento]} de ${atendimento.placa}`} className="aspect-square w-full rounded-lg object-cover" />
+                <img src={f.url} alt={`${NOME_DO_MOMENTO[f.momento]} de ${atendimento.placa}`} loading="lazy" decoding="async" className="aspect-square w-full rounded-lg object-cover" />
                 <figcaption className="text-xs text-gray-500">{NOME_DO_MOMENTO[f.momento]}</figcaption>
               </figure>
             ))}
@@ -76,14 +74,14 @@ export function FotosModal({ atendimento, onAtualizado, onClose }: { atendimento
 
         <form onSubmit={(e) => void enviar(e)} className="grid grid-cols-1 gap-3 border-t border-gray-100 pt-4 sm:grid-cols-[1fr_2fr_auto] sm:items-end">
           <div>
-            <label htmlFor="foto-momento" className="mb-1.5 block text-xs font-medium text-gray-700">Momento</label>
-            <select id="foto-momento" value={momento} onChange={(e) => setMomento(e.target.value as "checkin" | "checkout")} className={classeCampo}>
+            <label htmlFor="foto-momento" className={classeDoRotulo}>Momento</label>
+            <select id="foto-momento" value={momento} onChange={(e) => setMomento(e.target.value as "checkin" | "checkout")} className={classeDoCampo}>
               <option value="checkin">{NOME_DO_MOMENTO.checkin}</option>
               <option value="checkout">{NOME_DO_MOMENTO.checkout}</option>
             </select>
           </div>
           <div>
-            <label htmlFor="foto-arquivo" className="mb-1.5 block text-xs font-medium text-gray-700">Foto</label>
+            <label htmlFor="foto-arquivo" className={classeDoRotulo}>Foto</label>
             <input id="foto-arquivo" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={(e) => setArquivo(e.target.files?.[0] ?? null)} className="text-xs" />
           </div>
           <button type="submit" disabled={enviando} className="h-10 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60">

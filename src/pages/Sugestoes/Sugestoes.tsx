@@ -14,11 +14,9 @@ import type {
 import { Alert } from "../../components/ui/Alert";
 import { StatusChip } from "../../components/ui/StatusChip";
 import type { Tom } from "../../components/ui/tons";
+import { classeDaAreaDeTexto, classeDoCampo, classeDoCampoEmLinha, classeDoRotulo } from "../../components/ui/Campo";
 
 const LIMITE_IMAGENS = 3;
-
-const classeCampo =
-  "w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
 
 const CATEGORIAS: { chave: CategoriaSugestao; rotulo: string }[] = [
   { chave: "melhoria", rotulo: "Melhoria de algo que já existe" },
@@ -79,7 +77,7 @@ function RespostaDaEquipe({
           aria-label="Status da sugestão"
           value={status}
           onChange={(e) => setStatus(e.target.value as StatusSugestao)}
-          className={`h-8 ${classeCampo} sm:w-48`}
+          className={`${classeDoCampoEmLinha} w-full sm:w-48`}
         >
           {STATUS.map((s) => (
             <option key={s.chave} value={s.chave}>
@@ -103,7 +101,7 @@ function RespostaDaEquipe({
         aria-label="Resposta para quem enviou"
         placeholder="Resposta para quem enviou (opcional)"
         onChange={(e) => setResposta(e.target.value)}
-        className={`${classeCampo} py-2`}
+        className={classeDaAreaDeTexto}
       />
       {erro && <p className="text-xs text-(--tom-danger-texto)">{erro}</p>}
     </div>
@@ -239,27 +237,27 @@ export function Sugestoes() {
           </div>
         </div>
 
-        <label className="block text-xs text-gray-500">
-          Título
+        <label className="block">
+          <span className={classeDoRotulo}>Título</span>
           <input
             type="text"
             value={titulo}
             maxLength={120}
             placeholder="Ex.: Aviso da troca de pneus"
             onChange={(e) => setTitulo(e.target.value)}
-            className={`mt-1 h-10 ${classeCampo}`}
+            className={classeDoCampo}
           />
         </label>
 
-        <label className="block text-xs text-gray-500">
-          Conte a ideia
+        <label className="block">
+          <span className={classeDoRotulo}>Conte a ideia</span>
           <textarea
             value={descricao}
             maxLength={2000}
             rows={4}
             placeholder="O que você gostaria de poder fazer e por quê?"
             onChange={(e) => setDescricao(e.target.value)}
-            className={`mt-1 py-2 ${classeCampo}`}
+            className={classeDaAreaDeTexto}
           />
         </label>
 
@@ -366,7 +364,7 @@ export function Sugestoes() {
                     setFiltro(e.target.value as StatusSugestao | "");
                     setLista(null);
                   }}
-                  className={`h-8 ${classeCampo} sm:w-40`}
+                  className={`${classeDoCampoEmLinha} w-full sm:w-40`}
                 >
                   <option value="">Todos os status</option>
                   {STATUS.map((s) => (

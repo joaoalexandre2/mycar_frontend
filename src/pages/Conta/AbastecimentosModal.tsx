@@ -17,9 +17,7 @@ import {
 import type { Motorista } from "../../types/frota";
 import { Alert } from "../../components/ui/Alert";
 import { StatusChip } from "../../components/ui/StatusChip";
-
-const classeCampo =
-  "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
+import { classeDaAreaDeTexto, classeDoCampo, classeDoRotulo } from "../../components/ui/Campo";
 
 const numero = (valor: number | null, casas: number, sufixo = "") =>
   valor === null
@@ -245,31 +243,31 @@ export function AbastecimentosModal({
           <p className="text-xs font-medium text-gray-700">Novo abastecimento</p>
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <label className="block text-xs text-gray-500">
-              Data
+            <label className="block">
+              <span className={classeDoRotulo}>Data</span>
               <input
                 type="date"
                 value={data}
                 max={hojeISO()}
                 onChange={(e) => setData(e.target.value)}
-                className={`mt-1 ${classeCampo}`}
+                className={classeDoCampo}
                 required
               />
             </label>
-            <label className="block text-xs text-gray-500">
-              Km no hodômetro
+            <label className="block">
+              <span className={classeDoRotulo}>Km no hodômetro</span>
               <input
                 type="number"
                 min="0"
                 value={km}
                 placeholder={resumo?.kmAtual ? `Último: ${resumo.kmAtual}` : "Ex.: 45200"}
                 onChange={(e) => setKm(e.target.value)}
-                className={`mt-1 ${classeCampo}`}
+                className={classeDoCampo}
                 required
               />
             </label>
-            <label className="block text-xs text-gray-500">
-              Litros
+            <label className="block">
+              <span className={classeDoRotulo}>Litros</span>
               <input
                 type="text"
                 inputMode="decimal"
@@ -278,31 +276,31 @@ export function AbastecimentosModal({
                 onChange={(e) => setLitros(e.target.value)}
                 disabled={litrosTravados}
                 title={litrosTravados ? "Capacidade do tanque, da ficha técnica do modelo" : undefined}
-                className={`mt-1 ${classeCampo} disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500`}
+                className={classeDoCampo}
                 required
               />
             </label>
-            <label className="block text-xs text-gray-500">
-              Valor pago (R$)
+            <label className="block">
+              <span className={classeDoRotulo}>Valor pago (R$)</span>
               <input
                 type="text"
                 inputMode="decimal"
                 value={valor}
                 placeholder="Ex.: 230,00"
                 onChange={(e) => setValor(e.target.value)}
-                className={`mt-1 ${classeCampo}`}
+                className={classeDoCampo}
                 required
               />
             </label>
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <label className="block text-xs text-gray-500">
-              Combustível (opcional)
+            <label className="block">
+              <span className={classeDoRotulo}>Combustível (opcional)</span>
               <select
                 value={combustivel}
                 onChange={(e) => setCombustivel(e.target.value)}
-                className={`mt-1 ${classeCampo}`}
+                className={classeDoCampo}
               >
                 <option value="">—</option>
                 {COMBUSTIVEIS.map((item) => (
@@ -312,34 +310,34 @@ export function AbastecimentosModal({
                 ))}
               </select>
             </label>
-            <label className="block text-xs text-gray-500">
-              Posto (opcional)
+            <label className="block">
+              <span className={classeDoRotulo}>Posto (opcional)</span>
               <input
                 type="text"
                 value={posto}
                 maxLength={80}
                 onChange={(e) => setPosto(e.target.value)}
-                className={`mt-1 ${classeCampo}`}
+                className={classeDoCampo}
               />
             </label>
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <label className="block text-xs text-gray-500">
-              Hora (opcional)
+            <label className="block">
+              <span className={classeDoRotulo}>Hora (opcional)</span>
               <input
                 type="time"
                 value={hora}
                 onChange={(e) => setHora(e.target.value)}
-                className={`mt-1 ${classeCampo}`}
+                className={classeDoCampo}
               />
             </label>
-            <label className="block text-xs text-gray-500">
-              Quem abasteceu (opcional)
+            <label className="block">
+              <span className={classeDoRotulo}>Quem abasteceu (opcional)</span>
               <select
                 value={motoristaId}
                 onChange={(e) => setMotoristaId(e.target.value)}
-                className={`mt-1 ${classeCampo}`}
+                className={classeDoCampo}
               >
                 <option value="">—</option>
                 {motoristas.map((m) => (
@@ -397,15 +395,15 @@ export function AbastecimentosModal({
           </div>
 
           {precisaJustificativa && (
-            <label className="block text-xs text-gray-700">
-              Justificativa (obrigatória para este registro)
+            <label className="block">
+              <span className={classeDoRotulo}>Justificativa (obrigatória para este registro)</span>
               <textarea
                 value={justificativa}
                 onChange={(e) => setJustificativa(e.target.value)}
                 rows={2}
                 maxLength={255}
                 placeholder="Ex.: o odômetro foi trocado no painel em maio."
-                className="mt-1 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-700 outline-none focus:border-blue-500"
+                className={classeDaAreaDeTexto}
               />
             </label>
           )}

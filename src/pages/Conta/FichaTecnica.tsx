@@ -16,6 +16,7 @@ import type {
 } from "../../types/conta";
 import { Alert } from "../../components/ui/Alert";
 import { CLASSES_DO_TOM } from "../../components/ui/tons";
+import { classeDaAreaDeTexto, classeDoCampo, classeDoRotulo } from "../../components/ui/Campo";
 
 type Chave = keyof NonNullable<ManutencaoFicha>;
 type Campo = { chave: Chave; rotulo: string; numerico?: boolean };
@@ -46,9 +47,6 @@ const GRUPOS: { titulo: string; campos: Campo[] }[] = [
     ],
   },
 ];
-
-const classeCampo =
-  "h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
 
 function Cartao({
   titulo,
@@ -400,14 +398,14 @@ export function FichaTecnica() {
                     <p className="mb-2 text-xs font-medium text-gray-700">{grupo.titulo}</p>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                       {grupo.campos.map((campo) => (
-                        <label key={campo.chave} className="block text-xs text-gray-500">
-                          {campo.rotulo}
+                        <label key={campo.chave} className="block">
+                          <span className={classeDoRotulo}>{campo.rotulo}</span>
                           <input
                             type="text"
                             inputMode={campo.numerico ? "decimal" : undefined}
                             value={form[campo.chave] ?? ""}
                             onChange={(e) => setForm({ ...form, [campo.chave]: e.target.value })}
-                            className={`mt-1 ${classeCampo}`}
+                            className={classeDoCampo}
                           />
                         </label>
                       ))}
@@ -415,14 +413,14 @@ export function FichaTecnica() {
                   </div>
                 ))}
 
-                <label className="block text-xs text-gray-500">
-                  Observações
+                <label className="block">
+                  <span className={classeDoRotulo}>Observações</span>
                   <textarea
                     value={form.observacoes ?? ""}
                     maxLength={2000}
                     rows={3}
                     onChange={(e) => setForm({ ...form, observacoes: e.target.value })}
-                    className="mt-1 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-700 outline-none focus:border-blue-500"
+                    className={classeDaAreaDeTexto}
                   />
                 </label>
 

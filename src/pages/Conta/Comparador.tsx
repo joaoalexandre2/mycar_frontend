@@ -17,9 +17,7 @@ import {
 import type { ResultadoComparador } from "../../types/comparador";
 import type { VeiculoConta } from "../../types/conta";
 import { Alert } from "../../components/ui/Alert";
-
-const classeCampo =
-  "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
+import { classeDoCampo, classeDoRotulo } from "../../components/ui/Campo";
 
 export function Comparador() {
   const veiculosDaConta = useVeiculosDaConta();
@@ -147,15 +145,15 @@ export function Comparador() {
             </div>
           </div>
 
-          <label className="block text-xs text-gray-500">
-            O que comparar
+          <label className="block">
+            <span className={classeDoRotulo}>O que comparar</span>
             <select
               value={peca}
               onChange={(e) => {
                 setPeca(e.target.value as ChavePeca | "livre");
                 setResultado(null);
               }}
-              className={`mt-1 ${classeCampo}`}
+              className={classeDoCampo}
             >
               {PECAS_COMPARADOR.map((p) => (
                 <option key={p.chave} value={p.chave}>
@@ -168,23 +166,23 @@ export function Comparador() {
         </div>
 
         {peca === "livre" && (
-          <label className="block text-xs text-gray-500">
-            Peça
+          <label className="block">
+            <span className={classeDoRotulo}>Peça</span>
             <input
               type="text"
               value={textoLivre}
               maxLength={80}
               placeholder="Ex.: coifa da homocinética"
               onChange={(e) => setTextoLivre(e.target.value)}
-              className={`mt-1 ${classeCampo}`}
+              className={classeDoCampo}
             />
           </label>
         )}
 
         {precisaMedida && (
           <div>
-            <label className="block text-xs text-gray-500">
-              Medida do pneu
+            <label className="block">
+              <span className={classeDoRotulo}>Medida do pneu</span>
               <input
                 type="text"
                 value={medida}
@@ -194,7 +192,7 @@ export function Comparador() {
                   setMedida(e.target.value);
                   setMedidaDaFicha(false);
                 }}
-                className={`mt-1 ${classeCampo}`}
+                className={classeDoCampo}
               />
             </label>
             <p className="mt-1 text-xs text-gray-500">

@@ -6,10 +6,7 @@ import { useCarregarLista } from "../../hooks/useCarregarLista";
 import { useConfirmar } from "../../hooks/useNotificacoes";
 import type { PacoteDaEstetica, ServicoDaEstetica } from "../../types/estetica";
 import { Alert } from "../../components/ui/Alert";
-
-const classeCampo =
-  "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
-const rotulo = "mb-1.5 block text-xs font-medium text-gray-700";
+import { Campo, CampoDeTexto, classeDoRotulo } from "../../components/ui/Campo";
 
 /** Catálogo da estética: serviços (os longos têm dias previstos) e pacotes com preço próprio. */
 export function ServicosEPacotes() {
@@ -119,18 +116,15 @@ function NovoServico({ onSalvo }: { onSalvo: () => void }) {
 
   return (
     <form onSubmit={(e) => void salvar(e)} className="grid grid-cols-1 gap-3 rounded-xl border border-gray-200 bg-white p-4 sm:grid-cols-[2fr_1fr_1fr_auto] sm:items-end">
-      <div>
-        <label htmlFor="srv-nome" className={rotulo}>Nome</label>
-        <input id="srv-nome" type="text" maxLength={120} value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex.: Lavagem completa" className={classeCampo} />
-      </div>
-      <div>
-        <label htmlFor="srv-preco" className={rotulo}>Preço (R$)</label>
-        <input id="srv-preco" type="text" inputMode="decimal" value={preco} onChange={(e) => setPreco(e.target.value)} className={classeCampo} />
-      </div>
-      <div>
-        <label htmlFor="srv-dias" className={rotulo}>Dias (0 = rápido)</label>
-        <input id="srv-dias" type="number" min={0} max={365} value={dias} onChange={(e) => setDias(e.target.value)} className={classeCampo} />
-      </div>
+      <Campo id="srv-nome" rotulo="Nome">
+        {(a) => <CampoDeTexto {...a} maxLength={120} value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex.: Lavagem completa" />}
+      </Campo>
+      <Campo id="srv-preco" rotulo="Preço (R$)">
+        {(a) => <CampoDeTexto {...a} inputMode="decimal" value={preco} onChange={(e) => setPreco(e.target.value)} />}
+      </Campo>
+      <Campo id="srv-dias" rotulo="Dias (0 = rápido)">
+        {(a) => <CampoDeTexto {...a} type="number" min={0} max={365} value={dias} onChange={(e) => setDias(e.target.value)} />}
+      </Campo>
       <button type="submit" className="flex h-10 items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 text-xs font-semibold text-white hover:bg-blue-700">
         <Plus size={14} /> Adicionar
       </button>
@@ -163,17 +157,15 @@ function NovoPacote({ servicos, onSalvo }: { servicos: ServicoDaEstetica[]; onSa
   return (
     <form onSubmit={(e) => void salvar(e)} className="space-y-3 rounded-xl border border-gray-200 bg-white p-4">
       <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label htmlFor="pac-nome" className={rotulo}>Nome do pacote</label>
-          <input id="pac-nome" type="text" maxLength={120} value={nome} onChange={(e) => setNome(e.target.value)} className={classeCampo} />
-        </div>
-        <div>
-          <label htmlFor="pac-preco" className={rotulo}>Preço do pacote (R$)</label>
-          <input id="pac-preco" type="text" inputMode="decimal" value={preco} onChange={(e) => setPreco(e.target.value)} className={classeCampo} />
-        </div>
+        <Campo id="pac-nome" rotulo="Nome do pacote">
+          {(a) => <CampoDeTexto {...a} maxLength={120} value={nome} onChange={(e) => setNome(e.target.value)} />}
+        </Campo>
+        <Campo id="pac-preco" rotulo="Preço do pacote (R$)">
+          {(a) => <CampoDeTexto {...a} inputMode="decimal" value={preco} onChange={(e) => setPreco(e.target.value)} />}
+        </Campo>
       </div>
       <fieldset className="space-y-1">
-        <legend className={rotulo}>Serviços incluídos</legend>
+        <legend className={classeDoRotulo}>Serviços incluídos</legend>
         {servicos.map((s) => (
           <label key={s.id} className="flex items-center gap-2 text-xs text-gray-700">
             <input

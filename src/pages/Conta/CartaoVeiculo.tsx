@@ -153,6 +153,7 @@ export function CartaoVeiculo({
   consultandoFipe,
   acoes,
   podeGerir = true,
+  acimaDaDobra = false,
 }: {
   veiculo: VeiculoConta;
   nome: string;
@@ -160,8 +161,15 @@ export function CartaoVeiculo({
   acoes: AcoesDoVeiculo;
   /** Quem só consulta a frota (motorista) não vê os botões de gestão: o backend barra mesmo assim. */
   podeGerir?: boolean;
+  /**
+   * O primeiro cartão da lista aparece sem rolar: a capa dele carrega logo, em vez
+   * de esperar o `loading="lazy"` (que atrasaria a maior imagem da tela).
+   */
+  acimaDaDobra?: boolean;
 }) {
   const km = kmDoCartao(veiculo);
+  // A caixa da capa tem altura fixa (h-40): a imagem não empurra o cartão ao chegar.
+  const carregamentoDaCapa = acimaDaDobra ? "eager" : "lazy";
   const temCodigoFipe = Boolean(
     veiculo.fipeMarcaId && veiculo.fipeModeloId && veiculo.fipeAno,
   );
@@ -173,14 +181,16 @@ export function CartaoVeiculo({
           <img
             src={veiculo.fotoCapaUrl}
             alt={`Foto de ${nome}`}
-            loading="lazy"
+            loading={carregamentoDaCapa}
+            decoding="async"
             className="h-full w-full object-cover"
           />
         ) : veiculo.fotoModelo ? (
           <img
             src={veiculo.fotoModelo.url}
             alt={`Foto ilustrativa do modelo ${veiculo.fotoModelo.modelo}`}
-            loading="lazy"
+            loading={carregamentoDaCapa}
+            decoding="async"
             className="h-full w-full object-cover"
           />
         ) : (

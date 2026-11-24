@@ -17,9 +17,7 @@ import type {
   VeiculoConta,
 } from "../../types/conta";
 import { Alert } from "../../components/ui/Alert";
-
-const classeCampo =
-  "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
+import { classeDoCampo, classeDoRotulo } from "../../components/ui/Campo";
 
 /** Sugestões de aviso por tipo (o usuário pode trocar). */
 const SUGESTAO: Record<string, { meses: string; km: string }> = {
@@ -339,12 +337,12 @@ export function ServicoModal({
               </div>
             )}
 
-            <label className="block text-xs text-gray-500">
-              Serviço
+            <label className="block">
+              <span className={classeDoRotulo}>Serviço</span>
               <select
                 value={tipo}
                 onChange={(e) => escolherTipo(e.target.value)}
-                className={`mt-1 ${classeCampo}`}
+                className={classeDoCampo}
               >
                 {tipos.map((t) => (
                   <option key={t.tipo} value={t.tipo}>
@@ -356,26 +354,26 @@ export function ServicoModal({
           </div>
 
           {tipo === "outro" && (
-            <label className="block text-xs text-gray-500">
-              Nome do serviço
+            <label className="block">
+              <span className={classeDoRotulo}>Nome do serviço</span>
               <input
                 type="text"
                 value={titulo}
                 maxLength={80}
                 placeholder="Ex.: Pastilhas de freio"
                 onChange={(e) => setTitulo(e.target.value)}
-                className={`mt-1 ${classeCampo}`}
+                className={classeDoCampo}
               />
             </label>
           )}
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <label className="block text-xs text-gray-500">
-              Preventiva ou corretiva
+            <label className="block">
+              <span className={classeDoRotulo}>Preventiva ou corretiva</span>
               <select
                 value={natureza}
                 onChange={(e) => setNatureza(e.target.value as NaturezaServico | "")}
-                className={`mt-1 ${classeCampo}`}
+                className={classeDoCampo}
               >
                 {OPCOES_NATUREZA.map((o) => (
                   <option key={o.valor} value={o.valor}>
@@ -384,40 +382,40 @@ export function ServicoModal({
                 ))}
               </select>
             </label>
-            <label className="block text-xs text-gray-500">
-              Oficina (opcional)
+            <label className="block">
+              <span className={classeDoRotulo}>Oficina (opcional)</span>
               <input
                 type="text"
                 value={oficina}
                 maxLength={80}
                 placeholder="Ex.: Oficina do João"
                 onChange={(e) => setOficina(e.target.value)}
-                className={`mt-1 ${classeCampo}`}
+                className={classeDoCampo}
               />
             </label>
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <label className="block text-xs text-gray-500">
-              Feito em
+            <label className="block">
+              <span className={classeDoRotulo}>Feito em</span>
               <input
                 type="date"
                 value={realizadoEm}
                 max={hojeISO()}
                 onChange={(e) => setRealizadoEm(e.target.value)}
-                className={`mt-1 ${classeCampo}`}
+                className={classeDoCampo}
                 required
               />
             </label>
-            <label className="block text-xs text-gray-500">
-              Km do veículo
+            <label className="block">
+              <span className={classeDoRotulo}>Km do veículo</span>
               <input
                 type="text"
                 inputMode="numeric"
                 value={km}
                 placeholder="Ex.: 52300"
                 onChange={(e) => setKm(e.target.value)}
-                className={`mt-1 ${classeCampo}`}
+                className={classeDoCampo}
               />
             </label>
           </div>
@@ -445,35 +443,35 @@ export function ServicoModal({
                 key={peca.chave}
                 className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_5rem_7rem_auto] sm:items-end"
               >
-                <label className="block text-xs text-gray-500">
-                  Peça
+                <label className="block">
+                  <span className={classeDoRotulo}>Peça</span>
                   <input
                     type="text"
                     value={peca.descricao}
                     maxLength={120}
                     placeholder="Ex.: Filtro de ar"
                     onChange={(e) => alterarPeca(peca.chave, "descricao", e.target.value)}
-                    className={`mt-1 ${classeCampo}`}
+                    className={classeDoCampo}
                   />
                 </label>
-                <label className="block text-xs text-gray-500">
-                  Qtd.
+                <label className="block">
+                  <span className={classeDoRotulo}>Qtd.</span>
                   <input
                     type="text"
                     inputMode="decimal"
                     value={peca.quantidade}
                     onChange={(e) => alterarPeca(peca.chave, "quantidade", e.target.value)}
-                    className={`mt-1 ${classeCampo}`}
+                    className={classeDoCampo}
                   />
                 </label>
-                <label className="block text-xs text-gray-500">
-                  Preço unit. (R$)
+                <label className="block">
+                  <span className={classeDoRotulo}>Preço unit. (R$)</span>
                   <input
                     type="text"
                     inputMode="decimal"
                     value={peca.valorUnitario}
                     onChange={(e) => alterarPeca(peca.chave, "valorUnitario", e.target.value)}
-                    className={`mt-1 ${classeCampo}`}
+                    className={classeDoCampo}
                   />
                 </label>
                 <button
@@ -489,14 +487,14 @@ export function ServicoModal({
             ))}
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <label className="block text-xs text-gray-500">
-                Mão de obra (R$)
+              <label className="block">
+                <span className={classeDoRotulo}>Mão de obra (R$)</span>
                 <input
                   type="text"
                   inputMode="decimal"
                   value={maoDeObra}
                   onChange={(e) => setMaoDeObra(e.target.value)}
-                  className={`mt-1 ${classeCampo}`}
+                  className={classeDoCampo}
                 />
               </label>
 
@@ -506,14 +504,14 @@ export function ServicoModal({
                   <span className="font-semibold">{formatarMoeda(totalDoFormulario)}</span>
                 </p>
               ) : (
-                <label className="block text-xs text-gray-500">
-                  Valor pago (R$)
+                <label className="block">
+                  <span className={classeDoRotulo}>Valor pago (R$)</span>
                   <input
                     type="text"
                     inputMode="decimal"
                     value={valor}
                     onChange={(e) => setValor(e.target.value)}
-                    className={`mt-1 ${classeCampo}`}
+                    className={classeDoCampo}
                   />
                 </label>
               )}
@@ -526,12 +524,12 @@ export function ServicoModal({
             </p>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <label className="block text-xs text-gray-500">
-                Por prazo
+              <label className="block">
+                <span className={classeDoRotulo}>Por prazo</span>
                 <select
                   value={meses}
                   onChange={(e) => setMeses(e.target.value)}
-                  className={`mt-1 ${classeCampo}`}
+                  className={classeDoCampo}
                 >
                   {OPCOES_MESES.map((o) => (
                     <option key={o.valor} value={o.valor}>
@@ -541,15 +539,15 @@ export function ServicoModal({
                 </select>
               </label>
 
-              <label className="block text-xs text-gray-500">
-                Por quilometragem (a cada)
+              <label className="block">
+                <span className={classeDoRotulo}>Por quilometragem (a cada)</span>
                 <input
                   type="text"
                   inputMode="numeric"
                   value={intervaloKm}
                   placeholder="Ex.: 10000 km"
                   onChange={(e) => setIntervaloKm(e.target.value)}
-                  className={`mt-1 ${classeCampo}`}
+                  className={classeDoCampo}
                 />
               </label>
             </div>
@@ -560,15 +558,15 @@ export function ServicoModal({
             </p>
           </div>
 
-          <label className="block text-xs text-gray-500">
-            Observações (opcional)
+          <label className="block">
+            <span className={classeDoRotulo}>Observações (opcional)</span>
             <input
               type="text"
               value={observacoes}
               maxLength={255}
               placeholder="Ex.: óleo 5W30 sintético"
               onChange={(e) => setObservacoes(e.target.value)}
-              className={`mt-1 ${classeCampo}`}
+              className={classeDoCampo}
             />
           </label>
 

@@ -8,13 +8,7 @@ import { useConfirmar } from "../../hooks/useNotificacoes";
 import { Alert } from "../../components/ui/Alert";
 import { Modal } from "../../components/ui/Modal";
 import type { CentroCusto, LigacaoDeMotorista, Motorista, PapelDaFrota, PessoaDaFrota } from "../../types/frota";
-
-const classeCampo =
-  "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
-// No celular, alvo de toque de 44px; na tela grande, volta ao tamanho de sempre.
-const classeCampoDoModal =
-  "h-11 md:h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500 aria-[invalid=true]:border-red-500";
-const rotulo = "mb-1.5 block text-xs font-medium text-gray-700";
+import { Campo, CampoDeTexto, CampoSelect, classeDoCampo, classeDoRotulo } from "../../components/ui/Campo";
 
 const nomesDosPapeis: Record<PapelDaFrota, string> = {
   administrador: "Administrador",
@@ -228,21 +222,20 @@ export function Pessoas() {
     <div className="space-y-6">
       <form onSubmit={(e) => void convidar(e)} className="space-y-4 rounded-xl border border-gray-200 bg-white p-5">
         <p className="text-sm font-semibold text-gray-900">Convidar pessoa</p>
-        <div>
-          <label htmlFor="pes-nome" className={rotulo}>Nome</label>
-          <input id="pes-nome" type="text" value={nome} maxLength={255} onChange={(e) => setNome(e.target.value)} className={classeCampo} />
-        </div>
-        <div>
-          <label htmlFor="pes-email" className={rotulo}>E-mail</label>
-          <input id="pes-email" type="email" value={email} maxLength={255} onChange={(e) => setEmail(e.target.value)} className={classeCampo} />
-        </div>
-        <div>
-          <label htmlFor="pes-papel" className={rotulo}>Papel</label>
-          <select id="pes-papel" value={papelNovo} onChange={(e) => setPapelNovo(e.target.value as "administrador" | "gestor")} className={classeCampo}>
-            <option value="gestor">Gestor</option>
-            <option value="administrador">Administrador</option>
-          </select>
-        </div>
+        <Campo id="pes-nome" rotulo="Nome">
+          {(a) => <CampoDeTexto {...a} value={nome} maxLength={255} onChange={(e) => setNome(e.target.value)} />}
+        </Campo>
+        <Campo id="pes-email" rotulo="E-mail">
+          {(a) => <CampoDeTexto {...a} type="email" value={email} maxLength={255} onChange={(e) => setEmail(e.target.value)} />}
+        </Campo>
+        <Campo id="pes-papel" rotulo="Papel">
+          {(a) => (
+            <CampoSelect {...a} value={papelNovo} onChange={(e) => setPapelNovo(e.target.value as "administrador" | "gestor")}>
+              <option value="gestor">Gestor</option>
+              <option value="administrador">Administrador</option>
+            </CampoSelect>
+          )}
+        </Campo>
         <button
           type="submit"
           disabled={enviando}
@@ -492,7 +485,7 @@ function LigarMotoristaModal({
     >
       <form id={idForm} noValidate onSubmit={(e) => void ligar(e)} className="space-y-4 px-6 py-4">
         <fieldset className="space-y-2">
-          <legend className={rotulo}>Como ligar</legend>
+          <legend className={classeDoRotulo}>Como ligar</legend>
           <label className={classeOpcao}>
             <input
               type="radio"
@@ -519,7 +512,7 @@ function LigarMotoristaModal({
 
         {modo === "existente" && (
           <div>
-            <label htmlFor={`${id}-motorista`} className={rotulo}>
+            <label htmlFor={`${id}-motorista`} className={classeDoRotulo}>
               Motorista sem acesso
             </label>
             <select
@@ -533,7 +526,7 @@ function LigarMotoristaModal({
                 setMotoristaId(e.target.value);
                 setErroCampo(null);
               }}
-              className={classeCampoDoModal}
+              className={classeDoCampo}
             >
               <option value="">Escolha o motorista</option>
               {(candidatos ?? []).map((m) => (
@@ -553,7 +546,7 @@ function LigarMotoristaModal({
         {modo === "criar" && (
           <>
             <div>
-              <label htmlFor={`${id}-centro`} className={rotulo}>
+              <label htmlFor={`${id}-centro`} className={classeDoRotulo}>
                 Centro de custo (obrigatório)
               </label>
               <select
@@ -567,7 +560,7 @@ function LigarMotoristaModal({
                   setCentroId(e.target.value);
                   setErroCampo(null);
                 }}
-                className={classeCampoDoModal}
+                className={classeDoCampo}
               >
                 <option value="">{centros === null && !erroCentros ? "Carregando..." : "Escolha o centro de custo"}</option>
                 {(centros ?? []).map((c) => (
@@ -589,7 +582,7 @@ function LigarMotoristaModal({
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label htmlFor={`${id}-cnh`} className={rotulo}>
+                <label htmlFor={`${id}-cnh`} className={classeDoRotulo}>
                   Número da CNH
                 </label>
                 <input
@@ -598,11 +591,11 @@ function LigarMotoristaModal({
                   value={cnhNumero}
                   maxLength={20}
                   onChange={(e) => setCnhNumero(e.target.value)}
-                  className={classeCampoDoModal}
+                  className={classeDoCampo}
                 />
               </div>
               <div>
-                <label htmlFor={`${id}-validade`} className={rotulo}>
+                <label htmlFor={`${id}-validade`} className={classeDoRotulo}>
                   Validade da CNH
                 </label>
                 <input
@@ -610,7 +603,7 @@ function LigarMotoristaModal({
                   type="date"
                   value={cnhValidade}
                   onChange={(e) => setCnhValidade(e.target.value)}
-                  className={classeCampoDoModal}
+                  className={classeDoCampo}
                 />
               </div>
             </div>
