@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { AlertTriangle, CalendarClock, ClipboardCheck, CreditCard, Gauge } from "lucide-react";
 import { Alert } from "../../components/ui/Alert";
+import { EstadoVazio } from "../../components/ui/EstadoVazio";
 import { TITULO_DE_SECAO, TITULO_DE_SUBSECAO } from "../../components/ui/escalaDeTitulos";
 import { painelFrotaService } from "../../services/frotaDiferenciais";
 import { mensagemErro } from "../../services/api";
@@ -134,7 +135,7 @@ export function PainelFrota() {
         </div>
 
         {painel && painel.veiculos.length === 0 && (
-          <p className="rounded-lg bg-gray-50 px-4 py-6 text-center text-xs text-gray-500">Nenhum veículo na frota.</p>
+          <EstadoVazio titulo="Nenhum veículo na frota." />
         )}
 
         {painel && painel.veiculos.length > 0 && (

@@ -3,6 +3,8 @@ import { Building2, History, Pencil, Plus, Send, Trash2, UserRound } from "lucid
 import { isAxiosError } from "axios";
 import { Abas } from "../../components/ui/Abas";
 import { Alert } from "../../components/ui/Alert";
+import { Carregando } from "../../components/ui/Carregando";
+import { EstadoVazio } from "../../components/ui/EstadoVazio";
 import { StatusChip } from "../../components/ui/StatusChip";
 import { Modal } from "../../components/ui/Modal";
 import { useCarregarLista } from "../../hooks/useCarregarLista";
@@ -194,13 +196,9 @@ function Motoristas() {
         </Alert>
       )}
 
-      {carregando && !erroDeCarga && <p className="text-xs text-gray-500">Carregando...</p>}
+      {carregando && !erroDeCarga && <Carregando />}
 
-      {lista && lista.length === 0 && (
-        <p className="rounded-lg bg-gray-50 px-4 py-6 text-center text-xs text-gray-500">
-          Nenhum motorista cadastrado ainda.
-        </p>
-      )}
+      {lista && lista.length === 0 && <EstadoVazio titulo="Nenhum motorista cadastrado ainda." />}
 
       {lista && lista.length > 0 && (
         <ul className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white">
@@ -634,12 +632,10 @@ function Centros() {
         </Alert>
       )}
 
-      {carregando && !erroDeCarga && <p className="text-xs text-gray-500">Carregando...</p>}
+      {carregando && !erroDeCarga && <Carregando />}
 
       {lista && lista.length === 0 && (
-        <p className="rounded-lg bg-gray-50 px-4 py-6 text-center text-xs text-gray-500">
-          Nenhum centro de custo cadastrado ainda. Exemplos: Vendas, Entregas, Diretoria.
-        </p>
+        <EstadoVazio titulo="Nenhum centro de custo cadastrado ainda." descricao="Exemplos: Vendas, Entregas, Diretoria." />
       )}
 
       {lista && lista.length > 0 && (

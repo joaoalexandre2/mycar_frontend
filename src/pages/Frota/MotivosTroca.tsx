@@ -1,6 +1,8 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { motivosTrocaCentroService } from "../../services/frota";
 import { Alert } from "../../components/ui/Alert";
+import { Carregando } from "../../components/ui/Carregando";
+import { EstadoVazio } from "../../components/ui/EstadoVazio";
 import { mensagemErro } from "../../services/api";
 import type { MotivoTrocaCentro } from "../../types/frota";
 import { classeDoCampo, classeDoRotulo } from "../../components/ui/Campo";
@@ -90,10 +92,10 @@ export function MotivosTroca() {
 
       {erro && <Alert tone="danger">{erro}</Alert>}
 
-      {motivos === null && !erro && <p className="text-xs text-gray-500">Carregando...</p>}
+      {motivos === null && !erro && <Carregando />}
 
       {motivos && motivos.length === 0 && (
-        <p className="text-xs text-gray-500">Nenhum motivo cadastrado ainda.</p>
+        <EstadoVazio titulo="Nenhum motivo cadastrado ainda." />
       )}
 
       {motivos && motivos.length > 0 && (

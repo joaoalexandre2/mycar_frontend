@@ -64,6 +64,30 @@ function prepararServicos() {
 }
 
 describe("Ocorrências da frota", () => {
+  it("falha ao carregar os veículos avisa, mantém a lista e tenta de novo", async () => {
+    vi.spyOn(ocorrenciasService, "listar").mockResolvedValue({ dados: [ocorrencia], paginaAtual: 1, totalPaginas: 1, totalRegistros: 1, resumo });
+    const listarVeiculos = vi
+      .spyOn(contaService, "listarVeiculos")
+      .mockRejectedValueOnce(new Error("rede fora"))
+      .mockResolvedValueOnce({ dados: [{ id: 1, placa: "AAA1A11", marca: "Fiat", modelo: "Strada" }], paginaAtual: 1, totalPaginas: 1, totalRegistros: 1 } as never);
+    const user = userEvent.setup();
+
+    renderizar("gestor");
+
+    const aviso = await screen.findByText(/Não foi possível carregar a lista de veículos/);
+    const caixa = aviso.closest("[data-tom]") as HTMLElement;
+    expect(caixa).toHaveAttribute("data-tom", "warning");
+    // A lista não depende dos veículos: segue na tela, e registrar continua disponível.
+    expect(await screen.findByRole("button", { name: /Abrir ocorrência de/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Registrar ocorrência/ })).toBeEnabled();
+
+    await user.click(within(caixa).getByRole("button", { name: "Tentar de novo" }));
+
+    expect(await screen.findByRole("option", { name: "AAA1A11 · Fiat Strada" })).toBeInTheDocument();
+    expect(screen.queryByText(/Não foi possível carregar a lista de veículos/)).not.toBeInTheDocument();
+    expect(listarVeiculos).toHaveBeenCalledTimes(2);
+  });
+
   it("gestor vê a ocorrência, o prejuízo estimado e a coluna de gasto", async () => {
     prepararServicos();
 

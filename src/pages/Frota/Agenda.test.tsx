@@ -106,6 +106,43 @@ describe("Agenda: +N mais", () => {
     expect(within(screen.getByRole("dialog")).getByText("EEE5E55 · Strada")).toBeInTheDocument();
   });
 
+  it("ao fechar o detalhe aberto pela lista do dia, o foco volta ao '+N mais'", async () => {
+    simular([1, 2, 3, 4].map((id) => uso({ id, veiculo: { id, nome: "Strada", placa: `AAA${id}B25`, kmAtual: null } })));
+    agenda();
+
+    const mais = await screen.findByRole("button", { name: /^\+1 mais/ });
+    await userEvent.click(mais);
+    const lista = await screen.findByRole("dialog", { name: `Usos de ${dataCompleta(hoje)}` });
+    await userEvent.click(within(lista).getByRole("button", { name: /AAA4B25/ }));
+
+    const detalhe = await screen.findByRole("dialog");
+    await userEvent.click(within(detalhe).getByRole("button", { name: "Fechar" }));
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    expect(mais).toHaveFocus();
+  });
+
+  it("se o '+N mais' some enquanto o detalhe está aberto, o foco vai para o dia no calendário", async () => {
+    simular([1, 2, 3, 4].map((id) => uso({ id, veiculo: { id, nome: "Strada", placa: `AAA${id}B25`, kmAtual: null } })));
+    vi.spyOn(usosService, "remover").mockResolvedValue(undefined);
+    agenda({ id: 1, name: "Ana", email: "ana@frota.test", papel: "administrador", permissoes: [], centro_do_motorista: null });
+
+    await userEvent.click(await screen.findByRole("button", { name: /^\+1 mais/ }));
+    const lista = await screen.findByRole("dialog", { name: `Usos de ${dataCompleta(hoje)}` });
+    await userEvent.click(within(lista).getByRole("button", { name: /AAA4B25/ }));
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+
+    // Excluir tira um uso do dia: sobram 3, e o "+N mais" deixa de existir.
+    await userEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Excluir" }));
+    const confirmacao = await screen.findByRole("alertdialog");
+    await userEvent.click(within(confirmacao).getByRole("button", { name: "Excluir" }));
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    expect(screen.queryByRole("button", { name: /^\+1 mais/ })).not.toBeInTheDocument();
+    // Sem o gatilho, o foco fica no mesmo dia do calendário, e não solto no <body>.
+    expect(screen.getByRole("button", { name: `Reservar em ${dataCompleta(hoje)}` })).toHaveFocus();
+  });
+
   it("da lista do dia dá para reservar nesse dia", async () => {
     simular([1, 2, 3, 4].map((id) => uso({ id })));
     agenda();
@@ -170,6 +207,14 @@ describe("Agenda: erro e vazio", () => {
     expect(await screen.findByRole("button", { name: /^09:00 · AAA1B25/ })).toBeInTheDocument();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     expect(listar).toHaveBeenCalledTimes(2);
+  });
+
+  it("enquanto carrega, mostra um status visível (não só o aria-busy do calendário)", async () => {
+    simular().mockReturnValue(new Promise(() => {}));
+    agenda();
+
+    expect(screen.getByRole("status")).toHaveTextContent("Carregando...");
+    expect(screen.queryByText(/Nenhum uso agendado neste período/)).not.toBeInTheDocument();
   });
 
   it("vazio: traz o botão 'Reservar veículo' junto do aviso", async () => {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useMemo, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight, FileUp, Plus } from "lucide-react";
 import { contaService } from "../../services/conta";
@@ -10,6 +10,8 @@ import { UsoDetalheModal } from "../../components/frota/UsoDetalheModal";
 import { ImportarPlanilhaModal } from "../../components/frota/ImportarPlanilhaModal";
 import { Modal } from "../../components/ui/Modal";
 import { Alert } from "../../components/ui/Alert";
+import { Carregando } from "../../components/ui/Carregando";
+import { EstadoVazio } from "../../components/ui/EstadoVazio";
 import { CLASSES_DO_TOM } from "../../components/ui/tons";
 import { TITULO_DE_SECAO, TITULO_DE_SUBSECAO } from "../../components/ui/escalaDeTitulos";
 import { TOM_DO_STATUS_USO } from "../../components/frota/tomDoStatusUso";
@@ -111,6 +113,19 @@ export function Agenda() {
   /** Dia do seletor da lista do celular (onde os dias livres não aparecem). */
   const [diaEscolhido, setDiaEscolhido] = useState(hoje);
   const idBase = useId();
+  const calendario = useRef<HTMLDivElement>(null);
+  /** O "+N mais" que abriu a lista do dia. */
+  const gatilhoDoDia = useRef<HTMLElement | null>(null);
+  /**
+   * Para onde o foco volta quando o detalhe (ou a edição) aberto pela lista do dia fecha.
+   *
+   * O modal devolve o foco a quem estava focado quando ele abriu. Do "Usos do dia" para o
+   * detalhe, isso só dava certo porque o React desmonta a lista antes de montar o detalhe
+   * (o foco passava pelo "+N mais" no meio). Se o "+N mais" some enquanto o detalhe está
+   * aberto (excluir um uso deixa o dia com 3 ou menos), o foco caía no <body>. Aqui a Agenda
+   * guarda o gatilho e, se ele não existir mais, usa o primeiro botão do mesmo dia.
+   */
+  const retornoDoDetalhe = useRef<{ botao: HTMLElement | null; dia: string } | null>(null);
 
   useEffect(() => {
     let ativo = true;
@@ -163,6 +178,20 @@ export function Agenda() {
       ativo = false;
     };
   }, [ano, mes, filtroVeiculo, filtroMotorista, recarregar]);
+
+  // Roda depois da limpeza do modal que fechou (efeito do pai, no mesmo commit), então decide por último.
+  useEffect(() => {
+    const retorno = retornoDoDetalhe.current;
+    if (!retorno || aberto || formulario || diaAberto) return;
+
+    retornoDoDetalhe.current = null;
+
+    const alvo = retorno.botao?.isConnected
+      ? retorno.botao
+      : calendario.current?.querySelector<HTMLElement>(`[data-dia="${retorno.dia}"] button:not([disabled])`);
+
+    alvo?.focus();
+  }, [aberto, formulario, diaAberto]);
 
   const dias = useMemo(() => diasDoCalendario(ano, mes), [ano, mes]);
   const diasDoMes = useMemo(() => dias.filter((d) => d.doMes), [dias]);
@@ -299,9 +328,12 @@ export function Agenda() {
         </Alert>
       )}
 
+      {/* Visível e anunciado (o aria-busy sozinho não dizia nada a quem vê a tela nem à lista do celular). */}
+      {carregando && !erro && <Carregando />}
+
       {/* Calendário (a partir de lg: no tablet as 7 colunas ficavam estreitas
           demais para ler os usos; ele usa a lista por dia) */}
-      <div className="hidden overflow-hidden rounded-xl border border-gray-200 bg-white lg:block" aria-busy={carregando}>
+      <div ref={calendario} className="hidden overflow-hidden rounded-xl border border-gray-200 bg-white lg:block" aria-busy={carregando}>
         <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50 text-center text-xs font-bold tracking-wide text-gray-500 uppercase">
           {SEMANA.map((d) => (
             <div key={d} className="py-2">
@@ -318,6 +350,7 @@ export function Agenda() {
               <div
                 key={dia.data}
                 role="gridcell"
+                data-dia={dia.data}
                 className={`min-h-28 border-r border-b border-gray-100 p-1.5 ${dia.doMes ? "bg-white" : "bg-gray-50/60"}`}
               >
                 <button
@@ -356,7 +389,10 @@ export function Agenda() {
                   {doDia.length > POR_DIA_NO_CALENDARIO && (
                     <button
                       type="button"
-                      onClick={() => setDiaAberto(dia.data)}
+                      onClick={(evento) => {
+                        gatilhoDoDia.current = evento.currentTarget;
+                        setDiaAberto(dia.data);
+                      }}
                       aria-label={`+${doDia.length - POR_DIA_NO_CALENDARIO} mais: ver os ${doDia.length} usos de ${dataCompleta(dia.data)}`}
                       className="px-1 text-xs font-semibold text-gray-500 hover:text-gray-700"
                     >
@@ -439,22 +475,26 @@ export function Agenda() {
       </div>
 
       {!carregando && totalNoMes === 0 && !erro && (
-        <div className="space-y-3 rounded-lg bg-gray-50 px-4 py-6 text-center text-xs text-gray-500">
-          <p>
-            Nenhum uso agendado neste período.
-            {/* O motorista só recebe as reservas dele: a agenda vazia não quer dizer frota livre. */}
-            {souMotorista && " Você vê só as suas reservas."}
-          </p>
-          {!semVeiculos && (
-            <button
-              type="button"
-              onClick={() => setFormulario({ uso: null })}
-              className="inline-flex h-11 items-center gap-2 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700 md:h-10"
-            >
-              <Plus size={15} aria-hidden="true" /> Reservar veículo
-            </button>
-          )}
-        </div>
+        <EstadoVazio
+          titulo={
+            <>
+              Nenhum uso agendado neste período.
+              {/* O motorista só recebe as reservas dele: a agenda vazia não quer dizer frota livre. */}
+              {souMotorista && " Você vê só as suas reservas."}
+            </>
+          }
+          acao={
+            !semVeiculos && (
+              <button
+                type="button"
+                onClick={() => setFormulario({ uso: null })}
+                className="inline-flex h-11 items-center gap-2 rounded-lg bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-700 md:h-10"
+              >
+                <Plus size={15} aria-hidden="true" /> Reservar veículo
+              </button>
+            )
+          }
+        />
       )}
 
       {formulario && (
@@ -483,6 +523,7 @@ export function Agenda() {
                   <BotaoDoUso
                     uso={uso}
                     onAbrir={(u) => {
+                      retornoDoDetalhe.current = { botao: gatilhoDoDia.current, dia: diaAberto };
                       setDiaAberto(null);
                       setAberto(u);
                     }}

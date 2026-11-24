@@ -135,8 +135,10 @@ describe("ChecklistModal", () => {
 
     render(<ChecklistModal usoId={7} momento="saida" onSalvo={() => {}} onClose={() => {}} />);
 
-    const progresso = await screen.findByRole("status");
-    expect(progresso).toHaveTextContent("0 de 2 itens respondidos");
+    // O "Carregando..." também é um status agora: espera o do progresso pelo texto.
+    const progresso = await screen.findByText("0 de 2 itens respondidos");
+    expect(progresso).toHaveAttribute("role", "status");
+    expect(screen.getAllByRole("status")).toHaveLength(1);
 
     await usuario.click(screen.getAllByRole("radio", { name: "Problema" })[1]);
     expect(progresso).toHaveTextContent("1 de 2 itens respondidos");

@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Pencil, Plus, Trash2, Users } from "lucide-react";
 import { Alert } from "../../components/ui/Alert";
+import { EstadoVazio } from "../../components/ui/EstadoVazio";
 import { Modal } from "../../components/ui/Modal";
 import { useCarregarLista } from "../../hooks/useCarregarLista";
 import { gruposUsuariosService, modelosGrupoService } from "../../services/frota";
@@ -95,9 +96,7 @@ export function Grupos() {
       )}
 
       {dados && dados.grupos.length === 0 && (
-        <p className="rounded-lg bg-gray-50 px-4 py-6 text-center text-xs text-gray-500">
-          Nenhum grupo criado ainda. Exemplo: um grupo “Apoio” que pode gerenciar centros de custo.
-        </p>
+        <EstadoVazio titulo="Nenhum grupo criado ainda. Exemplo: um grupo “Apoio” que pode gerenciar centros de custo." />
       )}
 
       {dados && dados.grupos.length > 0 && (

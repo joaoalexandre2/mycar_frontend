@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Pencil, Plus, Tags, Trash2 } from "lucide-react";
 import { Alert } from "../../components/ui/Alert";
+import { EstadoVazio } from "../../components/ui/EstadoVazio";
 import { TITULO_DE_SECAO } from "../../components/ui/escalaDeTitulos";
 import { CategoriasDespesaModal } from "../../components/frota/CategoriasDespesaModal";
 import { DespesaAvulsaModal } from "../../components/frota/DespesaAvulsaModal";
@@ -204,7 +205,7 @@ export function Financeiro() {
                   </tr>
                 ))}
                 {resumo.porVeiculo.length === 0 && (
-                  <tr><td colSpan={8} className="px-5 py-6 text-center text-gray-500">Nenhum veículo com gasto no período.</td></tr>
+                  <tr><td colSpan={8} className="p-0"><EstadoVazio variante="linha" titulo="Nenhum veículo com gasto no período." /></td></tr>
                 )}
               </tbody>
             </table>
@@ -304,7 +305,7 @@ export function Financeiro() {
               </tr>
             ))}
             {despesas.length === 0 && (
-              <tr><td colSpan={6} className="px-5 py-6 text-center text-gray-500">Nenhuma despesa avulsa no período.</td></tr>
+              <tr><td colSpan={6} className="p-0"><EstadoVazio variante="linha" titulo="Nenhuma despesa avulsa no período." /></td></tr>
             )}
           </tbody>
         </table>

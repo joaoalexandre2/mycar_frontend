@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Download, Printer } from "lucide-react";
 import { Alert } from "../../components/ui/Alert";
+import { EstadoVazio } from "../../components/ui/EstadoVazio";
 import { TITULO_DE_SECAO } from "../../components/ui/escalaDeTitulos";
 import { contaService } from "../../services/conta/veiculos";
 import { motoristasService, centrosCustoService } from "../../services/frota";
@@ -187,7 +188,7 @@ export function Relatorios() {
                 </tr>
               ))}
               {relatorio.linhas.length === 0 && (
-                <tr><td colSpan={relatorio.colunas.length} className="px-5 py-6 text-center text-gray-500">Nenhum registro com esse filtro.</td></tr>
+                <tr><td colSpan={relatorio.colunas.length} className="p-0"><EstadoVazio variante="linha" titulo="Nenhum registro com esse filtro." /></td></tr>
               )}
             </tbody>
           </table>

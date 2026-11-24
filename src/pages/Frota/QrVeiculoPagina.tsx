@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Alert } from "../../components/ui/Alert";
+import { Carregando } from "../../components/ui/Carregando";
 import { TITULO_DE_SECAO } from "../../components/ui/escalaDeTitulos";
 import { StatusChip } from "../../components/ui/StatusChip";
 import { Car } from "lucide-react";
@@ -47,7 +48,7 @@ export function QrVeiculoPagina() {
   }
 
   if (!dados) {
-    return <p className="p-6 text-xs text-gray-500">Carregando o veículo...</p>;
+    return <Carregando texto="Carregando o veículo..." className="p-6" />;
   }
 
   return (

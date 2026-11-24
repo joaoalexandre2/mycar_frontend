@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { LinhaDeTroca } from "../../components/frota/LinhaDeTroca";
 import { Alert } from "../../components/ui/Alert";
+import { EstadoVazio } from "../../components/ui/EstadoVazio";
 import { centrosCustoService } from "../../services/frota";
 import { mensagemErro } from "../../services/api";
 import type { CentroCusto, TrocaDeCentro } from "../../types/frota";
@@ -82,9 +83,7 @@ export function HistoricoCentros() {
       )}
 
       {trocas && trocas.length === 0 && (
-        <p className="rounded-lg bg-gray-50 px-4 py-6 text-center text-xs text-gray-500">
-          Nenhuma troca de centro de custo no período.
-        </p>
+        <EstadoVazio titulo="Nenhuma troca de centro de custo no período." />
       )}
 
       {trocas && trocas.length > 0 && (

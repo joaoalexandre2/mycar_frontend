@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Pencil, Plus, Trash2 } from "lucide-react";
 import { Alert } from "../../components/ui/Alert";
+import { EstadoVazio } from "../../components/ui/EstadoVazio";
 import { TITULO_DE_SECAO } from "../../components/ui/escalaDeTitulos";
 import { OcorrenciaModal } from "../../components/frota/OcorrenciaModal";
 import { useConfirmar } from "../../hooks/useNotificacoes";
@@ -33,6 +34,9 @@ export function Ocorrencias() {
   const [lista, setLista] = useState<Ocorrencia[]>([]);
   const [resumo, setResumo] = useState<ResumoDeOcorrencias | null>(null);
   const [veiculos, setVeiculos] = useState<VeiculoConta[]>([]);
+  // Antes a falha virava lista vazia, sem aviso. A lista de ocorrências não depende dela, então só avisa.
+  const [erroVeiculos, setErroVeiculos] = useState(false);
+  const [versaoVeiculos, setVersaoVeiculos] = useState(0);
   const [versao, setVersao] = useState(0);
   const [erro, setErro] = useState<string | null>(null);
   const [editando, setEditando] = useState<Ocorrencia | null>(null);
@@ -42,15 +46,17 @@ export function Ocorrencias() {
     let ativo = true;
 
     contaService.listarVeiculos({}).then((p) => {
-      if (ativo) setVeiculos(p.dados);
+      if (!ativo) return;
+      setVeiculos(p.dados);
+      setErroVeiculos(false);
     }).catch(() => {
-      if (ativo) setVeiculos([]);
+      if (ativo) setErroVeiculos(true);
     });
 
     return () => {
       ativo = false;
     };
-  }, []);
+  }, [versaoVeiculos]);
 
   useEffect(() => {
     let ativo = true;
@@ -126,6 +132,13 @@ export function Ocorrencias() {
 
       {erro && <Alert tone="danger">{erro}</Alert>}
 
+      {erroVeiculos && (
+        <Alert tone="warning" action={{ label: "Tentar de novo", onClick: () => setVersaoVeiculos((v) => v + 1) }}>
+          Não foi possível carregar a lista de veículos. As ocorrências continuam aqui, mas o filtro por veículo e o
+          registro de uma nova ficam sem a lista até carregar.
+        </Alert>
+      )}
+
       {resumo && (
         <section aria-label="Resumo" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <Indicador titulo="Ocorrências" valor={String(resumo.total)} />
@@ -175,7 +188,7 @@ export function Ocorrencias() {
               </tr>
             ))}
             {lista.length === 0 && (
-              <tr><td colSpan={gerencia ? 8 : 7} className="px-5 py-6 text-center text-gray-500">Nenhuma ocorrência com esse filtro.</td></tr>
+              <tr><td colSpan={gerencia ? 8 : 7} className="p-0"><EstadoVazio variante="linha" titulo="Nenhuma ocorrência com esse filtro." /></td></tr>
             )}
           </tbody>
         </table>

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { pessoasFrotaService } from "../../services/frota";
 import { Alert } from "../../components/ui/Alert";
+import { Carregando } from "../../components/ui/Carregando";
+import { EstadoVazio } from "../../components/ui/EstadoVazio";
 import { mensagemErro } from "../../services/api";
 import { formatarDataHora } from "../../utils/formatters";
 import type { EventoDeAcesso } from "../../types/frota";
@@ -49,11 +51,11 @@ export function AcessosHistorico() {
   }
 
   if (eventos === null) {
-    return <p className="text-xs text-gray-500">Carregando...</p>;
+    return <Carregando />;
   }
 
   if (eventos.length === 0) {
-    return <p className="rounded-lg bg-gray-50 px-4 py-6 text-center text-xs text-gray-500">Nenhuma mudança de acesso registrada ainda.</p>;
+    return <EstadoVazio titulo="Nenhuma mudança de acesso registrada ainda." />;
   }
 
   return (
