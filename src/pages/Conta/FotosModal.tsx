@@ -186,6 +186,7 @@ export function FotosModal({
                       src={foto.urlMiniatura}
                       alt={foto.legenda ?? `Foto de ${formatarData(foto.criadaEm)}`}
                       loading="lazy"
+                      decoding="async"
                       className="aspect-square w-full object-cover transition group-hover:scale-105"
                     />
                   </button>

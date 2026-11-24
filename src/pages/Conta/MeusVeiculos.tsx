@@ -33,6 +33,7 @@ import type { TipoVeiculo } from "../../types/veiculo";
 import { SeletorDeTipo } from "../../components/veiculos/SeletorDeTipo";
 import type { CentroCusto } from "../../types/frota";
 import { nomeDoPlano } from "../../utils/plano";
+import { classeDoCampo, classeDoRotulo } from "../../components/ui/Campo";
 
 interface DadosForm {
   tipo: TipoVeiculo;
@@ -314,10 +315,11 @@ export function MeusVeiculos() {
           </p>
         ) : (
           <div className="grid grid-cols-1 gap-4 bg-gray-50 p-4 md:grid-cols-2 2xl:grid-cols-3">
-            {veiculos.map((veiculo) => (
+            {veiculos.map((veiculo, indice) => (
               <CartaoVeiculo
                 key={veiculo.id}
                 veiculo={veiculo}
+                acimaDaDobra={indice === 0}
                 nome={nomeDoVeiculo(veiculo)}
                 consultandoFipe={consultandoId === veiculo.id}
                 podeGerir={!ehFrota || ehAdministradorOuGestor(usuario)}
@@ -542,9 +544,6 @@ export function VeiculoContaModal({
     );
   }
 
-  const classeCampo =
-    "h-10 w-full rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-blue-500 aria-invalid:border-red-500";
-
   return (
     <Modal
       titulo={veiculo ? "Editar veículo" : "Novo veículo"}
@@ -557,7 +556,7 @@ export function VeiculoContaModal({
           <div>
             <label
               htmlFor={idApelido}
-              className="mb-1.5 block text-xs font-medium text-gray-700"
+              className={classeDoRotulo}
             >
               Apelido (opcional)
             </label>
@@ -568,7 +567,7 @@ export function VeiculoContaModal({
               onChange={(event) => setApelido(event.target.value)}
               maxLength={60}
               placeholder="Ex.: Carro da família, Van da entrega"
-              className={classeCampo}
+              className={classeDoCampo}
             />
           </div>
 
@@ -608,7 +607,7 @@ export function VeiculoContaModal({
             <div>
               <label
                 htmlFor={idMarca}
-                className="mb-1.5 block text-xs font-medium text-gray-700"
+                className={classeDoRotulo}
               >
                 Marca
               </label>
@@ -621,7 +620,7 @@ export function VeiculoContaModal({
                   setMarca(event.target.value);
                   limpar(idMarca);
                 }}
-                className={classeCampo}
+                className={classeDoCampo}
                 required
               />
               <ErroDoCampo campo={idMarca} mensagem={erros[idMarca]} />
@@ -629,7 +628,7 @@ export function VeiculoContaModal({
             <div>
               <label
                 htmlFor={idModelo}
-                className="mb-1.5 block text-xs font-medium text-gray-700"
+                className={classeDoRotulo}
               >
                 Modelo
               </label>
@@ -642,7 +641,7 @@ export function VeiculoContaModal({
                   setModelo(event.target.value);
                   limpar(idModelo);
                 }}
-                className={classeCampo}
+                className={classeDoCampo}
                 required
               />
               <ErroDoCampo campo={idModelo} mensagem={erros[idModelo]} />
@@ -653,7 +652,7 @@ export function VeiculoContaModal({
             <div>
               <label
                 htmlFor={idPlaca}
-                className="mb-1.5 block text-xs font-medium text-gray-700"
+                className={classeDoRotulo}
               >
                 Placa
               </label>
@@ -669,7 +668,7 @@ export function VeiculoContaModal({
                 maxLength={8}
                 placeholder="ABC1D23 ou ABC1234"
                 autoCapitalize="characters"
-                className={`${classeCampo} font-semibold uppercase tracking-wider`}
+                className={`${classeDoCampo} font-semibold uppercase tracking-wider`}
                 required
               />
               <ErroDoCampo campo={idPlaca} mensagem={erros[idPlaca]} />
@@ -689,7 +688,7 @@ export function VeiculoContaModal({
             <div>
               <label
                 htmlFor={idAno}
-                className="mb-1.5 block text-xs font-medium text-gray-700"
+                className={classeDoRotulo}
               >
                 Ano modelo
               </label>
@@ -705,7 +704,7 @@ export function VeiculoContaModal({
                   limpar(idAno);
                   limpar(idAnoFab);
                 }}
-                className={classeCampo}
+                className={classeDoCampo}
                 required
               />
               <ErroDoCampo campo={idAno} mensagem={erros[idAno]} />
@@ -718,7 +717,7 @@ export function VeiculoContaModal({
           <div>
             <label
               htmlFor={idAnoFab}
-              className="mb-1.5 block text-xs font-medium text-gray-700"
+              className={classeDoRotulo}
             >
               Ano de fabricação (opcional)
             </label>
@@ -734,7 +733,7 @@ export function VeiculoContaModal({
                 setAnoFab(event.target.value);
                 limpar(idAnoFab);
               }}
-              className={classeCampo}
+              className={classeDoCampo}
             />
             <ErroDoCampo campo={idAnoFab} mensagem={erros[idAnoFab]} />
             <p id={idAjudaAnoFab} className="mt-1 text-xs text-gray-500">
@@ -745,7 +744,7 @@ export function VeiculoContaModal({
           <div>
             <label
               htmlFor={idUf}
-              className="mb-1.5 block text-xs font-medium text-gray-700"
+              className={classeDoRotulo}
             >
               Estado de emplacamento
             </label>
@@ -753,7 +752,7 @@ export function VeiculoContaModal({
               id={idUf}
               value={uf}
               onChange={(event) => setUf(event.target.value)}
-              className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none transition focus:border-blue-500 aria-invalid:border-red-500"
+              className={classeDoCampo}
             >
               <option value="">Selecione (para calcular IPVA e licenciamento)</option>
               {ESTADOS.map((sigla) => (
@@ -767,7 +766,7 @@ export function VeiculoContaModal({
           <div>
             <label
               htmlFor={idRevisao}
-              className="mb-1.5 block text-xs font-medium text-gray-700"
+              className={classeDoRotulo}
             >
               Próxima revisão (opcional)
             </label>
@@ -777,7 +776,7 @@ export function VeiculoContaModal({
               type="date"
               value={revisao}
               onChange={(event) => setRevisao(event.target.value)}
-              className={classeCampo}
+              className={classeDoCampo}
             />
             <p id={idAjudaRevisao} className="mt-1 text-xs text-gray-500">
               Avisamos por e-mail quando faltar até 30 dias.
@@ -788,7 +787,7 @@ export function VeiculoContaModal({
             <div>
               <label
                 htmlFor="veiculo-centro"
-                className="mb-1.5 block text-xs font-medium text-gray-700"
+                className={classeDoRotulo}
               >
                 Centro de custo padrão (opcional)
               </label>
@@ -796,7 +795,7 @@ export function VeiculoContaModal({
                 id="veiculo-centro"
                 value={centroId}
                 onChange={(event) => setCentroId(event.target.value)}
-                className={classeCampo}
+                className={classeDoCampo}
               >
                 <option value="">Nenhum</option>
                 {centros.map((c) => (

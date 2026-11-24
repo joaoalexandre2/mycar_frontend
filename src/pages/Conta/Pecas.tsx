@@ -18,6 +18,7 @@ import type {
   VeiculoConta,
 } from "../../types/conta";
 import { Alert } from "../../components/ui/Alert";
+import { classeDoCampo } from "../../components/ui/Campo";
 
 const SUGESTOES = ["amortecedor", "coifa", "pastilha", "bateria", "correia", "óleo"];
 
@@ -35,9 +36,6 @@ function agruparPorSistema(pecas: PecaCatalogo[]) {
 
   return [...grupos.entries()];
 }
-
-const classeCampo =
-  "h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
 
 function PecaItem({
   peca,
@@ -227,7 +225,7 @@ function PecaItem({
               aria-label="Marca da peça"
               placeholder="Marca (ex.: Cofap)"
               onChange={(e) => setMarca(e.target.value)}
-              className={classeCampo}
+              className={classeDoCampo}
             />
             <input
               type="text"
@@ -236,7 +234,7 @@ function PecaItem({
               aria-label="Código confirmado da peça"
               placeholder="Código confirmado"
               onChange={(e) => setCodigo(e.target.value)}
-              className={classeCampo}
+              className={classeDoCampo}
             />
           </div>
           {erro && <Alert tone="danger">{erro}</Alert>}

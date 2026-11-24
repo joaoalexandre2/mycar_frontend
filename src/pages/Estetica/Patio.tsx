@@ -9,10 +9,7 @@ import { formatarDataHora } from "../../utils/formatters";
 import type { AtendimentoDaEstetica, EtapaDoAtendimento, FormaDePagamento, PacoteDaEstetica, ServicoDaEstetica } from "../../types/estetica";
 import { Alert } from "../../components/ui/Alert";
 import { StatusChip } from "../../components/ui/StatusChip";
-
-const classeCampo =
-  "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
-const rotulo = "mb-1.5 block text-xs font-medium text-gray-700";
+import { Campo, CampoDeTexto, classeDoCampo, classeDoRotulo } from "../../components/ui/Campo";
 
 const COLUNAS: { etapa: EtapaDoAtendimento; titulo: string }[] = [
   { etapa: "entrada", titulo: "Entrada" },
@@ -221,27 +218,23 @@ function NovoCarro({ onSalvo, onClose }: { onSalvo: () => void; onClose: () => v
     <Modal titulo="Novo carro no pátio" icone={<Plus size={16} />} onClose={onClose} larguraMax="max-w-lg">
       <form onSubmit={(e) => void salvar(e)} className="space-y-4 px-6 py-5">
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="pat-placa" className={rotulo}>Placa</label>
-            <input id="pat-placa" type="text" maxLength={10} value={placa} onChange={(e) => setPlaca(e.target.value)} placeholder="ABC1D23" className={classeCampo} />
-          </div>
-          <div>
-            <label htmlFor="pat-modelo" className={rotulo}>Modelo (opcional)</label>
-            <input id="pat-modelo" type="text" maxLength={120} value={modelo} onChange={(e) => setModelo(e.target.value)} className={classeCampo} />
-          </div>
-          <div>
-            <label htmlFor="pat-cliente" className={rotulo}>Cliente (opcional)</label>
-            <input id="pat-cliente" type="text" maxLength={120} value={cliente} onChange={(e) => setCliente(e.target.value)} className={classeCampo} />
-          </div>
-          <div>
-            <label htmlFor="pat-telefone" className={rotulo}>WhatsApp (opcional)</label>
-            <input id="pat-telefone" type="text" maxLength={30} value={telefone} onChange={(e) => setTelefone(e.target.value)} className={classeCampo} />
-          </div>
+          <Campo id="pat-placa" rotulo="Placa">
+            {(a) => <CampoDeTexto {...a} maxLength={10} value={placa} onChange={(e) => setPlaca(e.target.value)} placeholder="ABC1D23" />}
+          </Campo>
+          <Campo id="pat-modelo" rotulo="Modelo (opcional)">
+            {(a) => <CampoDeTexto {...a} maxLength={120} value={modelo} onChange={(e) => setModelo(e.target.value)} />}
+          </Campo>
+          <Campo id="pat-cliente" rotulo="Cliente (opcional)">
+            {(a) => <CampoDeTexto {...a} maxLength={120} value={cliente} onChange={(e) => setCliente(e.target.value)} />}
+          </Campo>
+          <Campo id="pat-telefone" rotulo="WhatsApp (opcional)">
+            {(a) => <CampoDeTexto {...a} maxLength={30} value={telefone} onChange={(e) => setTelefone(e.target.value)} />}
+          </Campo>
         </div>
 
         <div>
-          <label htmlFor="pat-pacote" className={rotulo}>Pacote (opcional)</label>
-          <select id="pat-pacote" value={pacoteId} onChange={(e) => setPacoteId(e.target.value)} className={classeCampo}>
+          <label htmlFor="pat-pacote" className={classeDoRotulo}>Pacote (opcional)</label>
+          <select id="pat-pacote" value={pacoteId} onChange={(e) => setPacoteId(e.target.value)} className={classeDoCampo}>
             <option value="">Nenhum: escolher serviços abaixo</option>
             {pacotes.map((p) => (
               <option key={p.id} value={p.id}>{p.nome} · R$ {p.preco.toFixed(2).replace(".", ",")}</option>
@@ -251,7 +244,7 @@ function NovoCarro({ onSalvo, onClose }: { onSalvo: () => void; onClose: () => v
 
         {!pacoteId && (
           <fieldset className="space-y-2">
-            <legend className={rotulo}>Serviços</legend>
+            <legend className={classeDoRotulo}>Serviços</legend>
             {servicos.length === 0 && <p className="text-xs text-gray-500">Cadastre os serviços em Serviços e pacotes.</p>}
             {servicos.map((s) => (
               <label key={s.id} className="flex items-center justify-between gap-2 text-xs text-gray-700">

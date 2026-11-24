@@ -15,9 +15,7 @@ import type {
 import { Alert } from "../../components/ui/Alert";
 import { StatusChip } from "../../components/ui/StatusChip";
 import type { Tom } from "../../components/ui/tons";
-
-const classeCampo =
-  "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
+import { classeDoCampo, classeDoRotulo } from "../../components/ui/Campo";
 
 const SITUACAO: Record<SituacaoDocumento, { texto: string; tom: Tom }> = {
   em_dia: { texto: "Em dia", tom: "success" },
@@ -148,12 +146,12 @@ export function DocumentosModal({
           <p className="text-xs font-medium text-gray-700">Adicionar</p>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <label className="block text-xs text-gray-500">
-              Documento
+            <label className="block">
+              <span className={classeDoRotulo}>Documento</span>
               <select
                 value={tipo}
                 onChange={(e) => setTipo(e.target.value as TipoDocumento)}
-                className={`mt-1 ${classeCampo}`}
+                className={classeDoCampo}
               >
                 <option value="crlv">CRLV</option>
                 <option value="vistoria">Vistoria</option>
@@ -162,39 +160,39 @@ export function DocumentosModal({
             </label>
 
             {tipo === "outro" && (
-              <label className="block text-xs text-gray-500">
-                Nome
+              <label className="block">
+                <span className={classeDoRotulo}>Nome</span>
                 <input
                   type="text"
                   value={titulo}
                   maxLength={80}
                   placeholder="Ex.: CNH do motorista"
                   onChange={(e) => setTitulo(e.target.value)}
-                  className={`mt-1 ${classeCampo}`}
+                  className={classeDoCampo}
                   required
                 />
               </label>
             )}
 
-            <label className="block text-xs text-gray-500">
-              Vence em
+            <label className="block">
+              <span className={classeDoRotulo}>Vence em</span>
               <input
                 type="date"
                 value={vencimento}
                 onChange={(e) => setVencimento(e.target.value)}
-                className={`mt-1 ${classeCampo}`}
+                className={classeDoCampo}
               />
             </label>
           </div>
 
-          <label className="block text-xs text-gray-500">
-            Observações (opcional)
+          <label className="block">
+            <span className={classeDoRotulo}>Observações (opcional)</span>
             <input
               type="text"
               value={observacoes}
               maxLength={255}
               onChange={(e) => setObservacoes(e.target.value)}
-              className={`mt-1 ${classeCampo}`}
+              className={classeDoCampo}
             />
           </label>
 

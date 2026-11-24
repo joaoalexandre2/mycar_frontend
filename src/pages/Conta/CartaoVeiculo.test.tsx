@@ -136,6 +136,22 @@ describe("CartaoVeiculo: capa", () => {
 
     expect(screen.queryByText(/Foto ilustrativa/)).not.toBeInTheDocument();
   });
+
+  it("a capa carrega sob demanda e decodifica fora da thread principal", () => {
+    montar({ ...base, fotoCapaUrl: "https://api.exemplo.com/api/fotos/9/miniatura" });
+
+    const capa = screen.getByAltText(/Foto de Strada/);
+    expect(capa).toHaveAttribute("loading", "lazy");
+    expect(capa).toHaveAttribute("decoding", "async");
+  });
+
+  it("o cartão acima da dobra carrega a capa logo, sem esperar a rolagem", () => {
+    render(
+      <CartaoVeiculo veiculo={{ ...base, fotoModelo }} nome="Strada" consultandoFipe={false} acoes={acoes as never} acimaDaDobra />,
+    );
+
+    expect(screen.getByAltText(/Foto ilustrativa do modelo/)).toHaveAttribute("loading", "eager");
+  });
 });
 
 describe("CartaoVeiculo: km atual da frota", () => {

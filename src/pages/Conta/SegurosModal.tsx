@@ -16,9 +16,7 @@ import type {
 } from "../../types/conta";
 import { Alert } from "../../components/ui/Alert";
 import { StatusChip } from "../../components/ui/StatusChip";
-
-const classeCampo =
-  "h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none focus:border-blue-500";
+import { classeDoCampo, classeDoRotulo } from "../../components/ui/Campo";
 
 function textoDaReferencia(item: Seguro) {
   if (item.vsReferenciaPct === null) return null;
@@ -285,49 +283,49 @@ export function SegurosModal({
           )}
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <label className="block text-xs text-gray-500">
-              Seguradora
+            <label className="block">
+              <span className={classeDoRotulo}>Seguradora</span>
               <input
                 type="text"
                 value={seguradora}
                 maxLength={60}
                 onChange={(e) => setSeguradora(e.target.value)}
-                className={`mt-1 ${classeCampo}`}
+                className={classeDoCampo}
                 required
               />
             </label>
-            <label className="block text-xs text-gray-500">
-              Valor por ano (R$)
+            <label className="block">
+              <span className={classeDoRotulo}>Valor por ano (R$)</span>
               <input
                 type="text"
                 inputMode="decimal"
                 value={valorAnual}
                 placeholder="Ex.: 2.400,00"
                 onChange={(e) => setValorAnual(e.target.value)}
-                className={`mt-1 ${classeCampo}`}
+                className={classeDoCampo}
                 required
               />
             </label>
-            <label className="block text-xs text-gray-500">
-              Franquia (R$, opcional)
+            <label className="block">
+              <span className={classeDoRotulo}>Franquia (R$, opcional)</span>
               <input
                 type="text"
                 inputMode="decimal"
                 value={franquia}
                 onChange={(e) => setFranquia(e.target.value)}
-                className={`mt-1 ${classeCampo}`}
+                className={classeDoCampo}
               />
             </label>
           </div>
 
           {tipo === "apolice" && (
-            <label className="block text-xs text-gray-500">
-              Vencimento do seguro (fim da vigência)
+            <label className="block">
+              <span className={classeDoRotulo}>Vencimento do seguro (fim da vigência)</span>
               <input
                 type="date"
                 value={vigenciaFim}
                 onChange={(e) => setVigenciaFim(e.target.value)}
-                className={`mt-1 ${classeCampo}`}
+                className={classeDoCampo}
                 required
               />
               <span className="mt-1 block text-xs text-gray-500">
@@ -336,15 +334,15 @@ export function SegurosModal({
             </label>
           )}
 
-          <label className="block text-xs text-gray-500">
-            Coberturas ou observações (opcional)
+          <label className="block">
+            <span className={classeDoRotulo}>Coberturas ou observações (opcional)</span>
             <input
               type="text"
               value={observacoes}
               maxLength={255}
               placeholder="Ex.: compreensiva, carro reserva 15 dias"
               onChange={(e) => setObservacoes(e.target.value)}
-              className={`mt-1 ${classeCampo}`}
+              className={classeDoCampo}
             />
           </label>
 
