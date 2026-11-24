@@ -303,6 +303,18 @@ describe("diálogos empilhados", () => {
   });
 });
 
+describe("Modal em tela de toque", () => {
+  // O jsdom não avalia media query: confere a classe documentada em index.css.
+  it("o botão de fechar mantém 32px visíveis e ganha a área de toque de 44px", async () => {
+    render(<Tela />);
+    await userEvent.click(screen.getByRole("button", { name: "Abrir" }));
+
+    const fechar = screen.getByRole("button", { name: "Fechar" });
+    expect(fechar).toHaveClass("alvo-de-toque", "h-8", "w-8");
+    expect(fechar.className).not.toMatch(/outline-none/);
+  });
+});
+
 describe("ModalTelaCheia", () => {
   it("tem rótulo, fecha com Esc e com clique no fundo", async () => {
     const aoFechar = vi.fn();
