@@ -1,6 +1,8 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { ChevronLeft, ChevronRight, FileWarning, Plus, Trash2 } from "lucide-react";
 import { Alert } from "../../components/ui/Alert";
+import { Carregando } from "../../components/ui/Carregando";
+import { EstadoVazio } from "../../components/ui/EstadoVazio";
 import { Modal } from "../../components/ui/Modal";
 import { useCarregarLista } from "../../hooks/useCarregarLista";
 import { contaService } from "../../services/conta/veiculos";
@@ -100,11 +102,9 @@ export function Multas() {
         </Alert>
       )}
 
-      {carregando && !erroDeCarga && <p className="text-xs text-gray-500">Carregando...</p>}
+      {carregando && !erroDeCarga && <Carregando />}
 
-      {multas && multas.dados.length === 0 && (
-        <p className="rounded-lg bg-gray-50 px-4 py-6 text-center text-xs text-gray-500">Nenhuma multa registrada.</p>
-      )}
+      {multas && multas.dados.length === 0 && <EstadoVazio titulo="Nenhuma multa registrada." />}
 
       {multas && multas.dados.length > 0 && (
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
@@ -189,6 +189,9 @@ export function Multas() {
 
 function NovaMulta({ onSalva, onClose }: { onSalva: () => void; onClose: () => void }) {
   const [veiculos, setVeiculos] = useState<VeiculoConta[]>([]);
+  // Antes a falha virava lista vazia, sem aviso: parecia uma frota sem veículos.
+  const [erroVeiculos, setErroVeiculos] = useState(false);
+  const [versaoVeiculos, setVersaoVeiculos] = useState(0);
   const [motoristas, setMotoristas] = useState<Motorista[]>([]);
   // Sem a lista, a multa ainda pode ser registrada com o responsável sugerido: só avisa, não trava.
   const [erroMotoristas, setErroMotoristas] = useState(false);
@@ -207,8 +210,23 @@ function NovaMulta({ onSalva, onClose }: { onSalva: () => void; onClose: () => v
   const sugestaoVisivel = veiculoId && dataHora ? sugestao : null;
 
   useEffect(() => {
-    contaService.listarVeiculos({}).then((p) => setVeiculos(p.dados)).catch(() => setVeiculos([]));
-  }, []);
+    let ativo = true;
+
+    contaService
+      .listarVeiculos({})
+      .then((p) => {
+        if (!ativo) return;
+        setVeiculos(p.dados);
+        setErroVeiculos(false);
+      })
+      .catch(() => {
+        if (ativo) setErroVeiculos(true);
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, [versaoVeiculos]);
 
   useEffect(() => {
     let ativo = true;
@@ -296,6 +314,12 @@ function NovaMulta({ onSalva, onClose }: { onSalva: () => void; onClose: () => v
               <option key={v.id} value={v.id}>{v.placa} · {v.marca} {v.modelo}</option>
             ))}
           </select>
+          {/* A multa precisa do veículo: sem a lista não dá para registrar, por isso é erro e não aviso. */}
+          {erroVeiculos && (
+            <Alert tone="danger" className="mt-2" action={{ label: "Tentar de novo", onClick: () => setVersaoVeiculos((v) => v + 1) }}>
+              Não foi possível carregar a lista de veículos. A multa precisa do veículo: tente de novo.
+            </Alert>
+          )}
         </div>
 
         <div>

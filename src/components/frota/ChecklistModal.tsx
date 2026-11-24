@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { ClipboardCheck } from "lucide-react";
 import { Modal } from "../ui/Modal";
 import { Alert } from "../ui/Alert";
+import { Carregando } from "../ui/Carregando";
 import { checklistService } from "../../services/frotaDiferenciais";
 import { mensagemErro } from "../../services/api";
 import type { ModeloDeChecklist, MomentoDoChecklist, RespostaDeChecklists, SituacaoDoItem } from "../../types/frota";
@@ -206,7 +207,7 @@ export function ChecklistModal({
         ) : undefined
       }
     >
-      {!dados && !erro && <p className="px-6 py-5 text-xs text-gray-500">Carregando...</p>}
+      {!dados && !erro && <Carregando className="px-6 py-5" />}
 
       {dados && jaFeito && (
         <p className="px-6 py-5 text-xs text-gray-700">Este checklist de {TEXTO_DO_MOMENTO[momento]} já foi feito.</p>

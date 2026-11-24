@@ -92,6 +92,44 @@ describe("Multas da frota", () => {
     expect(screen.queryByRole("heading", { level: 2 })).not.toBeInTheDocument();
   });
 
+  it("avisa quando os veículos não carregam (antes virava lista vazia) e tenta de novo", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(multasService, "listar").mockResolvedValue({ dados: [], paginaAtual: 1, totalPaginas: 0, totalRegistros: 0 });
+    vi.spyOn(motoristasService, "listar").mockResolvedValue([]);
+    const listarVeiculos = vi
+      .spyOn(contaService, "listarVeiculos")
+      .mockRejectedValueOnce(new Error("rede fora"))
+      .mockResolvedValueOnce({ dados: [{ id: 1, placa: "AAA1A11", marca: "Fiat", modelo: "Strada" }] } as unknown as Awaited<ReturnType<typeof contaService.listarVeiculos>>);
+
+    renderizar();
+
+    await user.click(await screen.findByRole("button", { name: /Nova multa/ }));
+
+    const aviso = await screen.findByText(/Não foi possível carregar a lista de veículos/);
+    const caixa = aviso.closest("[data-tom]") as HTMLElement;
+    expect(caixa).toHaveAttribute("role", "alert");
+
+    await user.click(within(caixa).getByRole("button", { name: "Tentar de novo" }));
+
+    expect(await screen.findByRole("option", { name: "AAA1A11 · Fiat Strada" })).toBeInTheDocument();
+    expect(screen.queryByText(/Não foi possível carregar a lista de veículos/)).not.toBeInTheDocument();
+    expect(listarVeiculos).toHaveBeenCalledTimes(2);
+  });
+
+  it("enquanto a lista carrega mostra um status; vazia, o aviso de sempre", async () => {
+    let responder: (valor: Awaited<ReturnType<typeof multasService.listar>>) => void = () => {};
+    vi.spyOn(multasService, "listar").mockReturnValue(new Promise((r) => (responder = r)));
+
+    renderizar();
+
+    expect(await screen.findByRole("status")).toHaveTextContent("Carregando...");
+
+    responder({ dados: [], paginaAtual: 1, totalPaginas: 0, totalRegistros: 0 });
+
+    expect(await screen.findByText("Nenhuma multa registrada.")).toBeInTheDocument();
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  });
+
   it("avisa quando os motoristas não carregam, sem travar o registro, e tenta de novo", async () => {
     const user = userEvent.setup();
     vi.spyOn(multasService, "listar").mockResolvedValue({ dados: [], paginaAtual: 1, totalPaginas: 0, totalRegistros: 0 });

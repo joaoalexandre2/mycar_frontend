@@ -104,6 +104,29 @@ describe("Trocar centro: resumo e histórico", () => {
     expect(screen.getByText(/Centro de custo: de/)).toHaveTextContent("Centro de custo: de Vendas para Entregas");
   });
 
+  it("falha ao carregar os motivos: erro próprio com 'Tentar de novo', não o genérico", async () => {
+    vi.spyOn(centrosCustoService, "listar").mockResolvedValue([vendas, entregas]);
+    vi.spyOn(usosService, "historicoDeCentros").mockResolvedValue([]);
+    const motivos = vi
+      .spyOn(motivosTrocaCentroService, "listar")
+      .mockRejectedValueOnce(new Error("rede fora"))
+      .mockResolvedValueOnce([{ id: 5, nome: "Reclassificação", ativo: true }]);
+    const usuario = userEvent.setup();
+    abrir();
+
+    const aviso = await screen.findByText(/Não foi possível carregar os motivos de troca/);
+    const caixa = aviso.closest("[data-tom]") as HTMLElement;
+    expect(caixa).toHaveAttribute("data-tom", "danger");
+    // Sem a lista ainda não se sabe se há motivos: não acusa "nenhum cadastrado".
+    expect(screen.queryByText(/ainda não tem nenhum cadastrado/)).not.toBeInTheDocument();
+
+    await usuario.click(within(caixa).getByRole("button", { name: "Tentar de novo" }));
+
+    expect(await screen.findByRole("option", { name: "Reclassificação" })).toBeInTheDocument();
+    expect(screen.queryByText(/Não foi possível carregar os motivos de troca/)).not.toBeInTheDocument();
+    expect(motivos).toHaveBeenCalledTimes(2);
+  });
+
   it("falha ao carregar o histórico avisa e tenta de novo", async () => {
     vi.spyOn(centrosCustoService, "listar").mockResolvedValue([vendas, entregas]);
     vi.spyOn(motivosTrocaCentroService, "listar").mockResolvedValue([{ id: 5, nome: "Reclassificação", ativo: true }]);

@@ -37,6 +37,9 @@ export function TrocarCentroModal({
   const [centroId, setCentroId] = useState("");
   // null enquanto carrega: só com a resposta dá para dizer que não há motivo cadastrado.
   const [motivos, setMotivos] = useState<MotivoTrocaCentro[] | null>(null);
+  // A falha dos motivos tem aviso e "Tentar de novo" próprios: antes virava o erro genérico do formulário.
+  const [erroMotivos, setErroMotivos] = useState(false);
+  const [versaoMotivos, setVersaoMotivos] = useState(0);
   const [motivoId, setMotivoId] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
@@ -58,19 +61,29 @@ export function TrocarCentroModal({
         if (ativo) setErro(mensagemErro(error));
       });
 
+    return () => {
+      ativo = false;
+    };
+  }, [uso.id]);
+
+  useEffect(() => {
+    let ativo = true;
+
     motivosTrocaCentroService
       .listar()
       .then((dados) => {
-        if (ativo) setMotivos(dados);
+        if (!ativo) return;
+        setMotivos(dados);
+        setErroMotivos(false);
       })
-      .catch((error) => {
-        if (ativo) setErro(mensagemErro(error));
+      .catch(() => {
+        if (ativo) setErroMotivos(true);
       });
 
     return () => {
       ativo = false;
     };
-  }, [uso.id]);
+  }, [uso.id, versaoMotivos]);
 
   useEffect(() => {
     let ativo = true;
@@ -139,6 +152,12 @@ export function TrocarCentroModal({
               <option key={m.id} value={m.id}>{m.nome}</option>
             ))}
           </select>
+          {/* A troca exige um motivo: sem a lista não dá para trocar, por isso é erro e não aviso. */}
+          {erroMotivos && (
+            <Alert tone="danger" className="mt-2" action={{ label: "Tentar de novo", onClick: () => setVersaoMotivos((v) => v + 1) }}>
+              Não foi possível carregar os motivos de troca. A troca precisa de um motivo: tente de novo.
+            </Alert>
+          )}
           {semMotivos && (
             <Alert tone="warning" id={idSemMotivos} className="mt-2">
               <p>
