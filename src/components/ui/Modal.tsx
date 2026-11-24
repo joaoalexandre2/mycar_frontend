@@ -76,12 +76,13 @@ export function Modal({
             )}
           </div>
 
+          {/* 32px visíveis; em tela de toque a área cresce a 44px (alvo-de-toque, em index.css). */}
           <button
             type="button"
             onClick={onClose}
             aria-label="Fechar"
             title="Fechar"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+            className="alvo-de-toque flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
           >
             <X
               size={17}

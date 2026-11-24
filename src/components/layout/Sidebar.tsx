@@ -353,7 +353,11 @@ import {
                   {usuario?.name ?? "Usuário"}
                 </strong>
 
-                <span className="truncate text-xs text-gray-400">
+                {/* Cortado com reticências quando não cabe; o title mostra o e-mail inteiro. */}
+                <span
+                  className="truncate text-xs text-gray-400"
+                  title={usuario?.email || undefined}
+                >
                   {usuario?.email ?? ""}
                 </span>
               </div>

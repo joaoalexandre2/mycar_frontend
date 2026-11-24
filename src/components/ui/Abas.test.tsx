@@ -98,4 +98,15 @@ describe("Abas", () => {
 
     expect(container).toBeEmptyDOMElement();
   });
+
+  // O jsdom não avalia media query: confere a classe que vira
+  // @media (pointer: coarse) { min-height: 44px } no CSS do Tailwind.
+  it("em tela de toque cada aba tem ao menos 44px de altura, sem tirar o contorno de foco", () => {
+    render(<Exemplo />);
+
+    for (const aba of screen.getAllByRole("tab")) {
+      expect(aba).toHaveClass("pointer-coarse:min-h-11");
+      expect(aba.className).not.toMatch(/outline-none/);
+    }
+  });
 });

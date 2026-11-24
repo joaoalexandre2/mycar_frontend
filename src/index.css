@@ -521,3 +521,49 @@ table thead th {
 main {
   font-variant-numeric: tabular-nums;
 }
+
+/* Alvos de toque de 44px (WCAG 2.5.8 e 2.5.5) só em telas de toque. No mouse
+   nada muda.
+
+   "alvo-de-toque" é a classe para pôr no ponto: o botão continua com o tamanho
+   visível dele e um pseudo-elemento invisível, centrado, estende a área que
+   recebe o toque até 44 por 44px. Como não ocupa espaço, não empurra colunas de
+   tabela nem linhas de cartão. Cuidados: o elemento não pode usar o próprio
+   ::after, e um ancestral com overflow-hidden corta a parte que sobra.
+
+   A regra global abaixo dela é estrita de propósito: só botão (ou
+   role="button") de ícone puro, com rótulo, cujo único filho é o svg e com
+   altura fixa menor que 44px. Ficam de fora o cabeçalho (já tem tratamento
+   acima), chips ([data-chip]), botões dentro de texto corrido (p) e quem
+   pedir com "sem-alvo-de-toque". Também usa o pseudo-elemento, e não
+   min-width/min-height, para não mexer no layout de tabelas e cartões.
+
+   Fica em @layer base, como a regra do cabeçalho, para que "absolute",
+   "fixed" ou "sticky" do Tailwind continuem valendo sobre o "relative". */
+@layer base {
+  @media (pointer: coarse) {
+    .alvo-de-toque,
+    :is(button, [role="button"])[aria-label]:has(> svg:only-child):where(.h-6, .h-7, .h-8, .h-9, .size-6, .size-7, .size-8, .size-9):not(header *, p *, [data-chip] *, .sem-alvo-de-toque) {
+      position: relative;
+    }
+
+    .alvo-de-toque::after,
+    :is(button, [role="button"])[aria-label]:has(> svg:only-child):where(.h-6, .h-7, .h-8, .h-9, .size-6, .size-7, .size-8, .size-9):not(header *, p *, [data-chip] *, .sem-alvo-de-toque)::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: max(100%, 44px);
+      height: max(100%, 44px);
+      transform: translate(-50%, -50%);
+    }
+  }
+}
+
+/* Abas e itens do menu lateral ficam dentro de contêineres com rolagem
+   (overflow), que cortariam o contorno de foco desenhado para fora. Aqui ele
+   é desenhado para dentro: continua inteiro e visível (WCAG 2.4.7). */
+[role="tab"]:focus-visible,
+aside nav a:focus-visible {
+  outline-offset: -2px;
+}

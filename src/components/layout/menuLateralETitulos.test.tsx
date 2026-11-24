@@ -202,6 +202,45 @@ describe("menu Gestão da frota", () => {
   });
 });
 
+describe("usuário no rodapé do menu", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("o e-mail longo é cortado com reticências e o title mostra ele inteiro; o nome fica como estava", () => {
+    vi.spyOn(api, "get").mockResolvedValue({ data: [] } as never);
+    const email = "um.email.bem.comprido.de.gestor@empresa-de-frota.com.br";
+
+    comUsuario({ ...frota, name: "Gestora", email }, "/", <Sidebar aberta aoFechar={() => {}} />);
+
+    const textoDoEmail = screen.getByText(email);
+    expect(textoDoEmail).toHaveAttribute("title", email);
+    expect(textoDoEmail).toHaveClass("truncate");
+
+    const nome = screen.getByText("Gestora");
+    expect(nome).toHaveClass("truncate");
+    expect(nome).not.toHaveAttribute("title");
+  });
+
+  it("sem e-mail, não sobra um title vazio", () => {
+    vi.spyOn(api, "get").mockResolvedValue({ data: [] } as never);
+
+    const { container } = comUsuario({ ...frota, email: "" }, "/", <Sidebar aberta aoFechar={() => {}} />);
+
+    expect(container.querySelector('aside span.truncate[title=""]')).toBeNull();
+  });
+
+  it("nenhum controle do menu tira o contorno de foco", () => {
+    vi.spyOn(api, "get").mockResolvedValue({ data: [] } as never);
+
+    const { container } = comUsuario(frota, "/", <Sidebar aberta aoFechar={() => {}} />);
+
+    for (const controle of container.querySelectorAll("aside a, aside button")) {
+      expect(controle.className).not.toMatch(/outline-none/);
+    }
+  });
+});
+
 describe("telas de senha", () => {
   it("esqueci a senha: o campo é achado pelo rótulo", () => {
     render(

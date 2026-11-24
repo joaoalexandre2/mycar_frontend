@@ -77,7 +77,8 @@ export function Abas<K extends string>({
               tabIndex={escolhida ? 0 : -1}
               onClick={() => onMudar(chave)}
               onKeyDown={(evento) => aoTeclar(evento, indice)}
-              className={`-mb-px flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-semibold ${
+              // Em tela de toque a aba tem ao menos 44px de altura; no mouse fica como era.
+              className={`-mb-px flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-semibold pointer-coarse:min-h-11 ${
                 escolhida ? "border-blue-600 text-blue-700" : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
