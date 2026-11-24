@@ -13,13 +13,19 @@ const RAIO = 80;
  * Velocímetro do consumo médio (km/l). O arco de cor usa a "cor principal" do
  * usuário (a escala blue, remapeada por data-cor). Sem dado (valor nulo), mostra a
  * escala vazia e um traço no lugar do número.
+ *
+ * `compactoNoCelular`: abaixo de `md` o velocímetro fica estreito (~136px), então
+ * os números da escala sobem de 9 para 16 unidades do SVG (≈11px reais) e o
+ * número do centro diminui. A partir de `md` nada muda.
  */
 export function Velocimetro({
   valor,
   unidade = "km por litro",
+  compactoNoCelular = false,
 }: {
   valor: number | null;
   unidade?: string;
+  compactoNoCelular?: boolean;
 }) {
   const fracao = fracaoDaEscala(valor);
   const marcas = marcasDaEscala(CX, CY, RAIO + 10, RAIO + 4, [0, 0.25, 0.5, 0.75, 1]);
@@ -60,18 +66,27 @@ export function Velocimetro({
           ))}
         </g>
 
-        <g fill="#9AA3AE" fontSize="9" textAnchor="middle">
+        <g
+          fill="#9AA3AE"
+          fontSize="9"
+          textAnchor="middle"
+          className={compactoNoCelular ? "max-md:text-[16px]" : undefined}
+        >
           <text x="20" y="116">0</text>
           <text x="100" y="12">{CONSUMO_MAXIMO_KM_L / 2}</text>
           <text x="180" y="116">{CONSUMO_MAXIMO_KM_L}</text>
         </g>
       </svg>
 
-      <div className="absolute inset-x-0 bottom-3 text-center">
-        <p className="font-display text-5xl leading-none font-bold text-white">
+      <div className={`absolute inset-x-0 bottom-3 text-center ${compactoNoCelular ? "max-md:bottom-0" : ""}`}>
+        <p
+          className={`font-display text-5xl leading-none font-bold text-white ${compactoNoCelular ? "max-md:text-3xl" : ""}`}
+        >
           {valor === null ? "—" : valor.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
         </p>
-        <p className="mt-1 text-xs tracking-[0.12em] text-[#9AA3AE] uppercase">
+        <p
+          className={`mt-1 text-xs tracking-[0.12em] text-[#9AA3AE] uppercase ${compactoNoCelular ? "max-md:mt-0.5 max-md:text-[11px] max-md:tracking-[0.06em]" : ""}`}
+        >
           {unidade}
         </p>
       </div>
